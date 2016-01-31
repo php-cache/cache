@@ -40,6 +40,7 @@
             "Cache\\Adapter\\Predis\\": "src/Adapter/Predis/src/",
             "Cache\\Adapter\\Redis\\": "src/Adapter/Redis/src/",
             "Cache\\Adapter\\Void\\": "src/Adapter/Void/src/",
+            "Cache\\Bridge\\": "src/Bridge/src/",
             "Cache\\Hierarchy\\": "src/Hierarchy/src/",
             "Cache\\IntegrationTests\\": "src/IntegrationTests/src/",
             "Cache\\SessionHandler\\": "src/SessionHandler/src/",
@@ -61,6 +62,7 @@
             "Cache\\Adapter\\Predis\\Tests\\": "src/Adapter/Predis/tests/",
             "Cache\\Adapter\\Redis\\Tests\\": "src/Adapter/Redis/tests/",
             "Cache\\Adapter\\Void\\Tests\\": "src/Adapter/Void/tests/",
+            "Cache\\Bridge\\Tests\\": "src/Bridge/tests/",
             "Cache\\Hierarchy\\Tests\\": "src/Hierarchy/tests/",
             "Cache\\SessionHandler\\Tests\\": "src/SessionHandler/tests/",
             "Cache\\Taggable\\Tests\\": "src/Taggable/tests/"
