@@ -39,6 +39,11 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
 
     protected function fetchObjectFromCache($key)
     {
+        if (false === $result = unserialize($this->cache->get($this->getHierarchyKey($key)))) {
+            return [false, null];
+        }
+
+        return $result;
         return unserialize($this->cache->get($this->getHierarchyKey($key)));
     }
 
@@ -62,11 +67,13 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
     protected function storeItemInCache($key, CacheItemInterface $item, $ttl)
     {
         $key = $this->getHierarchyKey($key);
+        $data = serialize([true, $item->get()]);
+
         if ($ttl === null) {
-            return 'OK' === $this->cache->set($key, serialize($item))->getPayload();
+            return 'OK' === $this->cache->set($key, $data)->getPayload();
         }
 
-        return 'OK' === $this->cache->setex($key, $ttl, serialize($item))->getPayload();
+        return 'OK' === $this->cache->setex($key, $ttl, $data)->getPayload();
     }
 
     protected function getValueFormStore($key)

@@ -21,7 +21,10 @@ class ApcuCachePool extends AbstractCachePool
 {
     protected function fetchObjectFromCache($key)
     {
-        return apcu_fetch($key);
+        $success = false;
+        $data    = apcu_fetch($key, $success);
+
+        return [$success, $data];
     }
 
     protected function clearAllObjectsFromCache()
@@ -38,6 +41,6 @@ class ApcuCachePool extends AbstractCachePool
 
     protected function storeItemInCache($key, CacheItemInterface $item, $ttl)
     {
-        return apcu_store($key, $item, $ttl);
+        return apcu_store($key, $item->get(), $ttl);
     }
 }
