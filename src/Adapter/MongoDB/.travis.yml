@@ -1,0 +1,57 @@
+language: php
+php:
+  - 7.0
+  - 5.6
+  - 5.5
+  - hhvm
+
+sudo: required
+
+env:
+  global:
+    - MONGODB_HOST="localhost:27017"
+    - MONGODB_COLLECTION="test.cache"
+    - KEY_SERVER="hkp://keyserver.ubuntu.com:80"
+    - MONGO_REPO_URI="http://repo.mongodb.com/apt/ubuntu"
+    - MONGO_REPO_TYPE="precise/mongodb-enterprise/"
+    - SOURCES_LOC="/etc/apt/sources.list.d/mongodb.list"
+    - SERVER_PACKAGE=mongodb-enterprise
+    - SERVER_SERVICE=mongod
+    - SERVER_VERSION=3.2
+
+services:
+  - mongodb
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - php: hhvm
+
+before_install:
+  - if [[ $TRAVIS_PHP_VERSION != 'hhvm' ]]; then phpenv config-rm xdebug.ini; fi;
+  - pip install --user codecov
+
+  # Fetch mongo stuff
+  - sudo apt-key adv --keyserver ${KEY_SERVER} --recv 7F0CEB10
+  - sudo apt-key adv --keyserver ${KEY_SERVER} --recv EA312927
+  - echo "deb ${MONGO_REPO_URI} ${MONGO_REPO_TYPE}${SERVER_VERSION} multiverse" | sudo tee ${SOURCES_LOC}
+  - sudo apt-get update -qq
+
+install:
+  - sudo apt-get install ${SERVER_PACKAGE}
+  - sudo apt-get -y install gdb
+
+before_script:
+  - if ! nc -z localhost 27017; then sudo service ${SERVER_SERVICE} start; fi
+  - mongod --version
+  - if [[ $TRAVIS_PHP_VERSION != 'hhvm' ]]; then pecl install -f mongodb-1.1.2; fi;
+  - mongo --eval 'tojson(db.runCommand({buildInfo:1}))'
+  - if [[ $TRAVIS_PHP_VERSION != 'hhvm' ]]; then php --ri mongodb; fi;
+  - travis_retry composer install --prefer-source --no-interaction
+  - travis_retry composer self-update
+
+script:
+  - php -dzend_extension=xdebug.so vendor/bin/phpunit --coverage-clover=coverage.xml
+
+after_success:
+  - codecov
