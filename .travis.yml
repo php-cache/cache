@@ -6,11 +6,11 @@ php:
   - 7.0
   - hhvm
 
-env:
-  matrix:
-    - ADAPTER=bar PHPUNIT_FILE=filepath
-    - ADAPTER=foo
-    - ADAPTER=common
+# env:
+#   matrix:
+#     - ADAPTER=bar PHPUNIT_FILE=filepath
+#     - ADAPTER=foo
+#     - ADAPTER=common
 
 matrix:
   include:
