@@ -34,8 +34,8 @@ script:
 
 after_success:
   - codecov # If coverage
-  - if [ "$TRAVIS_BRANCH" = "master" && "$SUBSPLIT" = true ]; then sh .travis/phpcacheuser.sh; fi
-  - if [[ "$TRAVIS_BRANCH" = "master" && "$SUBSPLIT" = true ]]; then sh .travis/subsplit.sh; fi;
+  - if [ "$TRAVIS_BRANCH" = "master" && "$SUBSPLIT" = true ]; then ''; fi
+  - if [[ "$TRAVIS_BRANCH" = "master" && "$SUBSPLIT" = true ]]; then ''; fi;
 
 sudo: true
 
