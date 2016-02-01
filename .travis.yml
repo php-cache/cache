@@ -36,7 +36,7 @@ install:
     - travis_retry composer install --no-interaction --prefer-source
 
 script:
-    - echo "$COMPONENTS" | parallel --gnu 'echo "Running tests for {}"; vendor/bin/phpunit --exclude-group tty,benchmark,intl-data {}'
+    - echo "$COMPONENTS" | parallel --gnu 'printf "\n\n************ Running tests for {} ************\n\n"; vendor/bin/phpunit --exclude-group tty,benchmark,intl-data {}'
 
 after_success:
     - if [ "$TRAVIS_PHP_VERSION" == '7.0' ]; codecov; fi
