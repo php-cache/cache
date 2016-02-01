@@ -35,7 +35,7 @@
         "mockery/mockery":         "^0.9"
     },
     "provide":           {
-        "psr/cache-implementation": "1.0.0"
+        "psr/cache-implementation": "^1.0"
     },
     "suggest":           {
         "ext-apc":       "Allows for caching with Apc",

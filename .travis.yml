@@ -32,7 +32,8 @@ script:
 after_success:
   - if [[ "$SEND_COVERAGE" = true ]]; codecov; fi
 
-sudo: true
+sudo: required
+dist: precise
 
 notifications:
   email: false
