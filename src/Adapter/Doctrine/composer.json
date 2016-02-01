@@ -45,12 +45,10 @@
     },
     "autoload":          {
         "psr-4": {
-            "Cache\\Adapter\\Doctrine\\": "src/"
-        }
-    },
-    "autoload-dev":      {
-        "psr-4": {
-            "Cache\\Adapter\\Doctrine\\Tests\\": "tests/"
-        }
+            "Cache\\Adapter\\Doctrine\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     }
 }

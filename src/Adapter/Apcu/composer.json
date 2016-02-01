@@ -39,12 +39,10 @@
     },
     "autoload":          {
         "psr-4": {
-            "Cache\\Adapter\\Apcu\\": "src/"
-        }
-    },
-    "autoload-dev":      {
-        "psr-4": {
-            "Cache\\Adapter\\Apcu\\Tests\\": "tests/"
-        }
+            "Cache\\Adapter\\Apcu\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     }
 }

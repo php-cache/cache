@@ -41,12 +41,10 @@
     },
     "autoload":          {
         "psr-4": {
-            "Cache\\Adapter\\Redis\\": "src/"
-        }
-    },
-    "autoload-dev":      {
-        "psr-4": {
-            "Cache\\Adapter\\Redis\\Tests\\": "tests/"
-        }
+            "Cache\\Adapter\\Redis\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     }
 }

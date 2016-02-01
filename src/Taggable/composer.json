@@ -31,12 +31,10 @@
     },
     "autoload":     {
         "psr-4": {
-            "Cache\\Taggable\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Cache\\Taggable\\Tests\\": "tests/"
-        }
+            "Cache\\Taggable\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     }
 }

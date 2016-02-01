@@ -28,12 +28,10 @@
     },
     "autoload":     {
         "psr-4": {
-            "Cache\\Bridge\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Cache\\Bridge\\Tests\\": "tests/"
-        }
+            "Cache\\Bridge\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     }
 }
