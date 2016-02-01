@@ -18,6 +18,11 @@ services:
     - redis
     - memcached
     - mongodb
+    
+env:
+  global:
+    - MONGODB_HOST="localhost:27017"
+    - MONGODB_COLLECTION="test.cache"
 
 cache:
   directories:
