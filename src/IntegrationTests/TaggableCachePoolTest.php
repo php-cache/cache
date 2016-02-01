@@ -40,6 +40,7 @@ abstract class TaggableCachePoolTest extends \PHPUnit_Framework_TestCase
     {
         if ($this->cache !== null) {
             $this->cache->clear();
+
         }
     }
 

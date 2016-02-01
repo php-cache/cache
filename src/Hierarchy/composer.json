@@ -34,13 +34,16 @@
         "cache/integration-tests": "^0.7"
     },
     "autoload":          {
-        "psr-4": {
-            "Cache\\Hierarchy\\": "src/"
-        }
+        "psr-4":                 {
+            "Cache\\Hierarchy\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     },
     "autoload-dev":      {
         "psr-4": {
-            "Cache\\Hierarchy\\Tests\\": "tests/"
+            "Cache\\Hierarchy\\Tests\\": "Tests/"
         }
     }
 }

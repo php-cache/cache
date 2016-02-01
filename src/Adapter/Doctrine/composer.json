@@ -43,14 +43,17 @@
         "ext-memcached": "Allows for caching with Memcached",
         "ext-redis":     "Allows for caching with Redis"
     },
-    "autoload":          {
-        "psr-4": {
-            "Cache\\Adapter\\Doctrine\\": "src/"
-        }
+    "autoload":     {
+        "psr-4":                 {
+            "Cache\\Adapter\\Doctrine\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     },
-    "autoload-dev":      {
+    "autoload-dev": {
         "psr-4": {
-            "Cache\\Adapter\\Doctrine\\Tests\\": "tests/"
+            "Cache\\Adapter\\Doctrine\\Tests\\": "Tests/"
         }
     }
 }

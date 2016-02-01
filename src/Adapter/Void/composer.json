@@ -36,14 +36,17 @@
     "provide":           {
         "psr/cache-implementation": "^1.0"
     },
-    "autoload":          {
-        "psr-4": {
-            "Cache\\Adapter\\Void\\": "src/"
-        }
+    "autoload":     {
+        "psr-4":                 {
+            "Cache\\Adapter\\Void\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     },
-    "autoload-dev":      {
+    "autoload-dev": {
         "psr-4": {
-            "Cache\\Adapter\\Void\\Tests\\": "tests/"
+            "Cache\\Adapter\\Void\\Tests\\": "Tests/"
         }
     }
 }

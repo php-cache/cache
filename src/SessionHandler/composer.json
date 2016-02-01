@@ -31,13 +31,16 @@
         "cache/array-adapter": "@stable"
     },
     "autoload":     {
-        "psr-4": {
-            "Cache\\SessionHandler\\": "src/"
-        }
+        "psr-4":                 {
+            "Cache\\SessionHandler\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
-            "Cache\\SessionHandler\\Tests\\": "tests/"
+            "Cache\\SessionHandler\\Tests\\": "Tests/"
         }
     }
 }

@@ -30,14 +30,17 @@
     "require-dev":       {
         "phpunit/phpunit": "^4.0|^5.1"
     },
-    "autoload":          {
-        "psr-4": {
-            "Cache\\Adapter\\Common\\": "src/"
-        }
+    "autoload":     {
+        "psr-4":                 {
+            "Cache\\Adapter\\Common\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     },
-    "autoload-dev":      {
+    "autoload-dev": {
         "psr-4": {
-            "Cache\\Adapter\\Common\\Tests\\": "tests/"
+            "Cache\\Adapter\\Common\\Tests\\": "Tests/"
         }
     },
     "extra":             {
