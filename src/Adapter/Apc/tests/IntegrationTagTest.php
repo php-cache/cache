@@ -18,7 +18,7 @@ class IntegrationTagTest extends TaggableCachePoolTest
 {
     public function createCachePool()
     {
-        if (defined('HHVM_VERSION') || !method_exists('apc_store')) {
+        if (defined('HHVM_VERSION') || !function_exists('apc_store')) {
             $this->markTestSkipped();
         }
 

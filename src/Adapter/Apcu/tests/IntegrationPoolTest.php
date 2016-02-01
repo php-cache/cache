@@ -18,7 +18,7 @@ class IntegrationPoolTest extends BaseTest
 {
     public function createCachePool()
     {
-        if (defined('HHVM_VERSION') || !method_exists('apcu_store')) {
+        if (defined('HHVM_VERSION') || !function_exists('apcu_store')) {
             $this->markTestSkipped();
         }
 
