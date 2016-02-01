@@ -21,11 +21,12 @@
         }
     ],
     "require":      {
-        "php":             "^5.5|^7.0",
-        "psr/cache":       "^1.0",
-        "mongodb/mongodb": "^1.0",
-        "predis/predis":   "^1.0",
-        "doctrine/cache":  "^1.3"
+        "php":              "^5.5|^7.0",
+        "psr/cache":        "^1.0",
+        "mongodb/mongodb":  "^1.0",
+        "predis/predis":    "^1.0",
+        "doctrine/cache":   "^1.3",
+        "league/flysystem": "^1.0"
     },
     "require-dev":  {
         "phpunit/phpunit": "^4.0|^5.1",
