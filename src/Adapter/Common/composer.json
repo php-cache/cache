@@ -32,17 +32,15 @@
     },
     "autoload":          {
         "psr-4": {
-            "Cache\\Adapter\\Common\\": "src/"
+            "Cache\\Adapter\\Common\\": ""
         }
     },
     "autoload-dev":      {
         "psr-4": {
-            "Cache\\Adapter\\Common\\Tests\\": "tests/"
-        }
-    },
-    "extra":             {
-        "branch-alias": {
-            "dev-master": "0.2.x-dev"
-        }
+            "Cache\\Adapter\\Common\\Tests\\": "Tests/"
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     }
 }

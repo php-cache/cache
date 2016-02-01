@@ -40,12 +40,10 @@
     },
     "autoload":          {
         "psr-4": {
-            "Cache\\Adapter\\Memcached\\": "src/"
-        }
-    },
-    "autoload-dev":      {
-        "psr-4": {
-            "Cache\\Adapter\\Memcached\\Tests\\": "tests/"
-        }
+            "Cache\\Adapter\\Memcached\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     }
 }

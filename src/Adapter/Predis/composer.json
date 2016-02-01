@@ -41,12 +41,10 @@
     },
     "autoload":          {
         "psr-4": {
-            "Cache\\Adapter\\Predis\\": "src/"
-        }
-    },
-    "autoload-dev":      {
-        "psr-4": {
-            "Cache\\Adapter\\Predis\\Tests\\": "tests/"
-        }
+            "Cache\\Adapter\\Predis\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     }
 }

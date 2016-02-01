@@ -32,12 +32,10 @@
     },
     "autoload":     {
         "psr-4": {
-            "Cache\\SessionHandler\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Cache\\SessionHandler\\Tests\\": "tests/"
-        }
+            "Cache\\SessionHandler\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     }
 }

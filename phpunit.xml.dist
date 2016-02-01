@@ -9,27 +9,12 @@
   processIsolation="false"
   stopOnFailure="false"
   syntaxCheck="false"
-         bootstrap="vendor/autoload.php"
+  bootstrap="vendor/autoload.php"
   >
   <testsuites>
     <testsuite name="Main Test Suite">
-      <directory>./src/Adapter/Apc/tests</directory>
-      <directory>./src/Adapter/Apcu/tests</directory>
-      <directory>./src/Adapter/Chain/tests</directory>
-      <directory>./src/Adapter/Common/tests</directory>
-      <directory>./src/Adapter/Doctrine/tests</directory>
-      <directory>./src/Adapter/Filesystem/tests</directory>
-      <directory>./src/Adapter/Memcache/tests</directory>
-      <directory>./src/Adapter/Memcached/tests</directory>
-      <directory>./src/Adapter/MongoDB/tests</directory>
-      <directory>./src/Adapter/PHPArray/tests</directory>
-      <directory>./src/Adapter/Predis/tests</directory>
-      <directory>./src/Adapter/Redis/tests</directory>
-      <directory>./src/Adapter/Void/tests</directory>
-      <directory>./src/Bridge/tests</directory>
-      <directory>./src/Hierarchy/tests</directory>
-      <directory>./src/SessionHandler/tests</directory>
-      <directory>./src/Taggable/tests</directory>
+      <directory>./src/*/Tests</directory>
+      <directory>./src/*/*/Tests</directory>
     </testsuite>
   </testsuites>
 
@@ -39,11 +24,12 @@
 
   <filter>
     <whitelist>
-      <directory>src/</directory>
+      <directory>./</directory>
       <exclude>
-        <directory>src/IntegrationTests</directory>
-        <directory>src/*/tests</directory>
-        <directory>src/*/*/tests</directory>
+        <directory>./src/IntegrationTests</directory>
+        <directory>./src/*/Tests</directory>
+        <directory>./src/*/*/Tests</directory>
+        <directory>./vendor</directory>
       </exclude>
     </whitelist>
   </filter>

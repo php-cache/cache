@@ -39,12 +39,10 @@
     },
     "autoload":          {
         "psr-4": {
-            "Cache\\Adapter\\PHPArray\\": "src/"
-        }
-    },
-    "autoload-dev":      {
-        "psr-4": {
-            "Cache\\Adapter\\PHPArray\\Tests\\": "tests/"
-        }
+            "Cache\\Adapter\\PHPArray\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     }
 }

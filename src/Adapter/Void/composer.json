@@ -38,12 +38,10 @@
     },
     "autoload":          {
         "psr-4": {
-            "Cache\\Adapter\\Void\\": "src/"
-        }
-    },
-    "autoload-dev":      {
-        "psr-4": {
-            "Cache\\Adapter\\Void\\Tests\\": "tests/"
-        }
+            "Cache\\Adapter\\Void\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     }
 }
