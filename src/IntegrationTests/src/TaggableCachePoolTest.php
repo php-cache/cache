@@ -38,7 +38,9 @@ abstract class TaggableCachePoolTest extends \PHPUnit_Framework_TestCase
 
     protected function tearDown()
     {
-        $this->cache->clear();
+        if ($this->cache !== null) {
+            $this->cache->clear();
+        }
     }
 
     public function invalidKeys()
