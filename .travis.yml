@@ -6,6 +6,10 @@ php:
     - 7.0
     - hhvm
 
+addons:
+    apt_packages:
+        - parallel
+        
 matrix:
     allow_failures:
         - hhvm
