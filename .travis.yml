@@ -9,7 +9,7 @@ php:
 matrix:
   include:
     - php: 7.0
-      env: SEND_COVERAGE=true SUBSPLIT=true
+      env: SEND_COVERAGE=true
   fast_finish: true
 
 cache:
@@ -31,7 +31,6 @@ script:
 
 after_success:
   - if [[ "$SEND_COVERAGE" = true ]]; codecov; fi
-  - if [[ "$TRAVIS_BRANCH" = "master" && "$SUBSPLIT" = true ]]; then ''; fi # Send subtree update
 
 sudo: true
 
