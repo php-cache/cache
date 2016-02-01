@@ -27,13 +27,16 @@
         "cache/doctrine-adapter": "@stable"
     },
     "autoload":     {
-        "psr-4": {
-            "Cache\\Bridge\\": "src/"
-        }
+        "psr-4":                 {
+            "Cache\\Bridge\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
-            "Cache\\Bridge\\Tests\\": "tests/"
+            "Cache\\Bridge\\Tests\\": "Tests/"
         }
     }
 }

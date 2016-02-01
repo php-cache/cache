@@ -37,14 +37,17 @@
     "provide":           {
         "psr/cache-implementation": "^1.0"
     },
-    "autoload":          {
-        "psr-4": {
-            "Cache\\Adapter\\MongoDB\\": "src/"
-        }
+    "autoload":     {
+        "psr-4":                 {
+            "Cache\\Adapter\\MongoDB\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     },
-    "autoload-dev":      {
+    "autoload-dev": {
         "psr-4": {
-            "Cache\\Adapter\\MongoDB\\Tests\\": "tests/"
+            "Cache\\Adapter\\MongoDB\\Tests\\": "Tests/"
         }
     }
 }

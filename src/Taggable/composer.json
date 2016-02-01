@@ -32,7 +32,10 @@
     "autoload":     {
         "psr-4": {
             "Cache\\Taggable\\": "src/"
-        }
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

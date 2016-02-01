@@ -37,14 +37,17 @@
     "provide":           {
         "psr/cache-implementation": "^1.0"
     },
-    "autoload":          {
-        "psr-4": {
-            "Cache\\Adapter\\Apcu\\": "src/"
-        }
+    "autoload":     {
+        "psr-4":                 {
+            "Cache\\Adapter\\Apcu\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     },
-    "autoload-dev":      {
+    "autoload-dev": {
         "psr-4": {
-            "Cache\\Adapter\\Apcu\\Tests\\": "tests/"
+            "Cache\\Adapter\\Apcu\\Tests\\": "Tests/"
         }
     }
 }

@@ -38,13 +38,14 @@
         "psr/cache-implementation": "^1.0"
     },
     "autoload":          {
-        "psr-4": {
-            "Cache\\Adapter\\Apc\\": "src/"
-        }
+        "psr-4": {"Cache\\Adapter\\Apc\\": ""},
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     },
     "autoload-dev":      {
         "psr-4": {
-            "Cache\\Adapter\\Apc\\Tests\\": "tests/"
+            "Cache\\Adapter\\Apc\\Tests\\": "Tests/"
         }
     }
 }

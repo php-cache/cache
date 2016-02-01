@@ -39,14 +39,17 @@
     "provide":           {
         "psr/cache-implementation": "^1.0"
     },
-    "autoload":          {
-        "psr-4": {
-            "Cache\\Adapter\\Predis\\": "src/"
-        }
+    "autoload":     {
+        "psr-4":                 {
+            "Cache\\Adapter\\Predis\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     },
-    "autoload-dev":      {
+    "autoload-dev": {
         "psr-4": {
-            "Cache\\Adapter\\Predis\\Tests\\": "tests/"
+            "Cache\\Adapter\\Predis\\Tests\\": "Tests/"
         }
     }
 }
