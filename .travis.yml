@@ -53,3 +53,7 @@ dist: precise
 
 notifications:
     email: false
+    webhooks:
+        urls:
+            - https://webhooks.gitter.im/e/179eceed083d0c887801
+
