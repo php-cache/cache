@@ -21,11 +21,41 @@
         }
     ],
     "require":      {
-        "php":       "^5.5|^7.0",
-        "psr/cache": "^1.0"
+        "php":             "^5.5|^7.0",
+        "psr/cache":       "^1.0",
+        "mongodb/mongodb": "^1.0",
+        "predis/predis":   "^1.0"
     },
     "require-dev":  {
-        "phpunit/phpunit": "^4.0|^5.1"
+        "phpunit/phpunit":         "^4.0|^5.1",
+        "cache/integration-tests": "^0.7"
+    },
+    "suggest":      {
+        "ext-apc":       "APC extension is required to use the APC Adapter",
+        "ext-apcu":      "APCu extension is required to use the APCu Adapter",
+        "ext-memcache":  "Memcache extension is required to use the Memcache Adapter",
+        "ext-memcached": "Memcached extension is required to use the Memcached Adapter",
+        "ext-redis":     "Redis extension is required to use the Redis adapter"
+    },
+    "replace":      {
+        "cache/apc-adapter":           "self.version",
+        "cache/apcu-adapter":          "self.version",
+        "cache/chain-adapter":         "self.version",
+        "cache/adapter-common":        "self.version",
+        "cache/doctrine-adapter":      "self.version",
+        "cache/filesystem-adapter":    "self.version",
+        "cache/memcache-adapter":      "self.version",
+        "cache/memcached-adapter":     "self.version",
+        "cache/mongodb-adapter":       "self.version",
+        "cache/array-adapter":         "self.version",
+        "cache/predis-adapter":        "self.version",
+        "cache/redis-adapter":         "self.version",
+        "cache/void-adapter":          "self.version",
+        "cache/psr-6-doctrine-bridge": "self.version",
+        "cache/hierarchical-cache":    "self.version",
+        "cache/integration-tests":     "self.version",
+        "cache/session-handler":       "self.version",
+        "cache/taggable-cache":        "self.version"
     },
     "autoload":     {
         "psr-4": {

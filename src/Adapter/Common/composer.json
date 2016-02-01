@@ -4,15 +4,13 @@
     "type":              "library",
     "license":           "MIT",
     "minimum-stability": "stable",
-    "keywords":
-    [
+    "keywords":          [
         "cache",
         "psr-6",
         "tag"
     ],
     "homepage":          "https://github.com/php-cache/adapter-common",
-    "authors":
-    [
+    "authors":           [
         {
             "name":     "Aaron Scherer",
             "email":    "aequasi@gmail.com",
@@ -24,29 +22,25 @@
             "homepage": "https://github.com/nyholm"
         }
     ],
-    "require":
-    {
+    "require":           {
         "php":                  "^5.5|^7.0",
-        "psr/cache":            "1.0.0",
+        "psr/cache":            "^1.0",
         "cache/taggable-cache": "^0.2|^0.3"
     },
-    "require-dev":
-    {
-        "phpunit/phpunit":         "^5.1|^4.0"
+    "require-dev":       {
+        "phpunit/phpunit": "^4.0|^5.1"
     },
-    "autoload":
-    {
+    "autoload":          {
         "psr-4": {
             "Cache\\Adapter\\Common\\": "src/"
         }
     },
-    "autoload-dev":
-    {
+    "autoload-dev":      {
         "psr-4": {
             "Cache\\Adapter\\Common\\Tests\\": "tests/"
         }
     },
-    "extra": {
+    "extra":             {
         "branch-alias": {
             "dev-master": "0.2.x-dev"
         }

@@ -4,16 +4,14 @@
     "type":              "library",
     "license":           "MIT",
     "minimum-stability": "stable",
-    "keywords":
-    [
+    "keywords":          [
         "cache",
         "psr-6",
         "apcu",
         "tag"
     ],
-    "homepage": "https://github.com/php-cache/apcu-adapter",
-    "authors":
-    [
+    "homepage":          "https://github.com/php-cache/apcu-adapter",
+    "authors":           [
         {
             "name":     "Aaron Scherer",
             "email":    "aequasi@gmail.com",
@@ -25,31 +23,26 @@
             "homepage": "https://github.com/nyholm"
         }
     ],
-    "require":
-    {
+    "require":           {
         "php":                  "^5.5|^7.0",
-        "ext-apcu":              "*",
-        "psr/cache":            "1.0.0",
+        "ext-apcu":             "*",
+        "psr/cache":            "^1.0",
         "cache/adapter-common": "^0.1",
         "cache/taggable-cache": "^0.2"
     },
-    "require-dev":
-    {
-        "phpunit/phpunit":         "^5.1|^4.0",
-        "cache/integration-tests": "dev-master"
+    "require-dev":       {
+        "phpunit/phpunit":         "^4.0|^5.1",
+        "cache/integration-tests": "^0.7"
     },
-    "provide":
-    {
+    "provide":           {
         "psr/cache-implementation": "1.0.0"
     },
-    "autoload":
-    {
+    "autoload":          {
         "psr-4": {
             "Cache\\Adapter\\Apcu\\": "src/"
         }
     },
-    "autoload-dev":
-    {
+    "autoload-dev":      {
         "psr-4": {
             "Cache\\Adapter\\Apcu\\Tests\\": "tests/"
         }
