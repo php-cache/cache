@@ -42,5 +42,10 @@
         "exclude-from-classmap": [
             "/Tests/"
         ]
+    },
+    "autoload-dev":      {
+        "psr-4": {
+            "Cache\\Adapter\\Apc\\Tests\\": "Tests/"
+        }
     }
 }

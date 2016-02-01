@@ -62,7 +62,7 @@
     },
     "autoload":     {
         "psr-4": {
-            "Cache\\Adapter\\Apc\\":        "src/Adapter/Apc/src/",
+            "Cache\\Adapter\\Apc\\":        "src/Adapter/Apc/",
             "Cache\\Adapter\\Apcu\\":       "src/Adapter/Apcu/src/",
             "Cache\\Adapter\\Chain\\":      "src/Adapter/Chain/src/",
             "Cache\\Adapter\\Common\\":     "src/Adapter/Common/src/",
@@ -80,7 +80,10 @@
             "Cache\\IntegrationTests\\":    "src/IntegrationTests/src/",
             "Cache\\SessionHandler\\":      "src/SessionHandler/src/",
             "Cache\\Taggable\\":            "src/Taggable/src/"
-        }
+        },
+        "exclude-from-classmap": [
+            "src/Adapter/Apc/Tests/"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
