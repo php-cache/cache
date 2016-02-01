@@ -22,6 +22,10 @@ class IntegrationPoolTest extends BaseTest
 
     public function createCachePool()
     {
+        if (defined('HHVM_VERSION')) {
+            $this->markTestSkipped();
+        }
+
         return new ApcCachePool();
     }
 }
