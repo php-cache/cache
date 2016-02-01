@@ -27,10 +27,11 @@ before_install:
     - travis_retry composer self-update
 
 install:
+    - COMPONENTS=$(find src/ -mindepth 3 -type f -name phpunit.xml.dist -printf '%h\n')
     - travis_retry composer install --no-interaction --prefer-source
 
 script:
-    - vendor/bin/phpunit -c phpunit.xml.dist
+    - echo "$COMPONENTS" | parallel --gnu 'vendor/bin/phpunit --exclude-group tty,benchmark,intl-data {}'
 
 after_success:
     - if [ "$TRAVIS_PHP_VERSION" == '7.0' ]; codecov; fi
