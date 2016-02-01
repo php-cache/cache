@@ -9,7 +9,7 @@ php:
 matrix:
   include:
     - php: 7.0
-      env: SEND_COVERAGE=true SUBSPLIT=true
+      env: SEND_COVERAGE=true
   fast_finish: true
 
 cache:
@@ -17,8 +17,11 @@ cache:
     - "$HOME/.composer/cache"
 
 before_install:
-  - if [[ $TRAVIS_PHP_VERSION != hhvm && SEND_COVERAGE != true ]]; then phpenv config-rm xdebug.ini; fi
-  - composer self-update
+  - ./build/all.sh
+  - if [[ "$TRAVIS_PHP_VERSION" == '5.5' || "$TRAVIS_PHP_VERSION" == '5.6' ]]; then ./build/5.x.sh; fi
+  - if [[ "$TRAVIS_PHP_VERSION" == '7.0' ]]; then ./build/7.x.sh; fi
+  - if [[ "$TRAVIS_PHP_VERSION" == 'hhvm' ]]; then ./build/hhvm.sh; fi
+  - travis_retry composer self-update
 
 install:
   - travis_retry composer install --no-interaction --prefer-source
@@ -27,11 +30,10 @@ script:
   - vendor/bin/phpunit -c phpunit.xml.dist
 
 after_success:
-  - codecov # If coverage
-  - if [ "$TRAVIS_BRANCH" = "master" && "$SUBSPLIT" = true ]; then ''; fi
-  - if [[ "$TRAVIS_BRANCH" = "master" && "$SUBSPLIT" = true ]]; then ''; fi;
+  - if [[ "$SEND_COVERAGE" = true ]]; codecov; fi
 
-sudo: true
+sudo: required
+dist: precise
 
 notifications:
   email: false

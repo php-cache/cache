@@ -1,8 +1,11 @@
 {
     "name":         "cache/cache",
     "type":         "library",
-    "description":  "",
-    "keywords":     ["cache", "psr6"],
+    "description":  "Library of all the php-cache adapters",
+    "keywords":     [
+        "cache",
+        "psr6"
+    ],
     "homepage":     "http://www.php-cache.com",
     "license":      "MIT",
     "authors":      [
@@ -17,55 +20,86 @@
             "homepage": "https://github.com/nyholm"
         }
     ],
-    "require":
-    {
-        "php": "^5.5|^7.0",
-        "psr/cache": "^1.0"
+    "require":      {
+        "php":              "^5.5|^7.0",
+        "psr/cache":        "^1.0",
+        "mongodb/mongodb":  "^1.0",
+        "predis/predis":    "^1.0",
+        "doctrine/cache":   "^1.3",
+        "league/flysystem": "^1.0"
     },
     "require-dev":  {
-        "phpunit/phpunit": "^4.0|^5.1"
+        "phpunit/phpunit": "^4.0|^5.1",
+        "mockery/mockery": "^0.9"
+    },
+    "suggest":      {
+        "ext-apc":       "APC extension is required to use the APC Adapter",
+        "ext-apcu":      "APCu extension is required to use the APCu Adapter",
+        "ext-memcache":  "Memcache extension is required to use the Memcache Adapter",
+        "ext-memcached": "Memcached extension is required to use the Memcached Adapter",
+        "ext-redis":     "Redis extension is required to use the Redis adapter"
+    },
+    "replace":      {
+        "cache/apc-adapter":           "self.version",
+        "cache/apcu-adapter":          "self.version",
+        "cache/chain-adapter":         "self.version",
+        "cache/adapter-common":        "self.version",
+        "cache/doctrine-adapter":      "self.version",
+        "cache/filesystem-adapter":    "self.version",
+        "cache/memcache-adapter":      "self.version",
+        "cache/memcached-adapter":     "self.version",
+        "cache/mongodb-adapter":       "self.version",
+        "cache/array-adapter":         "self.version",
+        "cache/predis-adapter":        "self.version",
+        "cache/redis-adapter":         "self.version",
+        "cache/void-adapter":          "self.version",
+        "cache/psr-6-doctrine-bridge": "self.version",
+        "cache/hierarchical-cache":    "self.version",
+        "cache/integration-tests":     "self.version",
+        "cache/session-handler":       "self.version",
+        "cache/taggable-cache":        "self.version"
     },
     "autoload":     {
         "psr-4": {
-            "Cache\\Adapter\\Apc\\": "src/Adapter/Apc/src/",
-            "Cache\\Adapter\\Apcu\\": "src/Adapter/Apcu/src/",
-            "Cache\\Adapter\\Chain\\": "src/Adapter/Chain/src/",
-            "Cache\\Adapter\\Common\\": "src/Adapter/Common/src/",
-            "Cache\\Adapter\\Doctrine\\": "src/Adapter/Doctrine/src/",
+            "Cache\\Adapter\\Apc\\":        "src/Adapter/Apc/src/",
+            "Cache\\Adapter\\Apcu\\":       "src/Adapter/Apcu/src/",
+            "Cache\\Adapter\\Chain\\":      "src/Adapter/Chain/src/",
+            "Cache\\Adapter\\Common\\":     "src/Adapter/Common/src/",
+            "Cache\\Adapter\\Doctrine\\":   "src/Adapter/Doctrine/src/",
             "Cache\\Adapter\\Filesystem\\": "src/Adapter/Filesystem/src/",
-            "Cache\\Adapter\\Memcache\\": "src/Adapter/Memcache/src/",
-            "Cache\\Adapter\\Memcached\\": "src/Adapter/Memcached/src/",
-            "Cache\\Adapter\\MongoDB\\": "src/Adapter/MongoDB/src/",
-            "Cache\\Adapter\\PHPArray\\": "src/Adapter/PHPArray/src/",
-            "Cache\\Adapter\\Predis\\": "src/Adapter/Predis/src/",
-            "Cache\\Adapter\\Redis\\": "src/Adapter/Redis/src/",
-            "Cache\\Adapter\\Void\\": "src/Adapter/Void/src/",
-            "Cache\\Bridge\\": "src/Bridge/src/",
-            "Cache\\Hierarchy\\": "src/Hierarchy/src/",
-            "Cache\\IntegrationTests\\": "src/IntegrationTests/src/",
-            "Cache\\SessionHandler\\": "src/SessionHandler/src/",
-            "Cache\\Taggable\\": "src/Taggable/src/"
+            "Cache\\Adapter\\Memcache\\":   "src/Adapter/Memcache/src/",
+            "Cache\\Adapter\\Memcached\\":  "src/Adapter/Memcached/src/",
+            "Cache\\Adapter\\MongoDB\\":    "src/Adapter/MongoDB/src/",
+            "Cache\\Adapter\\PHPArray\\":   "src/Adapter/PHPArray/src/",
+            "Cache\\Adapter\\Predis\\":     "src/Adapter/Predis/src/",
+            "Cache\\Adapter\\Redis\\":      "src/Adapter/Redis/src/",
+            "Cache\\Adapter\\Void\\":       "src/Adapter/Void/src/",
+            "Cache\\Bridge\\":              "src/Bridge/src/",
+            "Cache\\Hierarchy\\":           "src/Hierarchy/src/",
+            "Cache\\IntegrationTests\\":    "src/IntegrationTests/src/",
+            "Cache\\SessionHandler\\":      "src/SessionHandler/src/",
+            "Cache\\Taggable\\":            "src/Taggable/src/"
         }
     },
-    "autoload-dev":     {
+    "autoload-dev": {
         "psr-4": {
-            "Cache\\Adapter\\Apc\\Tests\\": "src/Adapter/Apc/tests/",
-            "Cache\\Adapter\\Apcu\\Tests\\": "src/Adapter/Apcu/tests/",
-            "Cache\\Adapter\\Chain\\Tests\\": "src/Adapter/Chain/tests/",
-            "Cache\\Adapter\\Common\\Tests\\": "src/Adapter/Common/tests/",
-            "Cache\\Adapter\\Doctrine\\Tests\\": "src/Adapter/Doctrine/tests/",
+            "Cache\\Adapter\\Apc\\Tests\\":        "src/Adapter/Apc/tests/",
+            "Cache\\Adapter\\Apcu\\Tests\\":       "src/Adapter/Apcu/tests/",
+            "Cache\\Adapter\\Chain\\Tests\\":      "src/Adapter/Chain/tests/",
+            "Cache\\Adapter\\Common\\Tests\\":     "src/Adapter/Common/tests/",
+            "Cache\\Adapter\\Doctrine\\Tests\\":   "src/Adapter/Doctrine/tests/",
             "Cache\\Adapter\\Filesystem\\Tests\\": "src/Adapter/Filesystem/tests/",
-            "Cache\\Adapter\\Memcache\\Tests\\": "src/Adapter/Memcache/tests/",
-            "Cache\\Adapter\\Memcached\\Tests\\": "src/Adapter/Memcached/tests/",
-            "Cache\\Adapter\\MongoDB\\Tests\\": "src/Adapter/MongoDB/tests/",
-            "Cache\\Adapter\\PHPArray\\Tests\\": "src/Adapter/PHPArray/tests/",
-            "Cache\\Adapter\\Predis\\Tests\\": "src/Adapter/Predis/tests/",
-            "Cache\\Adapter\\Redis\\Tests\\": "src/Adapter/Redis/tests/",
-            "Cache\\Adapter\\Void\\Tests\\": "src/Adapter/Void/tests/",
-            "Cache\\Bridge\\Tests\\": "src/Bridge/tests/",
-            "Cache\\Hierarchy\\Tests\\": "src/Hierarchy/tests/",
-            "Cache\\SessionHandler\\Tests\\": "src/SessionHandler/tests/",
-            "Cache\\Taggable\\Tests\\": "src/Taggable/tests/"
+            "Cache\\Adapter\\Memcache\\Tests\\":   "src/Adapter/Memcache/tests/",
+            "Cache\\Adapter\\Memcached\\Tests\\":  "src/Adapter/Memcached/tests/",
+            "Cache\\Adapter\\MongoDB\\Tests\\":    "src/Adapter/MongoDB/tests/",
+            "Cache\\Adapter\\PHPArray\\Tests\\":   "src/Adapter/PHPArray/tests/",
+            "Cache\\Adapter\\Predis\\Tests\\":     "src/Adapter/Predis/tests/",
+            "Cache\\Adapter\\Redis\\Tests\\":      "src/Adapter/Redis/tests/",
+            "Cache\\Adapter\\Void\\Tests\\":       "src/Adapter/Void/tests/",
+            "Cache\\Bridge\\Tests\\":              "src/Bridge/tests/",
+            "Cache\\Hierarchy\\Tests\\":           "src/Hierarchy/tests/",
+            "Cache\\SessionHandler\\Tests\\":      "src/SessionHandler/tests/",
+            "Cache\\Taggable\\Tests\\":            "src/Taggable/tests/"
         }
     }
 }

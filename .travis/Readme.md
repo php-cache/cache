@@ -1,1 +1,0 @@
-This directory has has confiuration files for travis and also the subtree slit
