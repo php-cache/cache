@@ -18,10 +18,9 @@ cache:
 
 before_install:
   - ./build/all.sh
-  - if [[ $TRAVIS_PHP_VERSION == '5.5' ]]; ./build/5.5.sh; fi
-  - if [[ $TRAVIS_PHP_VERSION == '5.6' ]]; ./build/5.6.sh; fi
-  - if [[ $TRAVIS_PHP_VERSION == '7.0' ]]; ./build/7.0.sh; fi
-  - if [[ $TRAVIS_PHP_VERSION == 'hhvm' ]]; ./build/hhvm.sh; fi
+  - if [[ "$TRAVIS_PHP_VERSION" == '5.5' || "$TRAVIS_PHP_VERSION" == '5.6' ]]; ./build/5.x.sh; fi
+  - if [[ "$TRAVIS_PHP_VERSION" == '7.0' ]]; ./build/7.x.sh; fi
+  - if [[ "$TRAVIS_PHP_VERSION" == 'hhvm' ]]; ./build/hhvm.sh; fi
   - composer self-update
 
 install:
