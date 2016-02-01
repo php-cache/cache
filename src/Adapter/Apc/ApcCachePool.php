@@ -9,7 +9,7 @@
  * with this source code in the file LICENSE.
  */
 
-namespace Cache\Adapter\Apc\Tests;
+namespace Cache\Adapter\Apc;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Psr\Cache\CacheItemInterface;
