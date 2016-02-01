@@ -81,45 +81,7 @@
             "Cache\\Taggable\\":            "src/Taggable/"
         },
         "exclude-from-classmap": [
-            "src/Adapter/Apc/Tests/",
-            "src/Adapter/Apcu/Tests/",
-            "src/Adapter/Chain/Tests/",
-            "src/Adapter/Common/Tests/",
-            "src/Adapter/Doctrine/Tests/",
-            "src/Adapter/Filesystem/Tests/",
-            "src/Adapter/Memcache/Tests/",
-            "src/Adapter/Memcached/Tests/",
-            "src/Adapter/MongoDB/Tests/",
-            "src/Adapter/PHPArray/Tests/",
-            "src/Adapter/Predis/Tests/",
-            "src/Adapter/Redis/Tests/",
-            "src/Adapter/Void/Tests/",
-            "src/Bridge/Tests/",
-            "src/Hierarchy/Tests/",
-            "src/SessionHandler/Tests/",
-            "src/Taggable/Tests/"
+            "**/Tests/"
         ]
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Cache\\Adapter\\Apc\\Tests\\":        "src/Adapter/Apc/Tests/",
-            "Cache\\Adapter\\Apcu\\Tests\\":       "src/Adapter/Apcu/Tests/",
-            "Cache\\Adapter\\Chain\\Tests\\":      "src/Adapter/Chain/Tests/",
-            "Cache\\Adapter\\Common\\Tests\\":     "src/Adapter/Common/Tests/",
-            "Cache\\Adapter\\Doctrine\\Tests\\":   "src/Adapter/Doctrine/Tests/",
-            "Cache\\Adapter\\Filesystem\\Tests\\": "src/Adapter/Filesystem/Tests/",
-            "Cache\\Adapter\\Memcache\\Tests\\":   "src/Adapter/Memcache/Tests/",
-            "Cache\\Adapter\\Memcached\\Tests\\":  "src/Adapter/Memcached/Tests/",
-            "Cache\\Adapter\\MongoDB\\Tests\\":    "src/Adapter/MongoDB/Tests/",
-            "Cache\\Adapter\\PHPArray\\Tests\\":   "src/Adapter/PHPArray/Tests/",
-            "Cache\\Adapter\\Predis\\Tests\\":     "src/Adapter/Predis/Tests/",
-            "Cache\\Adapter\\Redis\\Tests\\":      "src/Adapter/Redis/Tests/",
-            "Cache\\Adapter\\Void\\Tests\\":       "src/Adapter/Void/Tests/",
-            "Cache\\Bridge\\Tests\\":              "src/Bridge/Tests/",
-            "Cache\\Hierarchy\\Tests\\":           "src/Hierarchy/Tests/",
-            "Cache\\IntegrationTests\\":           "src/IntegrationTests/",
-            "Cache\\SessionHandler\\Tests\\":      "src/SessionHandler/Tests/",
-            "Cache\\Taggable\\Tests\\":            "src/Taggable/Tests/"
-        }
     }
 }
