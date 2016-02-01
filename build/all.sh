@@ -10,7 +10,7 @@ if [ $TRAVIS_PHP_VERSION != 'hhvm' ]; then phpenv config-add ./tests/travis/php.
 pip install --user codecov
 
 # Install Mongo
-./installMongo.sh
+./build/installMongo.sh
 
 # Install Redis extension
 mkdir -p ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d
