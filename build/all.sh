@@ -12,6 +12,10 @@ pip install --user codecov
 # Install Mongo
 ./build/installMongo.sh
 
+# Install Memcached extension
+if [[ $TRAVIS_PHP_VERSION != 'hhvm' ]]; then echo "extension = memcached.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini; fi;
+
+
 # Install Redis extension
 mkdir -p ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d
 echo "extension=redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
