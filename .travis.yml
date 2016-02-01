@@ -1,39 +1,42 @@
 language: php
 
 php:
-  - 5.5
-  - 5.6
-  - 7.0
-  - hhvm
+    - 5.5
+    - 5.6
+    - 7.0
+    - hhvm
 
 matrix:
-  include:
-    - php: 7.0
-      env: SEND_COVERAGE=true
-  fast_finish: true
+    allow_failures:
+        - hhvm
+
+services:
+    - redis
+    - memcached
+    - mongodb
 
 cache:
   directories:
     - "$HOME/.composer/cache"
 
 before_install:
-  - ./build/all.sh
-  - if [[ "$TRAVIS_PHP_VERSION" == '5.5' || "$TRAVIS_PHP_VERSION" == '5.6' ]]; then ./build/5.x.sh; fi
-  - if [[ "$TRAVIS_PHP_VERSION" == '7.0' ]]; then ./build/7.x.sh; fi
-  - if [[ "$TRAVIS_PHP_VERSION" == 'hhvm' ]]; then ./build/hhvm.sh; fi
-  - travis_retry composer self-update
+    - ./build/all.sh
+    - if [ "$TRAVIS_PHP_VERSION" == '5.5' || "$TRAVIS_PHP_VERSION" == '5.6' ]; then ./build/5.x.sh; fi
+    - if [ "$TRAVIS_PHP_VERSION" == '7.0' ]; then ./build/7.x.sh; fi
+    - if [ "$TRAVIS_PHP_VERSION" == 'hhvm' ]; then ./build/hhvm.sh; fi
+    - travis_retry composer self-update
 
 install:
-  - travis_retry composer install --no-interaction --prefer-source
+    - travis_retry composer install --no-interaction --prefer-source
 
 script:
-  - vendor/bin/phpunit -c phpunit.xml.dist
+    - vendor/bin/phpunit -c phpunit.xml.dist
 
 after_success:
-  - if [[ "$SEND_COVERAGE" = true ]]; codecov; fi
+    - if [ "$TRAVIS_PHP_VERSION" == '7.0' ]; codecov; fi
 
 sudo: required
 dist: precise
 
 notifications:
-  email: false
+    email: false
