@@ -10,6 +10,7 @@ if [ $TRAVIS_PHP_VERSION != 'hhvm' ]; then phpenv config-add ./build/php.ini; fi
 pip install --user codecov
 
 # Enable extension
+echo "extension = apcu.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini;
 echo "extension = mongodb.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 echo "extension = redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
 echo "extension = memcache.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini

@@ -11,5 +11,3 @@ yes '' | pecl install redis
 
 # Install Mongo
 yes '' | pecl install mongodb
-
-echo "extension = apcu.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
