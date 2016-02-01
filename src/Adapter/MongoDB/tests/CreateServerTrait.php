@@ -27,7 +27,11 @@ trait CreateServerTrait
             $manager = new Manager('mongodb://'.getenv('MONGODB_HOST'));
 
             // In your own code, only do this *once* to initialize your cache
-            $this->collection = MongoDBCachePool::createCollection($manager, getenv('MONGODB_COLLECTION'));
+            $this->collection = MongoDBCachePool::createCollection(
+                $manager,
+                getenv('MONGODB_DATABASE'),
+                getenv('MONGODB_COLLECTION')
+            );
         }
 
         return $this->collection;

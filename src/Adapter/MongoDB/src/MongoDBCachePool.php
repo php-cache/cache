@@ -36,9 +36,9 @@ class MongoDBCachePool extends AbstractCachePool
         $this->collection = $collection;
     }
 
-    public static function createCollection(Manager $manager, $namespace)
+    public static function createCollection(Manager $manager, $database, $collection)
     {
-        $collection = new Collection($manager, $namespace);
+        $collection = new Collection($manager, $database, $collection);
         $collection->createIndex(['expireAt' => 1], ['expireAfterSeconds' => 0]);
 
         return $collection;

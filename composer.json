@@ -23,7 +23,6 @@
     "require":      {
         "php":              "^5.5|^7.0",
         "psr/cache":        "^1.0",
-        "mongodb/mongodb":  "^1.0",
         "predis/predis":    "^1.0",
         "doctrine/cache":   "^1.3",
         "league/flysystem": "^1.0"
@@ -33,11 +32,13 @@
         "mockery/mockery": "^0.9"
     },
     "suggest":      {
-        "ext-apc":       "APC extension is required to use the APC Adapter",
-        "ext-apcu":      "APCu extension is required to use the APCu Adapter",
-        "ext-memcache":  "Memcache extension is required to use the Memcache Adapter",
-        "ext-memcached": "Memcached extension is required to use the Memcached Adapter",
-        "ext-redis":     "Redis extension is required to use the Redis adapter"
+        "ext-apc":         "APC extension is required to use the APC Adapter",
+        "ext-apcu":        "APCu extension is required to use the APCu Adapter",
+        "ext-memcache":    "Memcache extension is required to use the Memcache Adapter",
+        "ext-memcached":   "Memcached extension is required to use the Memcached Adapter",
+        "ext-redis":       "Redis extension is required to use the Redis adapter",
+        "ext-mongodb":     "Mongodb extension required to use the Mongodb adapter",
+        "mongodb/mongodb": "Mongodb extension required to use the Mongodb adapter"
     },
     "replace":      {
         "cache/apc-adapter":           "self.version",
