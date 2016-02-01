@@ -21,6 +21,10 @@ class IntegrationTagTest extends TaggableCachePoolTest
 
     public function createCachePool()
     {
+        if (!class_exists('Memcache')) {
+            $this->markTestSkipped();
+        }
+        
         return new MemcacheCachePool($this->getClient());
     }
 
