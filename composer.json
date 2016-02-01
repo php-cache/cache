@@ -117,7 +117,7 @@
             "Cache\\Adapter\\Void\\Tests\\":       "src/Adapter/Void/Tests/",
             "Cache\\Bridge\\Tests\\":              "src/Bridge/Tests/",
             "Cache\\Hierarchy\\Tests\\":           "src/Hierarchy/Tests/",
-            "Cache\\IntegrationTests\\Tests\\":    "src/IntegrationTests/",
+            "Cache\\IntegrationTests\\":           "src/IntegrationTests/",
             "Cache\\SessionHandler\\Tests\\":      "src/SessionHandler/Tests/",
             "Cache\\Taggable\\Tests\\":            "src/Taggable/Tests/"
         }
