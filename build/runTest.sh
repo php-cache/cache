@@ -4,7 +4,7 @@ SLUG=$(grep -Pho 'cache/[A-Za-z-\.]+' $1/composer.json | xargs | awk '{print $1}
 printf "\n\n************ Running tests for $SLUG ************\n\n"
 
 cd $1
-if [ $TRAVIS_PHP_VERSION = 5.5 ]; then composer require --no-update phpunit/phpunit:~4.0 cache/integration-tests:$INTEGRATION_TEST_VERSION; fi
+if [ $TRAVIS_PHP_VERSION = 5.5 ]; then composer require --no-update phpunit/phpunit:~4.0; fi
 composer install --no-interaction --prefer-source --ignore-platform-reqs
 
 TEST="./vendor/bin/phpunit $2"

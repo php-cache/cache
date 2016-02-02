@@ -24,7 +24,8 @@
     "require-dev":  {
         "phpunit/phpunit":        "^4.0|^5.1",
         "mockery/mockery":        "^0.9",
-        "cache/doctrine-adapter": "@stable"
+        "cache/doctrine-adapter": "@stable",
+        "cache/integration-test": "0.7.0"
     },
     "autoload":     {
         "psr-4": {
