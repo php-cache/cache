@@ -16,6 +16,10 @@ use Cache\IntegrationTests\CachePoolTest as BaseTest;
 
 class IntegrationPoolTest extends BaseTest
 {
+    protected $skippedTests = [
+        'testExpiration' => 'The cache expire at the next request.',
+    ];
+
     public function createCachePool()
     {
         if (defined('HHVM_VERSION') || !function_exists('apcu_store')) {
