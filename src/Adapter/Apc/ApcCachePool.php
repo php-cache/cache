@@ -41,6 +41,10 @@ class ApcCachePool extends AbstractCachePool
 
     protected function storeItemInCache($key, CacheItemInterface $item, $ttl)
     {
+        if ($ttl < 0) {
+            return false;
+        }
+
         return apc_store($key, $item->get(), $ttl);
     }
 }

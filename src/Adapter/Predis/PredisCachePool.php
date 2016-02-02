@@ -65,6 +65,10 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
 
     protected function storeItemInCache($key, CacheItemInterface $item, $ttl)
     {
+        if ($ttl < 0) {
+            return false;
+        }
+
         $key  = $this->getHierarchyKey($key);
         $data = serialize([true, $item->get()]);
 
