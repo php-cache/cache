@@ -11,10 +11,21 @@ ROOT=$(pwd)
 
 # Run for each components
 find src -mindepth 2 -type f -name phpunit.xml.dist | while read line; do
+ # Save the directory name
  DIR=$(dirname $line)
+
+ # Go to that directory
  cd $DIR
  pwd
+
+ # Let composer update the composer.json
  composer require --dev --no-update cache/integration-test:$VERSION
+
+ # Go back to the root
  cd $ROOT
  echo ""
 done
+
+# Update integration test for the root
+pwd
+composer require --dev --no-update cache/integration-test:$VERSION
