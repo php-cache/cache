@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of php-cache\chain-adapter package.
+ * This file is part of php-cache organization.
  *
  * (c) 2015-2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
@@ -11,11 +11,9 @@
 
 namespace Cache\Adapter\Chain;
 
-use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Taggable\TaggablePoolInterface;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
-use Psr\Cache\InvalidArgumentException;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
@@ -23,18 +21,17 @@ use Psr\Cache\InvalidArgumentException;
 class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
 {
     /**
-     * @var CacheItemPoolInterface[]
+     * @type CacheItemPoolInterface[]
      */
     private $pools;
 
     /**
-     *
      * @param array $pools
      */
     public function __construct(array $pools)
     {
         if (empty($pools)) {
-            throw new \LogicException("At least one pool is required for the chain.");
+            throw new \LogicException('At least one pool is required for the chain.');
         }
         $this->pools = $pools;
     }
@@ -57,7 +54,7 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
         $hits = [];
         foreach ($this->pools as $pool) {
             $items = $pool->getItems($keys, $tags);
-            /** @var CacheItemInterface $item */
+            /** @type CacheItemInterface $item */
             foreach ($items as $item) {
                 if ($item->isHit()) {
                     $hits[$item->getKey()] = $item;
@@ -143,6 +140,4 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
 
         return $result;
     }
-
-
 }

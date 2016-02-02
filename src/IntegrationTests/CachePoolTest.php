@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of php-cache\integration-tests package.
+ * This file is part of php-cache organization.
  *
  * (c) 2015-2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
@@ -493,10 +493,10 @@ abstract class CachePoolTest extends \PHPUnit_Framework_TestCase
         $item = $this->cache->getItem('key');
         $item->set('value');
         // Expire after 2 seconds
-        $item->expiresAfter(2);
+        $item->expiresAfter(1);
         $this->cache->save($item);
 
-        sleep(4);
+        sleep(2);
         $item = $this->cache->getItem('key');
         $this->assertFalse($item->isHit());
         $this->assertNull($item->get(), "Item's value must be null when isHit() is false.");

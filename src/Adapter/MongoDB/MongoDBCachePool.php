@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of php-cache\mongodb-adapter package.
+ * This file is part of php-cache organization.
  *
  * (c) 2015-2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
@@ -12,8 +12,6 @@
 namespace Cache\Adapter\MongoDB;
 
 use Cache\Adapter\Common\AbstractCachePool;
-use Cache\Adapter\Common\CacheItem;
-use MongoDB\BSON\UTCDateTime;
 use MongoDB\Collection;
 use MongoDB\Driver\Manager;
 use Psr\Cache\CacheItemInterface;
