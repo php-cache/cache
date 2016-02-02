@@ -4,6 +4,11 @@
 This is the main repository for all our cache adapters and libraries. To read about 
 features like tagging and hierarchy support please read the shared documentation at [www.php-cache.com](http://www.php-cache.com). 
 
+## Notice:
+
+This library is for development use. All pull requests to the adapters, and libraries included in here, should be made to this library.
+
+If you are lazy, you can also include this project, to include all the adapters and libraries.
 
 ### Contribute
 
