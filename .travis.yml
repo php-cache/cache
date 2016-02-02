@@ -15,7 +15,6 @@ addons:
 services:
     - redis
     - memcached
-    - mongodb
 
 env:
   global:
@@ -41,7 +40,7 @@ install:
 
 
 script:
-    - composer test
+    - ./build/runTests.sh
 
 after_success:
     - if [[ $TRAVIS_PHP_VERSION = 7.* ]]; then codecov ; fi

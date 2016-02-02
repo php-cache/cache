@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
 
-# Install APCu Adapter dependencies
+echo "Install APCu Adapter dependencies"
 yes '' | pecl install apcu-5.1.0
 
-# Install memcache(d)
+echo "Install memcache(d)"
 yes '' | pecl install memcache memcached
 
-# Install redis
-yes '' | pecl install redis
-
-# Install Mongo
-yes '' | pecl install mongodb
+echo "Enable extension"
+echo "extension = redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini

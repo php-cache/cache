@@ -26,8 +26,8 @@
     "require":           {
         "php":                  "^5.5|^7.0",
         "psr/cache":            "^1.0",
-        "cache/adapter-common": "^0.1",
-        "cache/taggable-cache": "^0.2",
+        "cache/adapter-common": "^0.2",
+        "cache/taggable-cache": "^0.3",
         "mongodb/mongodb":      "^1.0"
     },
     "require-dev":       {
