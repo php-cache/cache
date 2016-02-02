@@ -38,7 +38,7 @@ Please try to add a test for your pull-request.
 * If your test is specific for an adapter/library, but it in the library tests.
 * If it is adapter agnostic, put it in the src/IntegrationTests directory
 
-You can run the unit-tests by calling `./build/test` from the root of the project.
+You can run the unit-tests by calling `./build/test.sh` from the root of the project.
 It will run all the tests for each library.
 
 In order to do that, you will need a fresh copy of php-cache/cache, and you
