@@ -21,6 +21,7 @@ env:
     - MONGODB_HOST="localhost:27017"
     - MONGODB_DATABASE="test"
     - MONGODB_COLLECTION="cache"
+    - INTEGRATION_TEST_VERSION="0.7.0"
 
 cache:
   directories:
@@ -35,7 +36,8 @@ before_install:
     - travis_retry composer self-update
 
 install:
-    - composer require --no-update "mongodb/mongodb" "^1.0"
+    - composer require --no-update mongodb/mongodb:^1.0
+    - composer require --no-update cache/integration-tests:$INTEGRATION_TEST_VERSION
     - composer install --no-interaction --prefer-source
 
 
