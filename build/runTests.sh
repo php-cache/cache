@@ -12,6 +12,9 @@ else
     echo $COMPONENTS | xargs -n 1 ./build/runTest.sh
 fi
 
+# Fail out if the tests above failed
+if [ $? > 0 ]; then exit $?; fi
+
 # Run for main repo. Generate coverage
 COVERAGE=coverage.xml
 if [ -f $COVERAGE ]; then rm $COVERAGE; fi
