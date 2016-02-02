@@ -71,6 +71,8 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     {
         if ($ttl === null) {
             $ttl = 0;
+        } elseif ($ttl < 0) {
+            return false;
         }
 
         $key = $this->getHierarchyKey($key);
