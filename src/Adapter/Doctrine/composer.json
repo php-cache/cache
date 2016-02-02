@@ -31,7 +31,8 @@
     },
     "require-dev":       {
         "phpunit/phpunit":         "^4.0|^5.1",
-        "mockery/mockery":         "^0.9"
+        "mockery/mockery":         "^0.9",
+        "cache/integration-test": "0.7.0"
     },
     "provide":           {
         "psr/cache-implementation": "^1.0"
