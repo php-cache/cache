@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-# Disable xdebug when version isn't 7.0
-if [ $TRAVIS_PHP_VERSION != '7.0' ]; then phpenv config-rm xdebug.ini; fi
+# Disable xdebug
+phpenv config-rm xdebug.ini
 
-# Doing something with phpenv
-if [ $TRAVIS_PHP_VERSION != 'hhvm' ]; then phpenv config-add ./build/php.ini; fi
+# Add php.ini settings
+phpenv config-add ./build/php/php.ini
 
 # Install codecov
 pip install --user codecov

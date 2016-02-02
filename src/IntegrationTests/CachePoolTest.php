@@ -493,10 +493,10 @@ abstract class CachePoolTest extends \PHPUnit_Framework_TestCase
         $item = $this->cache->getItem('key');
         $item->set('value');
         // Expire after 2 seconds
-        $item->expiresAfter(2);
+        $item->expiresAfter(1);
         $this->cache->save($item);
 
-        sleep(4);
+        sleep(2);
         $item = $this->cache->getItem('key');
         $this->assertFalse($item->isHit());
         $this->assertNull($item->get(), "Item's value must be null when isHit() is false.");

@@ -67,5 +67,8 @@
         "exclude-from-classmap": [
             "**/Tests/"
         ]
+    },
+    "scripts": {
+        "test": "./build/runTests.sh"
     }
 }
