@@ -12,8 +12,11 @@ else
     echo $COMPONENTS | xargs -n 1 ./build/runTest.sh
 fi
 
-# Run for main repo. Generate coverage
-COVERAGE=coverage.xml
-if [ -f $COVERAGE ]; then rm $COVERAGE; fi
+if [ $? ]
+then
+    # Run for main repo. Generate coverage
+    COVERAGE=coverage.xml
+    if [ -f $COVERAGE ]; then rm $COVERAGE; fi
 
-./build/runTest.sh ./ --coverage-clover=$COVERAGE
+    ./build/runTest.sh ./ --coverage-clover=$COVERAGE
+fi
