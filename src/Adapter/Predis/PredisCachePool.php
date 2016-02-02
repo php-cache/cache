@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of php-cache\predis-adapter package.
+ * This file is part of php-cache organization.
  *
  * (c) 2015-2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
@@ -44,6 +44,7 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
         }
 
         return $result;
+
         return unserialize($this->cache->get($this->getHierarchyKey($key)));
     }
 
@@ -66,7 +67,7 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
 
     protected function storeItemInCache($key, CacheItemInterface $item, $ttl)
     {
-        $key = $this->getHierarchyKey($key);
+        $key  = $this->getHierarchyKey($key);
         $data = serialize([true, $item->get()]);
 
         if ($ttl === null) {
