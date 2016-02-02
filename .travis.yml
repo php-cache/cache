@@ -45,8 +45,8 @@ install:
 script:
     - echo "$COMPONENTS" | parallel --gnu 'printf "\n\n************ Running tests for {} ************\n\n"; vendor/bin/phpunit --exclude-group tty,benchmark,intl-data {}'
 
-after_success:
-    - if [ "$TRAVIS_PHP_VERSION" == '7.0' ]; codecov; fi
+after_script:
+    - if [ "$TRAVIS_PHP_VERSION" == '7.0' ]; then codecov; fi
 
 sudo: required
 dist: precise
