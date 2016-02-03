@@ -1,34 +1,34 @@
 {
-    "name":         "cache/psr-6-doctrine-bridge",
-    "type":         "library",
-    "description":  "PSR-6 Doctrine bridge",
-    "keywords":     [
+    "name":        "cache/psr-6-doctrine-bridge",
+    "type":        "library",
+    "description": "PSR-6 Doctrine bridge",
+    "keywords":    [
         "cache",
         "psr-6",
         "doctrine"
     ],
-    "homepage":     "https://github.com/php-cache/doctrine-bridge",
-    "license":      "MIT",
-    "authors":      [
+    "homepage":    "https://github.com/php-cache/doctrine-bridge",
+    "license":     "MIT",
+    "authors":     [
         {
             "name":     "Aaron Scherer",
             "email":    "aequasi@gmail.com",
             "homepage": "https://github.com/aequasi"
         }
     ],
-    "require":      {
+    "require":     {
         "php":                      "^5.5|^7.0",
         "doctrine/cache":           "^1.3",
         "psr/cache-implementation": "^1.0"
     },
-    "require-dev":  {
-        "phpunit/phpunit":        "^4.0|^5.1",
-        "mockery/mockery":        "^0.9",
-        "cache/doctrine-adapter": "@stable",
-        "cache/integration-test": "0.7.0"
+    "require-dev": {
+        "phpunit/phpunit":         "^4.0|^5.1",
+        "mockery/mockery":         "^0.9",
+        "cache/doctrine-adapter":  "@stable",
+        "cache/integration-tests": "^0.7"
     },
-    "autoload":     {
-        "psr-4": {
+    "autoload":    {
+        "psr-4":                 {
             "Cache\\Bridge\\": ""
         },
         "exclude-from-classmap": [

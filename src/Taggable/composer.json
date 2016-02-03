@@ -1,16 +1,16 @@
 {
-    "name":         "cache/taggable-cache",
-    "type":         "library",
-    "description":  "Add tag support to your PSR-6 cache implementation",
-    "keywords":     [
+    "name":        "cache/taggable-cache",
+    "type":        "library",
+    "description": "Add tag support to your PSR-6 cache implementation",
+    "keywords":    [
         "cache",
         "psr6",
         "tag",
         "taggable"
     ],
-    "homepage":     "https://github.com/php-cache/taggable-cache",
-    "license":      "MIT",
-    "authors":      [
+    "homepage":    "https://github.com/php-cache/taggable-cache",
+    "license":     "MIT",
+    "authors":     [
         {
             "name":     "Aaron Scherer",
             "email":    "aequasi@gmail.com",
@@ -22,16 +22,16 @@
             "homepage": "https://github.com/nyholm"
         }
     ],
-    "require":      {
-        "php":       "^5.4|^7.0",
+    "require":     {
+        "php":       "^5.5|^7.0",
         "psr/cache": "^1.0"
     },
-    "require-dev":  {
-        "phpunit/phpunit": "^4.0|^5.1",
-        "cache/integration-test": "0.7.0"
+    "require-dev": {
+        "phpunit/phpunit":         "^4.1|^5.1",
+        "cache/integration-tests": "^0.7"
     },
-    "autoload":     {
-        "psr-4": {
+    "autoload":    {
+        "psr-4":                 {
             "Cache\\Taggable\\": ""
         },
         "exclude-from-classmap": [

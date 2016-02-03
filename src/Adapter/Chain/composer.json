@@ -33,13 +33,13 @@
         "phpunit/phpunit":         "^4.0|^5.1",
         "cache/predis-adapter":    "@stable",
         "cache/array-adapter":     "@stable",
-        "cache/integration-test": "0.7.0"
+        "cache/integration-tests": "^0.7"
     },
     "provide":           {
         "psr/cache-implementation": "^1.0"
     },
     "autoload":          {
-        "psr-4": {
+        "psr-4":                 {
             "Cache\\Adapter\\Chain\\": ""
         },
         "exclude-from-classmap": [

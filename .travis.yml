@@ -1,49 +1,59 @@
 language: php
-sudo: required
-dist: precise
+sudo: true
 
 php:
     - 5.5
     - 5.6
     - 7.0
 
-addons:
-    apt:
-        packages:
-            - parallel
+env:
+    - BUILD_ALL=true
+    - ADAPTER=Apc
+    - ADAPTER=Apcu
+    - ADAPTER=Chain
+    - ADAPTER=Common
+    - ADAPTER=Doctrine
+    - ADAPTER=Filesystem
+    - ADAPTER=Memcache
+    - ADAPTER=Memcached
+    - ADAPTER=MongoDB
+    - ADAPTER=PHPArray
+    - ADAPTER=Predis
+    - ADAPTER=Redis
+    - ADAPTER=Void
+    - LIBRARY=Bridge
+    - LIBRARY=Hierarchy
+    - LIBRARY=SessionHandler
+    - LIBRARY=Taggable
+
+matrix:
+    exclude:
+        - php: 7.0
+          env: ADAPTER=Apc
+        - php: 7.0
+          env: ADAPTER=Memcache
 
 services:
     - redis
     - memcached
 
-env:
-  global:
-    - MONGODB_HOST="localhost:27017"
-    - MONGODB_DATABASE="test"
-    - MONGODB_COLLECTION="cache"
-
 cache:
-  directories:
-    - "$HOME/.composer/cache"
+    directories:
+      - "$HOME/.composer/cache"
 
 before_install:
+    - echo "Disable xdebug" && phpenv config-rm xdebug.ini
+    - . ./build/setEnvVariables.sh
     - mkdir -p ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d
-    - if [ -f build/php/$TRAVIS_PHP_VERSION.sh]; then ./build/php/$TRAVIS_PHP_VERSION.sh; fi
-    - if [[ $TRAVIS_PHP_VERSION = 5.* ]]; then ./build/php/5.x.sh; fi
-    - if [[ $TRAVIS_PHP_VERSION = 7.* ]]; then ./build/php/7.x.sh; fi
-    - ./build/php/all.sh
+    - if [ -f "build/php/$TRAVIS_PHP_VERSION/$PROJECT.sh" ]; then . ./build/php/$TRAVIS_PHP_VERSION/$PROJECT.sh; fi
+    - if [ ! -z "$BUILD_ALL" ]; then . ./build/php/all.sh; fi
     - travis_retry composer self-update
 
-install:
-    - composer require --no-update mongodb/mongodb:^1.0
-    - composer install --no-interaction --prefer-source
-
-
 script:
-    - ./build/runTests.sh
+    - ./build/runTest.sh "$DIR/$PROJECT"
 
 after_success:
-    - if [[ $TRAVIS_PHP_VERSION = 7.* ]]; then codecov ; fi
+    - if [[ $TRAVIS_PHP_VERSION = 7.* ]]; then pip install --user codecov && codecov ; fi
 
 notifications:
     email: false

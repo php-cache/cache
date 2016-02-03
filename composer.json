@@ -1,14 +1,14 @@
 {
-    "name":         "cache/cache",
-    "type":         "library",
-    "description":  "Library of all the php-cache adapters",
-    "keywords":     [
+    "name":        "cache/cache",
+    "type":        "library",
+    "description": "Library of all the php-cache adapters",
+    "keywords":    [
         "cache",
         "psr6"
     ],
-    "homepage":     "http://www.php-cache.com",
-    "license":      "MIT",
-    "authors":      [
+    "homepage":    "http://www.php-cache.com",
+    "license":     "MIT",
+    "authors":     [
         {
             "name":     "Aaron Scherer",
             "email":    "aequasi@gmail.com",
@@ -20,19 +20,19 @@
             "homepage": "https://github.com/nyholm"
         }
     ],
-    "require":      {
+    "require":     {
         "php":              "^5.5|^7.0",
         "psr/cache":        "^1.0",
         "predis/predis":    "^1.0",
         "doctrine/cache":   "^1.3",
         "league/flysystem": "^1.0"
     },
-    "require-dev":  {
+    "require-dev": {
         "phpunit/phpunit":         "^4.0|^5.1",
         "mockery/mockery":         "^0.9",
-        "cache/integration-test": "0.7.0"
+        "cache/integration-tests": "^0.7"
     },
-    "suggest":      {
+    "suggest":     {
         "ext-apc":         "APC extension is required to use the APC Adapter",
         "ext-apcu":        "APCu extension is required to use the APCu Adapter",
         "ext-memcache":    "Memcache extension is required to use the Memcache Adapter",
@@ -41,7 +41,7 @@
         "ext-mongodb":     "Mongodb extension required to use the Mongodb adapter",
         "mongodb/mongodb": "Mongodb extension required to use the Mongodb adapter"
     },
-    "conflict":      {
+    "conflict":    {
         "cache/apc-adapter":           "*",
         "cache/apcu-adapter":          "*",
         "cache/chain-adapter":         "*",
@@ -60,8 +60,8 @@
         "cache/session-handler":       "*",
         "cache/taggable-cache":        "*"
     },
-    "autoload":     {
-        "psr-4": {
+    "autoload":    {
+        "psr-4":                 {
             "Cache\\": "src/"
         },
         "exclude-from-classmap": [
