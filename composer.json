@@ -30,7 +30,8 @@
     "require-dev": {
         "phpunit/phpunit":         "^4.0|^5.1",
         "mockery/mockery":         "^0.9",
-        "cache/integration-tests": "0.7.0"
+        "cache/integration-tests": "0.7.0",
+        "brianium/paratest": "^0.13"
     },
     "suggest":     {
         "ext-apc":         "APC extension is required to use the APC Adapter",

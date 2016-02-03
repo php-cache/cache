@@ -25,7 +25,8 @@
         "phpunit/phpunit":         "^4.0|^5.1",
         "mockery/mockery":         "^0.9",
         "cache/doctrine-adapter":  "@stable",
-        "cache/integration-tests": "0.7.0"
+        "cache/integration-tests": "0.7.0",
+        "brianium/paratest": "^0.13"
     },
     "autoload":    {
         "psr-4":                 {
