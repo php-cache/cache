@@ -8,8 +8,7 @@ printf     "************ Running tests for: $SLUG ************\n\n"
 
 
 if [ ! -z "$BUILD_ALL" ]; then composer require --no-update mongodb/mongodb:^1.0; fi
-if [ $TRAVIS_PHP_VERSION = 5.5 ]; then composer require --no-update phpunit/phpunit:~4.0; fi
-composer install --no-interaction --prefer-source
+composer install --no-interaction
 
 TEST="./vendor/bin/phpunit"
 if [ ! -z "$BUILD_ALL" ]; then TEST="$TEST --coverage-clover=coverage.xml"; fi
