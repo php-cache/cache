@@ -30,8 +30,6 @@ matrix:
     fast_finish: true
     exclude:
         - php: 7.0
-          env: ADAPTER=Apc
-        - php: 7.0
           env: ADAPTER=Memcache
 
 services:
