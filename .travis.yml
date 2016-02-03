@@ -36,6 +36,7 @@ matrix:
 services:
     - redis
     - memcached
+    - mongodb
 
 cache:
     directories:
