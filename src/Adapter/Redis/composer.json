@@ -34,7 +34,8 @@
     },
     "require-dev":       {
         "phpunit/phpunit":         "^4.0|^5.1",
-        "cache/integration-tests": "0.7.0"
+        "cache/integration-tests": "0.7.0",
+        "brianium/paratest": "^0.13"
     },
     "provide":           {
         "psr/cache-implementation": "^1.0"
