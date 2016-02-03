@@ -1,5 +1,5 @@
 language: php
-sudo: true
+sudo: false
 
 php:
     - 5.5
@@ -27,6 +27,7 @@ env:
     - LIBRARY=Taggable
 
 matrix:
+    fast_finish: true
     exclude:
         - php: 7.0
           env: ADAPTER=Apc
@@ -36,6 +37,14 @@ matrix:
 services:
     - redis
     - memcached
+    - mongodb
+
+addons:
+  apt:
+    sources:
+      - mongodb-3.2-precise
+    packages:
+      - mongodb-org-server
 
 cache:
     directories:
