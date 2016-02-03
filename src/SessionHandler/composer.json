@@ -29,7 +29,7 @@
         "phpunit/phpunit":         "^4.0|^5.1",
         "mockery/mockery":         "^0.9",
         "cache/array-adapter":     "@stable",
-        "cache/integration-tests": "^0.7"
+        "cache/integration-tests": "0.7.0"
     },
     "autoload":    {
         "psr-4":                 {
