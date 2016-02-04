@@ -1,24 +1,21 @@
 # PSR 6 Doctrine Bridge 
-[![Build Status](https://travis-ci.org/php-cache/doctrine-bridge.svg)](https://travis-ci.org/php-cache/doctrine-bridge)
+[![Gitter](https://badges.gitter.im/php-cache/cache.svg)](https://gitter.im/php-cache/cache?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Latest Stable Version](https://poser.pugx.org/cache/doctrine-bridge/v/stable)](https://packagist.org/packages/cache/doctrine-bridge)
+[![Total Downloads](https://poser.pugx.org/cache/doctrine-bridge/downloads)](https://packagist.org/packages/cache/doctrine-bridge)
+[![Monthly Downloads](https://poser.pugx.org/cache/doctrine-bridge/d/monthly.png)](https://packagist.org/packages/cache/doctrine-bridge)
+[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
 This library provides a PSR-6 compliant bridge between Doctrine and a Cache Pool. The bridge implements the 
 `Doctrine\Common\Cache\Cache` interface. This is useful for projects that require an implementation of 
 `Doctrine\Common\Cache\Cache`, but you still want to use a PSR-6 implementation. 
 
-## Installation
+### Install
 
-#### Composer
-
-Download composer using `curl -sS https://getcomposer.org/installer | php`
-
-Run the following:
-
-```sh
-$ composer require cache/psr-6-doctrine-bridge
+```bash
+composer require cache/psr-6-doctrine-bridge
 ```
 
-## Usage
-
+### Usage
 
 ```php
 use DoctrineCacheBridge\DoctrineCacheBridge;
@@ -34,3 +31,8 @@ $cacheProvider->delete($key);
 // Also, if you need it:
 $cacheProvider->getPool(); // same as $pool
 ```
+
+### Contribute
+
+Contributions are very welcome! Send a pull request to the [main repository](https://github.com/php-cache/cache) or 
+report any issues you find on the [issue tracker](http://issues.php-cache.com).
