@@ -24,7 +24,7 @@
         }
     ],
     "require":           {
-        "php":                  "^5.5",
+        "php":                  "^5.5|^7.0",
         "ext-apc":              "*",
         "psr/cache":            "^1.0",
         "cache/adapter-common": "^0.2",
