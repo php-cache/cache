@@ -30,7 +30,7 @@ class MemcacheCachePool extends AbstractCachePool
     protected function fetchObjectFromCache($key)
     {
         if (false === $result = unserialize($this->cache->get($key))) {
-            return [false, null];
+            return [false, null, []];
         }
 
         return $result;
@@ -48,10 +48,10 @@ class MemcacheCachePool extends AbstractCachePool
         return true;
     }
 
-    protected function storeItemInCache($key, CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(CacheItemInterface $item, $ttl)
     {
-        $data = serialize([true, $item->get()]);
+        $data = serialize([true, $item->get(), []]);
 
-        return $this->cache->set($key, $data, 0, $ttl ?: 0);
+        return $this->cache->set($item->getKey(), $data, 0, $ttl ?: 0);
     }
 }

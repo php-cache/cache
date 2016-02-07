@@ -11,25 +11,34 @@
 
 namespace Cache\Taggable;
 
+use Psr\Cache\CacheItemPoolInterface;
+use Psr\Cache\InvalidArgumentException;
+
 /**
  * Lets you add tags to your cache items. Prepend the PSR-6 function arguments with an array of tag names for
  * functions not requiring an CacheItemInterface.
  *
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-interface TaggablePoolInterface
+interface TaggablePoolInterface extends CacheItemPoolInterface
 {
     const TAG_SEPARATOR = '!';
 
-    public function getItem($key, array $tags = []);
+    /**
+     * @param string $key
+     *
+     * @throws InvalidArgumentException
+     *
+     * @return TaggableItemInterface
+     */
+    public function getItem($key);
 
-    public function getItems(array $keys = [], array $tags = []);
-
-    public function hasItem($key, array $tags = []);
-
-    public function clear(array $tags = []);
-
-    public function deleteItem($key, array $tags = []);
-
-    public function deleteItems(array $keys, array $tags = []);
+    /**
+     * Clear all items with a tag in $tags.
+     *
+     * @param array $tags
+     *
+     * @return bool
+     */
+    public function clearTags(array $tags);
 }

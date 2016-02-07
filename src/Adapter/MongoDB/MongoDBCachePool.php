@@ -73,10 +73,10 @@ class MongoDBCachePool extends AbstractCachePool
         return true;
     }
 
-    protected function storeItemInCache($key, CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(CacheItemInterface $item, $ttl)
     {
         $object = [
-            '_id'  => $key,
+            '_id'  => $item->getKey(),
             'data' => serialize($item->get()),
         ];
 
@@ -84,7 +84,7 @@ class MongoDBCachePool extends AbstractCachePool
             $object['expiresAt'] = time() + $ttl;
         }
 
-        $this->collection->updateOne(['_id' => $key], ['$set' => $object], ['upsert' => true]);
+        $this->collection->updateOne(['_id' => $item->getKey()], ['$set' => $object], ['upsert' => true]);
 
         return true;
     }

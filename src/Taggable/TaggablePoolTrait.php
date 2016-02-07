@@ -11,7 +11,7 @@
 
 namespace Cache\Taggable;
 
-use Psr\Cache\CacheItemInterface;
+use Psr\Cache\InvalidArgumentException;
 
 /**
  * Use this trait with a CacheItemPoolInterface to support tagging.
@@ -21,148 +21,119 @@ use Psr\Cache\CacheItemInterface;
 trait TaggablePoolTrait
 {
     /**
-     * This is a private storage where we cache/save the tag names and ids.
+     * @param string $key
      *
-     * @type array tagName => tagId
+     * @return TaggableItemInterface
      */
-    private $tags;
+    abstract protected function getItem($key);
 
     /**
-     * From Psr\Cache\CacheItemPoolInterface.
+     * Get an array with all the values in the list named $name.
      *
-     * @param CacheItemInterface $item
+     * @param string $name
+     *
+     * @return array
+     */
+    abstract protected function getList($name);
+
+    /**
+     * Remove the list.
+     *
+     * @param string $name
      *
      * @return bool
      */
-    abstract public function save(CacheItemInterface $item);
+    abstract protected function removeList($name);
 
     /**
-     * From Psr\Cache\CacheItemPoolInterface.
-     * This function should run $this->generateCacheKey to get a key using the tags.
+     * Add a item key on a list named $name.
      *
+     * @param string $name
      * @param string $key
-     *
-     * @return CacheItemInterface
      */
-    abstract public function getItem($key);
+    abstract protected function appendListItem($name, $key);
 
     /**
-     * Return an CacheItemInterface for a tag.
-     * This function MUST NOT run $this->generateCacheKey.
-     *
-     * @param $key
-     *
-     * @return CacheItemInterface
-     */
-    abstract protected function getItemWithoutGenerateCacheKey($key);
-
-    /**
-     * Make sure we do not use any invalid characters in the tag name.
-     * If the tag name is invalid, an InvalidArgumentException should be thrown.
-     * The actual tag name will be "tag!$name".
+     * Remove an item from the list.
      *
      * @param string $name
-     *
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @param string $key
      */
-    abstract protected function validateTagName($name);
+    abstract protected function removeListItem($name, $key);
 
     /**
-     * Reset the tag and return the new tag identifier.
+     * @param array $keys
+     
+     * @throws InvalidArgumentException
      *
-     * This will not delete anything form cache, only generate a new reference. This is a memory leak.
-     *
-     * @param string $name
-     *
-     * @return string
+     * @return bool
      */
-    protected function flushTag($name)
+    abstract public function deleteItems(array $keys);
+
+    /**
+     * @param TaggableItemInterface $item
+     *
+     * @return $this
+     */
+    protected function saveTags(TaggableItemInterface $item)
     {
-        $this->validateTagName($name);
-        $item = $this->getItemWithoutGenerateCacheKey($this->getTagKey($name));
+        $tags = $item->getTags();
+        foreach ($tags as $tag) {
+            $this->appendListItem($this->getTagKey($tag), $item->getKey());
+        }
 
-        return $this->generateNewTagId($item);
+        return $this;
     }
 
     /**
-     * Generate a good cache key that is dependent of the tags. This key should be the key of the CacheItem.
+     * @param array $tags
      *
-     * @param string $key
-     * @param array  $tags
-     *
-     * @return string
+     * @return bool
      */
-    protected function generateCacheKey($key, array $tags)
+    public function clearTags(array $tags)
     {
-        if (empty($tags)) {
-            return $key;
+        $itemIds = [];
+        foreach ($tags as $tag) {
+            $itemIds = array_merge($itemIds, $this->getList($this->getTagKey($tag)));
         }
 
-        // We sort the tags because the order should not matter
-        sort($tags);
+        // Remove all items with the tag
+        $success = $this->deleteItems($itemIds);
 
-        $tagIds = [];
-        foreach ($tags as $tag) {
-            if (isset($this->tags[$tag])) {
-                $tagIds[] = $this->tags[$tag];
-            } else {
-                $tagIds[] = $this->getTagId($tag);
+        if ($success) {
+            // Remove the tag list
+            foreach ($tags as $tag) {
+                $this->removeList($this->getTagKey($tag));
             }
         }
-        $tagsNamespace = sha1(implode('|', $tagIds));
 
-        return $key.TaggablePoolInterface::TAG_SEPARATOR.$tagsNamespace;
+        return $success;
     }
 
     /**
-     * Get the unique tag identifier for a given tag.
+     * Removes the key form all tag lists.
      *
-     * @param string $name
+     * @param string $key
      *
-     * @return string
+     * @return $this
      */
-    private function getTagId($name)
+    protected function preRemoveItem($key)
     {
-        $this->validateTagName($name);
-        $item = $this->getItemWithoutGenerateCacheKey($this->getTagKey($name));
-
-        if ($item->isHit()) {
-            return $item->get();
+        $tags = $this->getItem($key)->getTags();
+        foreach ($tags as $tag) {
+            $this->removeListItem($this->getTagKey($tag), $key);
         }
 
-        return $this->generateNewTagId($item);
+        return $this;
     }
 
     /**
-     * Get the tag identifier key for a given tag.
-     *
-     * @param string $name
+     * @param $tag
      *
      * @return string
      */
-    private function getTagKey($name)
+    protected function getTagKey($tag)
     {
-        return $name.TaggablePoolInterface::TAG_SEPARATOR.'tag';
-    }
-
-    /**
-     * A TagId is retrieved from cache using the TagKey.
-     *
-     * @param \Psr\Cache\CacheItemPoolInterface $storage
-     * @param CacheItemInterface                $item
-     *
-     * @return string
-     */
-    private function generateNewTagId(CacheItemInterface $item)
-    {
-        $value = str_replace('.', '', uniqid('', true));
-        $item->set($value);
-        $item->expiresAfter(null);
-        $this->save($item);
-
-        // Save to temporary tag store
-        $this->tags[$item->getKey()] = $value;
-
-        return $value;
+        return 'tag'.TaggablePoolInterface::TAG_SEPARATOR.$tag;
     }
 }

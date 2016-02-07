@@ -41,7 +41,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     protected function fetchObjectFromCache($key)
     {
         if (false === $result = unserialize($this->cache->get($this->getHierarchyKey($key)))) {
-            return [false, null];
+            return [false, null, []];
         }
 
         return $result;
@@ -67,7 +67,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
         return $this->cache->getResultCode() === \Memcached::RES_NOTFOUND;
     }
 
-    protected function storeItemInCache($key, CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(CacheItemInterface $item, $ttl)
     {
         if ($ttl === null) {
             $ttl = 0;
@@ -75,9 +75,9 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
             return false;
         }
 
-        $key = $this->getHierarchyKey($key);
+        $key = $this->getHierarchyKey($item->getKey());
 
-        return $this->cache->set($key, serialize([true, $item->get()]), $ttl);
+        return $this->cache->set($key, serialize([true, $item->get(), []]), $ttl);
     }
 
     protected function getValueFormStore($key)

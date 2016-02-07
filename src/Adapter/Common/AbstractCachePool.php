@@ -12,9 +12,6 @@
 namespace Cache\Adapter\Common;
 
 use Cache\Adapter\Common\Exception\InvalidArgumentException;
-use Cache\Taggable\TaggableItemInterface;
-use Cache\Taggable\TaggablePoolInterface;
-use Cache\Taggable\TaggablePoolTrait;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
@@ -22,14 +19,45 @@ use Psr\Cache\CacheItemPoolInterface;
  * @author Aaron Scherer <aequasi@gmail.com>
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-abstract class AbstractCachePool implements CacheItemPoolInterface, TaggablePoolInterface
+abstract class AbstractCachePool implements CacheItemPoolInterface
 {
-    use TaggablePoolTrait;
-
     /**
      * @type CacheItemInterface[] deferred
      */
     protected $deferred = [];
+
+    /**
+     * @param CacheItemInterface $item
+     * @param int|null           $ttl  seconds from now
+     *
+     * @return bool true if saved
+     */
+    abstract protected function storeItemInCache(CacheItemInterface $item, $ttl);
+
+    /**
+     * Fetch an object from the cache implementation.
+     *
+     * @param string $key
+     *
+     * @return array with [isHit, value]
+     */
+    abstract protected function fetchObjectFromCache($key);
+
+    /**
+     * Clear all objects from cache.
+     *
+     * @return bool false if error
+     */
+    abstract protected function clearAllObjectsFromCache();
+
+    /**
+     * Remove one object from cache.
+     *
+     * @param string $key
+     *
+     * @return bool
+     */
+    abstract protected function clearOneObjectFromCache($key);
 
     /**
      * Make sure to commit before we destruct.
@@ -42,19 +70,9 @@ abstract class AbstractCachePool implements CacheItemPoolInterface, TaggablePool
     /**
      * {@inheritdoc}
      */
-    public function getItem($key, array $tags = [])
+    public function getItem($key)
     {
         $this->validateKey($key);
-        $taggedKey = $this->generateCacheKey($key, $tags);
-
-        return $this->getItemWithoutGenerateCacheKey($taggedKey);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getItemWithoutGenerateCacheKey($key)
-    {
         if (isset($this->deferred[$key])) {
             $item = $this->deferred[$key];
 
@@ -69,22 +87,13 @@ abstract class AbstractCachePool implements CacheItemPoolInterface, TaggablePool
     }
 
     /**
-     * Fetch an object from the cache implementation.
-     *
-     * @param string $key
-     *
-     * @return array with [isHit, value]
-     */
-    abstract protected function fetchObjectFromCache($key);
-
-    /**
      * {@inheritdoc}
      */
-    public function getItems(array $keys = [], array $tags = [])
+    public function getItems(array $keys = [])
     {
         $items = [];
         foreach ($keys as $key) {
-            $items[$key] = $this->getItem($key, $tags);
+            $items[$key] = $this->getItem($key);
         }
 
         return $items;
@@ -93,24 +102,16 @@ abstract class AbstractCachePool implements CacheItemPoolInterface, TaggablePool
     /**
      * {@inheritdoc}
      */
-    public function hasItem($key, array $tags = [])
+    public function hasItem($key)
     {
-        return $this->getItem($key, $tags)->isHit();
+        return $this->getItem($key)->isHit();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function clear(array $tags = [])
+    public function clear()
     {
-        if (!empty($tags)) {
-            foreach ($tags as $tag) {
-                $this->flushTag($tag);
-            }
-
-            return true;
-        }
-
         // Clear the deferred items
         $this->deferred = [];
 
@@ -118,34 +119,26 @@ abstract class AbstractCachePool implements CacheItemPoolInterface, TaggablePool
     }
 
     /**
-     * Clear all objects from cache.
-     *
-     * @return bool false if error
-     */
-    abstract protected function clearAllObjectsFromCache();
-
-    /**
      * {@inheritdoc}
      */
-    public function deleteItem($key, array $tags = [])
+    public function deleteItem($key)
     {
-        return $this->deleteItems([$key], $tags);
+        return $this->deleteItems([$key]);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function deleteItems(array $keys, array $tags = [])
+    public function deleteItems(array $keys)
     {
         $deleted = true;
         foreach ($keys as $key) {
             $this->validateKey($key);
-            $taggedKey = $this->generateCacheKey($key, $tags);
 
             // Delete form deferred
-            unset($this->deferred[$taggedKey]);
+            unset($this->deferred[$key]);
 
-            if (!$this->clearOneObjectFromCache($taggedKey)) {
+            if (!$this->clearOneObjectFromCache($key)) {
                 $deleted = false;
             }
         }
@@ -154,25 +147,10 @@ abstract class AbstractCachePool implements CacheItemPoolInterface, TaggablePool
     }
 
     /**
-     * Remove one object from cache.
-     *
-     * @param string $key
-     *
-     * @return bool
-     */
-    abstract protected function clearOneObjectFromCache($key);
-
-    /**
      * {@inheritdoc}
      */
     public function save(CacheItemInterface $item)
     {
-        if ($item instanceof TaggableItemInterface) {
-            $key = $item->getTaggedKey();
-        } else {
-            $key = $item->getKey();
-        }
-
         $timeToLive = null;
         if ($item instanceof HasExpirationDateInterface) {
             if (null !== $expirationDate = $item->getExpirationDate()) {
@@ -180,30 +158,15 @@ abstract class AbstractCachePool implements CacheItemPoolInterface, TaggablePool
             }
         }
 
-        return $this->storeItemInCache($key, $item, $timeToLive);
+        return $this->storeItemInCache($item, $timeToLive);
     }
-
-    /**
-     * @param string             $key
-     * @param CacheItemInterface $item
-     * @param int|null           $ttl  seconds from now
-     *
-     * @return bool true if saved
-     */
-    abstract protected function storeItemInCache($key, CacheItemInterface $item, $ttl);
 
     /**
      * {@inheritdoc}
      */
     public function saveDeferred(CacheItemInterface $item)
     {
-        if ($item instanceof TaggableItemInterface) {
-            $key = $item->getTaggedKey();
-        } else {
-            $key = $item->getKey();
-        }
-
-        $this->deferred[$key] = $item;
+        $this->deferred[$item->getKey()] = $item;
 
         return true;
     }
@@ -243,15 +206,5 @@ abstract class AbstractCachePool implements CacheItemPoolInterface, TaggablePool
                 $key
             ));
         }
-    }
-
-    /**
-     * @param string $name
-     *
-     * @throws InvalidArgumentException
-     */
-    protected function validateTagName($name)
-    {
-        $this->validateKey($name);
     }
 }

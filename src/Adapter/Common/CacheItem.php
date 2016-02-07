@@ -12,7 +12,6 @@
 namespace Cache\Adapter\Common;
 
 use Cache\Taggable\TaggableItemInterface;
-use Cache\Taggable\TaggableItemTrait;
 use Psr\Cache\CacheItemInterface;
 
 /**
@@ -21,7 +20,10 @@ use Psr\Cache\CacheItemInterface;
  */
 class CacheItem implements HasExpirationDateInterface, CacheItemInterface, TaggableItemInterface
 {
-    use TaggableItemTrait;
+    /**
+     * @type array
+     */
+    private $tags = [];
 
     /**
      * @type \Closure
@@ -54,8 +56,7 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
      */
     public function __construct($key, $callable = null, $value = null)
     {
-        $this->taggedKey = $key;
-        $this->key       = $this->getKeyFromTaggedKey($key);
+        $this->key = $key;
 
         if ($callable === true) {
             $this->hasValue = true;
@@ -103,12 +104,7 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
      */
     public function isHit()
     {
-        if ($this->callable !== null) {
-            // Initialize
-            $f                                  = $this->callable;
-            list($this->hasValue, $this->value) = $f();
-            $this->callable                     = null;
-        }
+        $this->initialize();
 
         if (!$this->hasValue) {
             return false;
@@ -162,5 +158,42 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
         }
 
         return $this;
+    }
+
+    public function getTags()
+    {
+        $this->initialize();
+
+        return $this->tags;
+    }
+
+    public function addTag($tag)
+    {
+        $this->initialize();
+
+        $this->tags[] = $tag;
+
+        return $this;
+    }
+
+    public function setTags(array $tags)
+    {
+        $this->initialize();
+
+        $this->tags = $tags;
+
+        return $this;
+    }
+
+    /**
+     * If callable is not null, execute it an populate this object with values.
+     */
+    private function initialize()
+    {
+        if ($this->callable !== null) {
+            $f                                               = $this->callable;
+            list($this->hasValue, $this->value, $this->tags) = $f();
+            $this->callable                                  = null;
+        }
     }
 }

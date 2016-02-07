@@ -12,16 +12,18 @@
 namespace Cache\Adapter\Void;
 
 use Cache\Adapter\Common\AbstractCachePool;
+use Cache\Hierarchy\HierarchicalPoolInterface;
+use Cache\Taggable\TaggablePoolInterface;
 use Psr\Cache\CacheItemInterface;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class VoidCachePool extends AbstractCachePool
+class VoidCachePool extends AbstractCachePool implements TaggablePoolInterface, HierarchicalPoolInterface
 {
     protected function fetchObjectFromCache($key)
     {
-        return [false, null];
+        return [false, null, []];
     }
 
     protected function clearAllObjectsFromCache()
@@ -34,7 +36,12 @@ class VoidCachePool extends AbstractCachePool
         return true;
     }
 
-    protected function storeItemInCache($key, CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(CacheItemInterface $item, $ttl)
+    {
+        return true;
+    }
+
+    public function clearTags(array $tags)
     {
         return true;
     }

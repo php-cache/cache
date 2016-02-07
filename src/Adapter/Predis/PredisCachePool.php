@@ -14,14 +14,18 @@ namespace Cache\Adapter\Predis;
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
+use Cache\Taggable\TaggableItemInterface;
+use Cache\Taggable\TaggablePoolInterface;
+use Cache\Taggable\TaggablePoolTrait;
 use Predis\Client;
 use Psr\Cache\CacheItemInterface;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInterface
+class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInterface, TaggablePoolInterface
 {
+    use TaggablePoolTrait;
     use HierarchicalCachePoolTrait;
 
     /**
@@ -37,10 +41,19 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
         $this->cache = $cache;
     }
 
+    public function save(CacheItemInterface $item)
+    {
+        if ($item instanceof TaggableItemInterface) {
+            $this->saveTags($item);
+        }
+
+        return parent::save($item);
+    }
+
     protected function fetchObjectFromCache($key)
     {
         if (false === $result = unserialize($this->cache->get($this->getHierarchyKey($key)))) {
-            return [false, null];
+            return [false, null, []];
         }
 
         return $result;
@@ -56,6 +69,7 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
         // We have to commit here to be able to remove deferred hierarchy items
         $this->commit();
 
+        $this->preRemoveItem($key);
         $keyString = $this->getHierarchyKey($key, $path);
         $this->cache->incr($path);
         $this->clearHierarchyKeyCache();
@@ -63,16 +77,16 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
         return $this->cache->del($keyString) >= 0;
     }
 
-    protected function storeItemInCache($key, CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(CacheItemInterface $item, $ttl)
     {
         if ($ttl < 0) {
             return false;
         }
 
-        $key  = $this->getHierarchyKey($key);
-        $data = serialize([true, $item->get()]);
+        $key  = $this->getHierarchyKey($item->getKey());
+        $data = serialize([true, $item->get(), $item->getTags()]);
 
-        if ($ttl === null) {
+        if ($ttl === null || $ttl === 0) {
             return 'OK' === $this->cache->set($key, $data)->getPayload();
         }
 
@@ -82,5 +96,25 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
     protected function getValueFormStore($key)
     {
         return $this->cache->get($key);
+    }
+
+    protected function appendListItem($name, $value)
+    {
+        $this->cache->lpush($name, $value);
+    }
+
+    protected function getList($name)
+    {
+        return $this->cache->lrange($name, 0, -1);
+    }
+
+    protected function removeList($name)
+    {
+        return $this->cache->del($name);
+    }
+
+    protected function removeListItem($name, $key)
+    {
+        return $this->cache->lrem($name, 0, $key);
     }
 }
