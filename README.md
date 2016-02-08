@@ -17,4 +17,4 @@ If you are lazy, you can also include this project, to include all the adapters 
 
 ### Contribute
 
-Contributions are very welcome! Make sure you check out the [contributing docs](CONTRIBUTING.md) and aend us a pull request or report any issues you find on the [issue tracker](http://issues.php-cache.com).
+Contributions are very welcome! Make sure you check out the [contributing docs](CONTRIBUTING.md) and aend us a pull request or report any issues you find on the [issue tracker](http://issues.php-cache.com). Feel free to come chat with us on [Gitter](https://gitter.im/php-cache/cache?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) too.
