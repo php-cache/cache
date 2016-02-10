@@ -1,8 +1,8 @@
 # Common PSR-6 Cache pool 
 [![Gitter](https://badges.gitter.im/php-cache/cache.svg)](https://gitter.im/php-cache/cache?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-[![Latest Stable Version](https://poser.pugx.org/cache/common-adapter/v/stable)](https://packagist.org/packages/cache/common-adapter)
-[![Total Downloads](https://poser.pugx.org/cache/common-adapter/downloads)](https://packagist.org/packages/cache/common-adapter)
-[![Monthly Downloads](https://poser.pugx.org/cache/common-adapter/d/monthly.png)](https://packagist.org/packages/cache/common-adapter)
+[![Latest Stable Version](https://poser.pugx.org/cache/adapter-common/v/stable)](https://packagist.org/packages/cache/adapter-common)
+[![Total Downloads](https://poser.pugx.org/cache/adapter-common/downloads)](https://packagist.org/packages/cache/adapter-common)
+[![Monthly Downloads](https://poser.pugx.org/cache/adapter-common/d/monthly.png)](https://packagist.org/packages/cache/adapter-common)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
 This repository contains shared classes and interfaces used by the PHP Cache organisation. To read about 
