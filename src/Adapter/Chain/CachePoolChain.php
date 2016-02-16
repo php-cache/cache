@@ -38,14 +38,29 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
 
     public function getItem($key, array $tags = [])
     {
+        $found     = false;
+        $result    = null;
+        $needsSave = [];
+
         foreach ($this->pools as $pool) {
             $item = $pool->getItem($key, $tags);
-            if ($item->isHit()) {
-                return $item;
+            if ($item->isHit() && !$found) {
+                $found  = true;
+                $result = $item;
+                break;
             }
+
+            $needsSave[] = $pool;
         }
 
-        // Return the item from the last pool
+        if ($found) {
+            foreach ($needsSave as $pool) {
+                $pool->save($result);
+            }
+
+            $item = $result;
+        }
+
         return $item;
     }
 
