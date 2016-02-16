@@ -44,7 +44,7 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
 
         foreach ($this->pools as $pool) {
             $item = $pool->getItem($key, $tags);
-            if ($item->isHit() && !$found) {
+            if ($item->isHit()) {
                 $found  = true;
                 $result = $item;
                 break;
