@@ -41,6 +41,9 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
         $this->cache = $cache;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function save(CacheItemInterface $item)
     {
         if ($item instanceof TaggableItemInterface) {
@@ -50,6 +53,9 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
         return parent::save($item);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function fetchObjectFromCache($key)
     {
         if (false === $result = unserialize($this->cache->get($this->getHierarchyKey($key)))) {
@@ -59,11 +65,17 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
         return $result;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearAllObjectsFromCache()
     {
         return 'OK' === $this->cache->flushdb()->getPayload();
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearOneObjectFromCache($key)
     {
         // We have to commit here to be able to remove deferred hierarchy items
@@ -77,6 +89,9 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
         return $this->cache->del($keyString) >= 0;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function storeItemInCache(CacheItemInterface $item, $ttl)
     {
         if ($ttl < 0) {
@@ -93,26 +108,41 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
         return 'OK' === $this->cache->setex($key, $ttl, $data)->getPayload();
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function getValueFormStore($key)
     {
         return $this->cache->get($key);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function appendListItem($name, $value)
     {
         $this->cache->lpush($name, $value);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function getList($name)
     {
         return $this->cache->lrange($name, 0, -1);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function removeList($name)
     {
         return $this->cache->del($name);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function removeListItem($name, $key)
     {
         return $this->cache->lrem($name, 0, $key);

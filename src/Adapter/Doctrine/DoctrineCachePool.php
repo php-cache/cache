@@ -42,6 +42,9 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
         $this->cache = $cache;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function save(CacheItemInterface $item)
     {
         if ($item instanceof TaggableItemInterface) {
@@ -51,6 +54,9 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
         return parent::save($item);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function fetchObjectFromCache($key)
     {
         if (false === $data = $this->cache->fetch($key)) {
@@ -60,6 +66,9 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
         return unserialize($data);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearAllObjectsFromCache()
     {
         if ($this->cache instanceof FlushableCache) {
@@ -69,6 +78,9 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
         return false;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearOneObjectFromCache($key)
     {
         $this->preRemoveItem($key);
@@ -76,6 +88,9 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
         return $this->cache->delete($key);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function storeItemInCache(CacheItemInterface $item, $ttl)
     {
         if ($ttl === null) {
@@ -100,7 +115,7 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
     }
 
     /**
-     * @{@inheritdoc}
+     * {@inheritdoc}
      */
     protected function getList($name)
     {
@@ -112,7 +127,7 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
     }
 
     /**
-     * @{@inheritdoc}
+     * {@inheritdoc}
      */
     protected function removeList($name)
     {
@@ -120,7 +135,7 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
     }
 
     /**
-     * @{@inheritdoc}
+     * {@inheritdoc}
      */
     protected function appendListItem($name, $key)
     {
@@ -130,7 +145,7 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
     }
 
     /**
-     * @{@inheritdoc}
+     * {@inheritdoc}
      */
     protected function removeListItem($name, $key)
     {

@@ -36,6 +36,9 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
         $this->pools = $pools;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getItem($key)
     {
         $found     = false;
@@ -64,6 +67,9 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
         return $item;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getItems(array $keys = [])
     {
         $hits = [];
@@ -85,6 +91,9 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
         return array_merge($hits, $items);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function hasItem($key)
     {
         foreach ($this->pools as $pool) {
@@ -96,6 +105,9 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
         return false;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function clear()
     {
         $result = true;
@@ -106,6 +118,9 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
         return $result;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function deleteItem($key)
     {
         $result = true;
@@ -116,6 +131,9 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
         return $result;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function deleteItems(array $keys)
     {
         $result = true;
@@ -126,6 +144,9 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
         return $result;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function save(CacheItemInterface $item)
     {
         $result = true;
@@ -136,6 +157,9 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
         return $result;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function saveDeferred(CacheItemInterface $item)
     {
         $result = true;
@@ -146,6 +170,9 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
         return $result;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function commit()
     {
         $result = true;
@@ -156,6 +183,9 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
         return $result;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function clearTags(array $tags)
     {
         $result = true;

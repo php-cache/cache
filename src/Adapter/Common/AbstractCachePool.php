@@ -39,7 +39,7 @@ abstract class AbstractCachePool implements CacheItemPoolInterface
      *
      * @param string $key
      *
-     * @return array with [isHit, value]
+     * @return array with [isHit, value, [tags]]
      */
     abstract protected function fetchObjectFromCache($key);
 

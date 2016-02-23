@@ -26,14 +26,14 @@
     "require":           {
         "php":                  "^5.5|^7.0",
         "psr/cache":            "^1.0",
-        "cache/adapter-common": "^0.2",
-        "cache/taggable-cache": "^0.3",
+        "cache/adapter-common": "^0.3",
+        "cache/taggable-cache": "^0.4",
         "doctrine/cache":       "^1.3"
     },
     "require-dev":       {
         "phpunit/phpunit":         "^4.0|^5.1",
         "mockery/mockery":         "^0.9",
-        "cache/integration-tests": "0.9.0"
+        "cache/integration-tests": "^0.9"
     },
     "provide":           {
         "psr/cache-implementation": "^1.0"

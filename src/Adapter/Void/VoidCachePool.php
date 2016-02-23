@@ -21,26 +21,41 @@ use Psr\Cache\CacheItemInterface;
  */
 class VoidCachePool extends AbstractCachePool implements TaggablePoolInterface, HierarchicalPoolInterface
 {
+    /**
+     * {@inheritdoc}
+     */
     protected function fetchObjectFromCache($key)
     {
         return [false, null, []];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearAllObjectsFromCache()
     {
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearOneObjectFromCache($key)
     {
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function storeItemInCache(CacheItemInterface $item, $ttl)
     {
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function clearTags(array $tags)
     {
         return true;

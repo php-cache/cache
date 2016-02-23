@@ -19,6 +19,9 @@ use Psr\Cache\CacheItemInterface;
  */
 class ApcCachePool extends AbstractCachePool
 {
+    /**
+     * {@inheritdoc}
+     */
     protected function fetchObjectFromCache($key)
     {
         $success = false;
@@ -27,11 +30,17 @@ class ApcCachePool extends AbstractCachePool
         return [$success, $data, []];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearAllObjectsFromCache()
     {
         return apc_clear_cache('user');
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearOneObjectFromCache($key)
     {
         apc_delete($key);
@@ -39,6 +48,9 @@ class ApcCachePool extends AbstractCachePool
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function storeItemInCache(CacheItemInterface $item, $ttl)
     {
         if ($ttl < 0) {

@@ -38,6 +38,9 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
         $this->cache->setOption(\Memcached::OPT_BINARY_PROTOCOL, true);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function fetchObjectFromCache($key)
     {
         if (false === $result = unserialize($this->cache->get($this->getHierarchyKey($key)))) {
@@ -47,11 +50,17 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
         return $result;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearAllObjectsFromCache()
     {
         return $this->cache->flush();
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearOneObjectFromCache($key)
     {
         $this->commit();
@@ -67,6 +76,9 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
         return $this->cache->getResultCode() === \Memcached::RES_NOTFOUND;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function storeItemInCache(CacheItemInterface $item, $ttl)
     {
         if ($ttl === null) {
@@ -80,6 +92,9 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
         return $this->cache->set($key, serialize([true, $item->get(), []]), $ttl);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function getValueFormStore($key)
     {
         return $this->cache->get($key);

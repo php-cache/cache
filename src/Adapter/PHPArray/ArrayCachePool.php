@@ -156,6 +156,9 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function save(CacheItemInterface $item)
     {
         if ($item instanceof TaggableItemInterface) {
@@ -175,6 +178,9 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function getList($name)
     {
         if (!isset($this->cache[$name])) {
@@ -184,6 +190,9 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         return $this->cache[$name];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function removeList($name)
     {
         unset($this->cache[$name]);
@@ -191,11 +200,17 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function appendListItem($name, $key)
     {
         $this->cache[$name][] = $key;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function removeListItem($name, $key)
     {
         foreach ($this->cache[$name] as $i => $item) {

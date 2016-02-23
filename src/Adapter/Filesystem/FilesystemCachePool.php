@@ -43,6 +43,9 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
         $this->filesystem->createDir(self::CACHE_PATH);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function fetchObjectFromCache($key)
     {
         $file = $this->getFilePath($key);
@@ -63,6 +66,9 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
         return [true, $data[1], $data[2]];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearAllObjectsFromCache()
     {
         $this->filesystem->deleteDir(self::CACHE_PATH);
@@ -71,6 +77,9 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearOneObjectFromCache($key)
     {
         $this->preRemoveItem($key);
@@ -78,6 +87,9 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
         return $this->forceClear($key);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function storeItemInCache(CacheItemInterface $item, $ttl)
     {
         $file = $this->getFilePath($item->getKey());
@@ -113,6 +125,9 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
         return sprintf('%s/%s', self::CACHE_PATH, $key);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function save(CacheItemInterface $item)
     {
         if ($item instanceof TaggableItemInterface) {
@@ -122,6 +137,9 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
         return parent::save($item);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function getList($name)
     {
         $file = $this->getFilePath($name);
@@ -133,12 +151,18 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
         return unserialize($this->filesystem->read($file));
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function removeList($name)
     {
         $file = $this->getFilePath($name);
         $this->filesystem->delete($file);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function appendListItem($name, $key)
     {
         $list   = $this->getList($name);
@@ -147,6 +171,9 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
         return $this->filesystem->update($this->getFilePath($name), serialize($list));
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function removeListItem($name, $key)
     {
         $list = $this->getList($name);

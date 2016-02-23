@@ -22,11 +22,17 @@ class MemcacheCachePool extends AbstractCachePool
      */
     private $cache;
 
+    /**
+     * @param Memcache $cache
+     */
     public function __construct(Memcache $cache)
     {
         $this->cache = $cache;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function fetchObjectFromCache($key)
     {
         if (false === $result = unserialize($this->cache->get($key))) {
@@ -36,11 +42,17 @@ class MemcacheCachePool extends AbstractCachePool
         return $result;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearAllObjectsFromCache()
     {
         return $this->cache->flush();
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearOneObjectFromCache($key)
     {
         $this->cache->delete($key);
@@ -48,6 +60,9 @@ class MemcacheCachePool extends AbstractCachePool
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function storeItemInCache(CacheItemInterface $item, $ttl)
     {
         $data = serialize([true, $item->get(), []]);
