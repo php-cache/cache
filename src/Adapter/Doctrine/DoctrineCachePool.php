@@ -12,6 +12,9 @@
 namespace Cache\Adapter\Doctrine;
 
 use Cache\Adapter\Common\AbstractCachePool;
+use Cache\Taggable\TaggableItemInterface;
+use Cache\Taggable\TaggablePoolInterface;
+use Cache\Taggable\TaggablePoolTrait;
 use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\Cache\FlushableCache;
 use Psr\Cache\CacheItemInterface;
@@ -22,8 +25,10 @@ use Psr\Cache\CacheItemInterface;
  * @author Aaron Scherer <aequasi@gmail.com>
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class DoctrineCachePool extends AbstractCachePool
+class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterface
 {
+    use TaggablePoolTrait;
+
     /**
      * @type Cache
      */
@@ -37,15 +42,33 @@ class DoctrineCachePool extends AbstractCachePool
         $this->cache = $cache;
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function save(CacheItemInterface $item)
+    {
+        if ($item instanceof TaggableItemInterface) {
+            $this->saveTags($item);
+        }
+
+        return parent::save($item);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function fetchObjectFromCache($key)
     {
         if (false === $data = $this->cache->fetch($key)) {
-            return [false, null];
+            return [false, null, []];
         }
 
-        return [true, unserialize($data)];
+        return unserialize($data);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearAllObjectsFromCache()
     {
         if ($this->cache instanceof FlushableCache) {
@@ -55,18 +78,32 @@ class DoctrineCachePool extends AbstractCachePool
         return false;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearOneObjectFromCache($key)
     {
+        $this->preRemoveItem($key);
+
         return $this->cache->delete($key);
     }
 
-    protected function storeItemInCache($key, CacheItemInterface $item, $ttl)
+    /**
+     * {@inheritdoc}
+     */
+    protected function storeItemInCache(CacheItemInterface $item, $ttl)
     {
         if ($ttl === null) {
             $ttl = 0;
         }
 
-        return $this->cache->save($key, serialize($item->get()), $ttl);
+        $tags = [];
+        if ($item instanceof TaggableItemInterface) {
+            $tags = $item->getTags();
+        }
+        $data = serialize([true, $item->get(), $tags]);
+
+        return $this->cache->save($item->getKey(), $data, $ttl);
     }
 
     /**
@@ -75,5 +112,49 @@ class DoctrineCachePool extends AbstractCachePool
     public function getCache()
     {
         return $this->cache;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getList($name)
+    {
+        if (false === $list = $this->cache->fetch($name)) {
+            return [];
+        }
+
+        return $list;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function removeList($name)
+    {
+        return $this->cache->delete($name);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function appendListItem($name, $key)
+    {
+        $list   = $this->getList($name);
+        $list[] = $key;
+        $this->cache->save($name, $list);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function removeListItem($name, $key)
+    {
+        $list = $this->getList($name);
+        foreach ($list as $i => $item) {
+            if ($item === $key) {
+                unset($list[$i]);
+            }
+        }
+        $this->cache->save($name, $list);
     }
 }

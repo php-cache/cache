@@ -15,6 +15,9 @@ use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\CacheItem;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
+use Cache\Taggable\TaggableItemInterface;
+use Cache\Taggable\TaggablePoolInterface;
+use Cache\Taggable\TaggablePoolTrait;
 use Psr\Cache\CacheItemInterface;
 
 /**
@@ -22,8 +25,9 @@ use Psr\Cache\CacheItemInterface;
  *
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterface
+class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterface, TaggablePoolInterface
 {
+    use TaggablePoolTrait;
     use HierarchicalCachePoolTrait;
 
     /**
@@ -78,6 +82,18 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      */
     protected function fetchObjectFromCache($key)
     {
+        // Not used
+    }
+
+    public function getItem($key)
+    {
+        $this->validateKey($key);
+        if (isset($this->deferred[$key])) {
+            $item = $this->deferred[$key];
+
+            return is_object($item) ? clone $item : $item;
+        }
+
         $storageKey = $this->getHierarchyKey($key);
         if (isset($this->cache[$storageKey])) {
             return $this->cache[$storageKey];
@@ -102,6 +118,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     protected function clearOneObjectFromCache($key)
     {
         $this->commit();
+        $this->preRemoveItem($key);
         $keyString = $this->getHierarchyKey($key, $path);
         if (isset($this->cache[$path])) {
             $this->cache[$path]++;
@@ -118,9 +135,9 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     /**
      * {@inheritdoc}
      */
-    protected function storeItemInCache($key, CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(CacheItemInterface $item, $ttl)
     {
-        $key               = $this->getHierarchyKey($key);
+        $key               = $this->getHierarchyKey($item->getKey());
         $this->cache[$key] = $item;
 
         if ($this->limit !== null) {
@@ -142,10 +159,64 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     /**
      * {@inheritdoc}
      */
+    public function save(CacheItemInterface $item)
+    {
+        if ($item instanceof TaggableItemInterface) {
+            $this->saveTags($item);
+        }
+
+        return parent::save($item);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function getValueFormStore($key)
     {
         if (isset($this->cache[$key])) {
             return $this->cache[$key];
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getList($name)
+    {
+        if (!isset($this->cache[$name])) {
+            $this->cache[$name] = [];
+        }
+
+        return $this->cache[$name];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function removeList($name)
+    {
+        unset($this->cache[$name]);
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function appendListItem($name, $key)
+    {
+        $this->cache[$name][] = $key;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function removeListItem($name, $key)
+    {
+        foreach ($this->cache[$name] as $i => $item) {
+            if ($item === $key) {
+                unset($this->cache[$name][$i]);
+            }
         }
     }
 }

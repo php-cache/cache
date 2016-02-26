@@ -17,7 +17,9 @@ use Cache\IntegrationTests\CachePoolTest as BaseTest;
 class IntegrationPoolTest extends BaseTest
 {
     protected $skippedTests = [
-        'testExpiration' => 'The cache expire at the next request.',
+        'testExpiration'      => 'The cache expire at the next request.',
+        'testSaveExpired'     => 'The cache expire at the next request.',
+        'testDeferredExpired' => 'The cache expire at the next request.',
     ];
 
     public function createCachePool()

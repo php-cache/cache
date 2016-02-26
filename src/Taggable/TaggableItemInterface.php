@@ -11,15 +11,35 @@
 
 namespace Cache\Taggable;
 
+use Psr\Cache\CacheItemInterface;
+
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-interface TaggableItemInterface
+interface TaggableItemInterface extends CacheItemInterface
 {
     /**
-     * Get the key with the tag prefix.
+     * Get an array with the tags.
      *
-     * @return string
+     * @return array
      */
-    public function getTaggedKey();
+    public function getTags();
+
+    /**
+     * Replace the current tags with a new set of tags.
+     *
+     * @param array $tags
+     *
+     * @return $this
+     */
+    public function setTags(array $tags);
+
+    /**
+     * Append a tag.
+     *
+     * @param string $tag
+     *
+     * @return $this
+     */
+    public function addTag($tag);
 }

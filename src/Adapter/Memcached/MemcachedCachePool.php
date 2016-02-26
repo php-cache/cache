@@ -38,20 +38,29 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
         $this->cache->setOption(\Memcached::OPT_BINARY_PROTOCOL, true);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function fetchObjectFromCache($key)
     {
         if (false === $result = unserialize($this->cache->get($this->getHierarchyKey($key)))) {
-            return [false, null];
+            return [false, null, []];
         }
 
         return $result;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearAllObjectsFromCache()
     {
         return $this->cache->flush();
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearOneObjectFromCache($key)
     {
         $this->commit();
@@ -67,7 +76,10 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
         return $this->cache->getResultCode() === \Memcached::RES_NOTFOUND;
     }
 
-    protected function storeItemInCache($key, CacheItemInterface $item, $ttl)
+    /**
+     * {@inheritdoc}
+     */
+    protected function storeItemInCache(CacheItemInterface $item, $ttl)
     {
         if ($ttl === null) {
             $ttl = 0;
@@ -75,11 +87,14 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
             return false;
         }
 
-        $key = $this->getHierarchyKey($key);
+        $key = $this->getHierarchyKey($item->getKey());
 
-        return $this->cache->set($key, serialize([true, $item->get()]), $ttl);
+        return $this->cache->set($key, serialize([true, $item->get(), []]), $ttl);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function getValueFormStore($key)
     {
         return $this->cache->get($key);

@@ -18,6 +18,7 @@ use Psr\Cache\CacheItemInterface;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
+ * @author Magnus Nordlander
  */
 class MongoDBCachePool extends AbstractCachePool
 {
@@ -34,6 +35,13 @@ class MongoDBCachePool extends AbstractCachePool
         $this->collection = $collection;
     }
 
+    /**
+     * @param Manager $manager
+     * @param string  $database
+     * @param string  $collection
+     *
+     * @return Collection
+     */
     public static function createCollection(Manager $manager, $database, $collection)
     {
         $collection = new Collection($manager, $database, $collection);
@@ -42,23 +50,29 @@ class MongoDBCachePool extends AbstractCachePool
         return $collection;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function fetchObjectFromCache($key)
     {
         $object = $this->collection->findOne(['_id' => $key]);
 
         if (!$object || !isset($object->data)) {
-            return [false, null];
+            return [false, null, []];
         }
 
         if (isset($object->expiresAt)) {
             if ($object->expiresAt < time()) {
-                return [false, null];
+                return [false, null, []];
             }
         }
 
-        return [true, unserialize($object->data)];
+        return [true, unserialize($object->data), []];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearAllObjectsFromCache()
     {
         $this->collection->deleteMany([]);
@@ -66,6 +80,9 @@ class MongoDBCachePool extends AbstractCachePool
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function clearOneObjectFromCache($key)
     {
         $this->collection->deleteOne(['_id' => $key]);
@@ -73,10 +90,13 @@ class MongoDBCachePool extends AbstractCachePool
         return true;
     }
 
-    protected function storeItemInCache($key, CacheItemInterface $item, $ttl)
+    /**
+     * {@inheritdoc}
+     */
+    protected function storeItemInCache(CacheItemInterface $item, $ttl)
     {
         $object = [
-            '_id'  => $key,
+            '_id'  => $item->getKey(),
             'data' => serialize($item->get()),
         ];
 
@@ -84,7 +104,7 @@ class MongoDBCachePool extends AbstractCachePool
             $object['expiresAt'] = time() + $ttl;
         }
 
-        $this->collection->updateOne(['_id' => $key], ['$set' => $object], ['upsert' => true]);
+        $this->collection->updateOne(['_id' => $item->getKey()], ['$set' => $object], ['upsert' => true]);
 
         return true;
     }

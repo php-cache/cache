@@ -36,14 +36,17 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
         $this->pools = $pools;
     }
 
-    public function getItem($key, array $tags = [])
+    /**
+     * {@inheritdoc}
+     */
+    public function getItem($key)
     {
         $found     = false;
         $result    = null;
         $needsSave = [];
 
         foreach ($this->pools as $pool) {
-            $item = $pool->getItem($key, $tags);
+            $item = $pool->getItem($key);
             if ($item->isHit()) {
                 $found  = true;
                 $result = $item;
@@ -64,11 +67,14 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
         return $item;
     }
 
-    public function getItems(array $keys = [], array $tags = [])
+    /**
+     * {@inheritdoc}
+     */
+    public function getItems(array $keys = [])
     {
         $hits = [];
         foreach ($this->pools as $pool) {
-            $items = $pool->getItems($keys, $tags);
+            $items = $pool->getItems($keys);
             /** @type CacheItemInterface $item */
             foreach ($items as $item) {
                 if ($item->isHit()) {
@@ -85,10 +91,13 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
         return array_merge($hits, $items);
     }
 
-    public function hasItem($key, array $tags = [])
+    /**
+     * {@inheritdoc}
+     */
+    public function hasItem($key)
     {
         foreach ($this->pools as $pool) {
-            if ($pool->hasItem($key, $tags)) {
+            if ($pool->hasItem($key)) {
                 return true;
             }
         }
@@ -96,36 +105,48 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
         return false;
     }
 
-    public function clear(array $tags = [])
+    /**
+     * {@inheritdoc}
+     */
+    public function clear()
     {
         $result = true;
         foreach ($this->pools as $pool) {
-            $result = $result && $pool->clear($tags);
+            $result = $result && $pool->clear();
         }
 
         return $result;
     }
 
-    public function deleteItem($key, array $tags = [])
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteItem($key)
     {
         $result = true;
         foreach ($this->pools as $pool) {
-            $result = $result && $pool->deleteItem($key, $tags);
+            $result = $result && $pool->deleteItem($key);
         }
 
         return $result;
     }
 
-    public function deleteItems(array $keys, array $tags = [])
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteItems(array $keys)
     {
         $result = true;
         foreach ($this->pools as $pool) {
-            $result = $result && $pool->deleteItems($keys, $tags);
+            $result = $result && $pool->deleteItems($keys);
         }
 
         return $result;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function save(CacheItemInterface $item)
     {
         $result = true;
@@ -136,6 +157,9 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
         return $result;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function saveDeferred(CacheItemInterface $item)
     {
         $result = true;
@@ -146,11 +170,29 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
         return $result;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function commit()
     {
         $result = true;
         foreach ($this->pools as $pool) {
             $result = $result && $pool->commit();
+        }
+
+        return $result;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function clearTags(array $tags)
+    {
+        $result = true;
+        foreach ($this->pools as $pool) {
+            if ($pool instanceof TaggablePoolInterface) {
+                $result = $result && $pool->clearTags($tags);
+            }
         }
 
         return $result;
