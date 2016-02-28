@@ -62,7 +62,8 @@ trait TaggablePoolTrait
     abstract protected function removeListItem($name, $key);
 
     /**
-     * @param  array                    $keys
+     * @param array $keys
+     *
      * @throws InvalidArgumentException
      *
      * @return bool
