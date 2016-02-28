@@ -11,11 +11,7 @@
 
 namespace Cache\Taggable;
 
-use Cache\Taggable\TaggableItemInterface;
-use Cache\Taggable\TaggablePoolInterface;
-use Cache\Taggable\TaggablePoolTrait;
 use Psr\Cache\CacheItemInterface;
-use Psr\Cache\CacheItemPoolInterface;
 
 /**
  * @internal
@@ -31,7 +27,7 @@ use Psr\Cache\CacheItemPoolInterface;
 class TaggablePSR6ItemAdapter implements TaggableItemInterface
 {
     /**
-     * @type boolean
+     * @type bool
      */
     private $initialized = false;
 
@@ -55,6 +51,7 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
 
     /**
      * @param CacheItemInterface $cacheItem
+     *
      * @return TaggableItemInterface
      */
     public static function makeTaggable(CacheItemInterface $cacheItem)
@@ -88,8 +85,6 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
         if (is_array($rawItem) && isset($rawItem['value'])) {
             return $rawItem['value'];
         }
-
-        return null;
     }
 
     /**
@@ -109,7 +104,7 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
 
         $this->cacheItem->set([
             'value' => $value,
-            'tags' => $this->tags,
+            'tags'  => $this->tags,
         ]);
 
         return $this;
@@ -121,6 +116,7 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
     public function getTags()
     {
         $this->initializeTags();
+
         return $this->tags;
     }
 
@@ -130,7 +126,7 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
     public function setTags(array $tags)
     {
         $this->initialized = true;
-        $this->tags = $tags;
+        $this->tags        = $tags;
         $this->updateTags();
 
         return $this;
@@ -154,6 +150,7 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
     public function expiresAt($expiration)
     {
         $this->cacheItem->expiresAt($expiration);
+
         return $this;
     }
 
@@ -163,6 +160,7 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
     public function expiresAfter($time)
     {
         $this->cacheItem->expiresAfter($time);
+
         return $this;
     }
 
@@ -170,7 +168,7 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
     {
         $this->cacheItem->set([
             'value' => $this->get(),
-            'tags' => $this->tags,
+            'tags'  => $this->tags,
         ]);
     }
 

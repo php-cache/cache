@@ -11,9 +11,6 @@
 
 namespace Cache\Taggable;
 
-use Cache\Taggable\TaggableItemInterface;
-use Cache\Taggable\TaggablePoolInterface;
-use Cache\Taggable\TaggablePoolTrait;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
@@ -67,14 +64,14 @@ class TaggablePSR6PoolAdapter implements TaggablePoolInterface
     }
 
     /**
-     * @param CacheItemPoolInterface $cachePool The pool to which to add tagging capabilities.
+     * @param CacheItemPoolInterface      $cachePool    The pool to which to add tagging capabilities.
      * @param CacheItemPoolInterface|null $tagStorePool The pool to store tags in. If null is passed, the main pool is used.
      *
      * @return TaggablePoolInterface
      */
     public static function makeTaggable(CacheItemPoolInterface $cachePool, CacheItemPoolInterface $tagStorePool = null)
     {
-        if ($cachePool instanceOf TaggablePoolInterface && $tagStorePool === null) {
+        if ($cachePool instanceof TaggablePoolInterface && $tagStorePool === null) {
             return $cachePool;
         }
 
@@ -92,7 +89,7 @@ class TaggablePSR6PoolAdapter implements TaggablePoolInterface
     /**
      * {@inheritdoc}
      */
-    public function getItems(array $keys = array())
+    public function getItems(array $keys = [])
     {
         $items = $this->cachePool->getItems($keys);
 
@@ -118,6 +115,7 @@ class TaggablePSR6PoolAdapter implements TaggablePoolInterface
     public function clear()
     {
         $ret = $this->cachePool->clear();
+
         return $this->tagStorePool->clear() && $ret; // Is this acceptable?
     }
 
@@ -127,6 +125,7 @@ class TaggablePSR6PoolAdapter implements TaggablePoolInterface
     public function deleteItem($key)
     {
         $this->preRemoveItem($key);
+
         return $this->cachePool->deleteItem($key);
     }
 
@@ -148,6 +147,7 @@ class TaggablePSR6PoolAdapter implements TaggablePoolInterface
     public function save(CacheItemInterface $item)
     {
         $this->saveTags($item);
+
         return $this->cachePool->save($item->unwrap());
     }
 
@@ -157,6 +157,7 @@ class TaggablePSR6PoolAdapter implements TaggablePoolInterface
     public function saveDeferred(CacheItemInterface $item)
     {
         $this->saveTags($item);
+
         return $this->cachePool->saveDeferred($item->unwrap());
     }
 
