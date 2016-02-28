@@ -7,7 +7,7 @@
         "psr-6",
         "doctrine"
     ],
-    "homepage":    "https://github.com/php-cache/doctrine-bridge",
+    "homepage":    "http://www.php-cache.com/en/latest/",
     "license":     "MIT",
     "authors":     [
         {

@@ -7,7 +7,7 @@
         "psr-6",
         "session handler"
     ],
-    "homepage":    "https://github.com/php-cache/session-handler",
+    "homepage":    "http://www.php-cache.com/en/latest/",
     "license":     "MIT",
     "authors":     [
         {

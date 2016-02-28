@@ -7,10 +7,9 @@
     "keywords":          [
         "cache",
         "psr-6",
-        "apc",
-        "tag"
+        "apc"
     ],
-    "homepage":          "https://github.com/php-cache/apc-adapter",
+    "homepage":          "http://www.php-cache.com/en/latest/",
     "authors":           [
         {
             "name":     "Aaron Scherer",
