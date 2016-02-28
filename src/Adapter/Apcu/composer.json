@@ -7,10 +7,9 @@
     "keywords":          [
         "cache",
         "psr-6",
-        "apcu",
-        "tag"
+        "apcu"
     ],
-    "homepage":          "https://github.com/php-cache/apcu-adapter",
+    "homepage":          "http://www.php-cache.com/en/latest/",
     "authors":           [
         {
             "name":     "Aaron Scherer",

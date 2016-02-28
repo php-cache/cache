@@ -10,7 +10,7 @@
         "doctrine",
         "tag"
     ],
-    "homepage":          "https://github.com/php-cache/doctrine-adapter",
+    "homepage":          "http://www.php-cache.com/en/latest/",
     "authors":           [
         {
             "name":     "Aaron Scherer",

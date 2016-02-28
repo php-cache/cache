@@ -8,7 +8,7 @@
         "tag",
         "taggable"
     ],
-    "homepage":    "https://github.com/php-cache/taggable-cache",
+    "homepage":    "http://www.php-cache.com/en/latest/",
     "license":     "MIT",
     "authors":     [
         {
@@ -28,7 +28,8 @@
     },
     "require-dev": {
         "phpunit/phpunit":         "^4.1|^5.1",
-        "cache/integration-tests": "^0.9"
+        "cache/integration-tests": "^0.9",
+        "symfony/cache":           "dev-master"
     },
     "autoload":    {
         "psr-4":                 {

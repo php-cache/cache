@@ -11,7 +11,7 @@
         "redis",
         "tag"
     ],
-    "homepage":          "http://www.php-cache.com",
+    "homepage":          "http://www.php-cache.com/en/latest/",
     "authors":           [
         {
             "name":     "Aaron Scherer",

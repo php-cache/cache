@@ -34,7 +34,7 @@ class CachePool
 
     public function exposeClearHierarchyKeyCache()
     {
-        return $this->clearHierarchyKeyCache();
+        $this->clearHierarchyKeyCache();
     }
 
     public function exposeGetHierarchyKey($key, &$pathKey = null)
