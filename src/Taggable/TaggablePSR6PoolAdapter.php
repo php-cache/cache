@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of php-cache organization.
+ *
+ * (c) 2015-2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 namespace Cache\Taggable;
 
 use Cache\Taggable\TaggableItemInterface;
@@ -9,15 +18,44 @@ use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
 /**
-* 
-*/
+ * This adapter lets you make any PSR-6 cache pool taggable. If a pool is
+ * already taggable, it is simply returned by makeTaggable. Tags are stored
+ * either in the same cache pool, or a a separate pool, and both of these
+ * appoaches come with different caveats.
+ *
+ * A general caveat is that using this adapter reserves any cache key starting
+ * with '__tag.'.
+ *
+ * Using the same pool is precarious if your cache does LRU evictions of items
+ * even if they do not expire (as in e.g. memcached). If so, the tag item may
+ * be evicted without all of the tagged items having been evicted first,
+ * causing items to lose their tags.
+ *
+ * In order to mitigate this issue, you may use a separate, more persistent
+ * pool for your tag items. Do however note that if you are doing so, the
+ * entire pool is reserved for tags, as this pool is cleared whenever the
+ * main pool is cleared.
+ *
+ * @author Magnus Nordlander <magnus@fervo.se>
+ */
 class TaggablePSR6PoolAdapter implements TaggablePoolInterface
 {
     use TaggablePoolTrait;
 
+    /**
+     * @type CacheItemPoolInterface
+     */
     private $cachePool;
+
+    /**
+     * @type CacheItemPoolInterface
+     */
     private $tagStorePool;
 
+    /**
+     * @param CacheItemPoolInterface $cachePool
+     * @param CacheItemPoolInterface $tagStorePool
+     */
     private function __construct(CacheItemPoolInterface $cachePool, CacheItemPoolInterface $tagStorePool = null)
     {
         $this->cachePool = $cachePool;
@@ -28,7 +66,13 @@ class TaggablePSR6PoolAdapter implements TaggablePoolInterface
         }
     }
 
-    public static function makeTaggable(CacheItemPoolInterface $cachePool, CacheItemPoolInterface $tagStorePool = null) // @TODO naming?
+    /**
+     * @param CacheItemPoolInterface $cachePool The pool to which to add tagging capabilities.
+     * @param CacheItemPoolInterface|null $tagStorePool The pool to store tags in. If null is passed, the main pool is used.
+     *
+     * @return TaggablePoolInterface
+     */
+    public static function makeTaggable(CacheItemPoolInterface $cachePool, CacheItemPoolInterface $tagStorePool = null)
     {
         if ($cachePool instanceOf TaggablePoolInterface && $tagStorePool === null) {
             return $cachePool;
