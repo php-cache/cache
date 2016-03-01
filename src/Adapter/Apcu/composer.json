@@ -24,7 +24,6 @@
     ],
     "require":           {
         "php":                  "^5.5|^7.0",
-        "ext-apcu":             "*",
         "psr/cache":            "^1.0",
         "cache/adapter-common": "^0.3",
         "cache/taggable-cache": "^0.4"
@@ -32,6 +31,9 @@
     "require-dev":       {
         "phpunit/phpunit":         "^4.0|^5.1",
         "cache/integration-tests": "^0.9"
+    },
+    "suggest":          {
+        "ext-apcu": "The extension required to use this pool."
     },
     "provide":           {
         "psr/cache-implementation": "^1.0"
