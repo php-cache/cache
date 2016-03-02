@@ -24,10 +24,12 @@
     ],
     "require":           {
         "php":                  "^5.5|^7.0",
-        "ext-apc":              "*",
         "psr/cache":            "^1.0",
         "cache/adapter-common": "^0.3",
         "cache/taggable-cache": "^0.4"
+    },
+    "suggest":          {
+        "ext-apc": "The extension required to use this pool."
     },
     "require-dev":       {
         "phpunit/phpunit":         "^4.0|^5.1",
