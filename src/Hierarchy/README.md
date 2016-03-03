@@ -5,7 +5,7 @@
 [![Monthly Downloads](https://poser.pugx.org/cache/hierarchical-cache/d/monthly.png)](https://packagist.org/packages/cache/hierarchical-cache)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
-This is a implementation for the PSR-6 for an hierarchical cache architecture. 
+This is an implementation for the PSR-6 for an hierarchical cache architecture. 
 
 If you have a cache key like `|users|:uid|followers|:fid|likes` where `:uid` and `:fid` are arbitrary integers. You
  may flush all followers by flushing `|users|:uid|followers`.
