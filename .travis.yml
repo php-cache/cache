@@ -23,6 +23,7 @@ env:
     - ADAPTER=Void
     - LIBRARY=Bridge
     - LIBRARY=Hierarchy
+    - LIBRARY=Namespaced
     - LIBRARY=SessionHandler
     - LIBRARY=Taggable
 
