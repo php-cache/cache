@@ -24,16 +24,32 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
      * @type CacheItemPoolInterface[]
      */
     private $pools;
+    /** @type bool */
+    private $skipOnFailure;
 
     /**
      * @param array $pools
+     * @param bool  $skipOnFailure
      */
-    public function __construct(array $pools)
+    public function __construct(array $pools, $skipOnFailure = false)
     {
-        if (empty($pools)) {
+        $this->pools         = $pools;
+        $this->skipOnFailure = $skipOnFailure;
+        if (empty($this->pools)) {
             throw new \LogicException('At least one pool is required for the chain.');
         }
-        $this->pools = $pools;
+    }
+
+    /**
+     * @return array|\Psr\Cache\CacheItemPoolInterface[]
+     */
+    public function getPools()
+    {
+        if (empty($this->pools)) {
+            throw new \LogicException('No valid cache pool available for the chain.');
+        }
+
+        return $this->pools;
     }
 
     /**
@@ -45,8 +61,16 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
         $result    = null;
         $needsSave = [];
 
-        foreach ($this->pools as $pool) {
-            $item = $pool->getItem($key);
+        foreach ($this->getPools() as $poolKey => $pool) {
+            try {
+                $item = $pool->getItem($key);
+            } catch (\Exception $e) {
+                if (!$this->skipOnFailure) {
+                    throw $e;
+                }
+                unset($this->pools[$poolKey]);
+                break;
+            }
             if ($item->isHit()) {
                 $found  = true;
                 $result = $item;
@@ -72,9 +96,18 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
      */
     public function getItems(array $keys = [])
     {
-        $hits = [];
-        foreach ($this->pools as $pool) {
-            $items = $pool->getItems($keys);
+        $hits  = [];
+        $items = [];
+        foreach ($this->getPools() as $poolKey => $pool) {
+            try {
+                $items = $pool->getItems($keys);
+            } catch (\Exception $e) {
+                if (!$this->skipOnFailure) {
+                    throw $e;
+                }
+                unset($this->pools[$poolKey]);
+                break;
+            }
             /** @type CacheItemInterface $item */
             foreach ($items as $item) {
                 if ($item->isHit()) {
@@ -96,9 +129,17 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
      */
     public function hasItem($key)
     {
-        foreach ($this->pools as $pool) {
-            if ($pool->hasItem($key)) {
-                return true;
+        foreach ($this->getPools() as $poolKey => $pool) {
+            try {
+                if ($pool->hasItem($key)) {
+                    return true;
+                }
+            } catch (\Exception $e) {
+                if (!$this->skipOnFailure) {
+                    throw $e;
+                }
+                unset($this->pools[$poolKey]);
+                break;
             }
         }
 
@@ -111,8 +152,15 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
     public function clear()
     {
         $result = true;
-        foreach ($this->pools as $pool) {
-            $result = $result && $pool->clear();
+        foreach ($this->getPools() as $poolKey => $pool) {
+            try {
+                $result = $result && $pool->clear();
+            } catch (\Exception $e) {
+                if (!$this->skipOnFailure) {
+                    throw $e;
+                }
+                unset($this->pools[$poolKey]);
+            }
         }
 
         return $result;
@@ -124,8 +172,15 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
     public function deleteItem($key)
     {
         $result = true;
-        foreach ($this->pools as $pool) {
-            $result = $result && $pool->deleteItem($key);
+        foreach ($this->getPools() as $poolKey => $pool) {
+            try {
+                $result = $result && $pool->deleteItem($key);
+            } catch (\Exception $e) {
+                if (!$this->skipOnFailure) {
+                    throw $e;
+                }
+                unset($this->pools[$poolKey]);
+            }
         }
 
         return $result;
@@ -137,8 +192,15 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
     public function deleteItems(array $keys)
     {
         $result = true;
-        foreach ($this->pools as $pool) {
-            $result = $result && $pool->deleteItems($keys);
+        foreach ($this->getPools() as $poolKey => $pool) {
+            try {
+                $result = $result && $pool->deleteItems($keys);
+            } catch (\Exception $e) {
+                if (!$this->skipOnFailure) {
+                    throw $e;
+                }
+                unset($this->pools[$poolKey]);
+            }
         }
 
         return $result;
@@ -150,8 +212,15 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
     public function save(CacheItemInterface $item)
     {
         $result = true;
-        foreach ($this->pools as $pool) {
-            $result = $result && $pool->save($item);
+        foreach ($this->getPools() as $poolKey => $pool) {
+            try {
+                $result = $result && $pool->save($item);
+            } catch (\Exception $e) {
+                if (!$this->skipOnFailure) {
+                    throw $e;
+                }
+                unset($this->pools[$poolKey]);
+            }
         }
 
         return $result;
@@ -163,8 +232,15 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
     public function saveDeferred(CacheItemInterface $item)
     {
         $result = true;
-        foreach ($this->pools as $pool) {
-            $result = $result && $pool->saveDeferred($item);
+        foreach ($this->getPools() as $poolKey => $pool) {
+            try {
+                $result = $result && $pool->saveDeferred($item);
+            } catch (\Exception $e) {
+                if (!$this->skipOnFailure) {
+                    throw $e;
+                }
+                unset($this->pools[$poolKey]);
+            }
         }
 
         return $result;
@@ -176,8 +252,15 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
     public function commit()
     {
         $result = true;
-        foreach ($this->pools as $pool) {
-            $result = $result && $pool->commit();
+        foreach ($this->getPools() as $poolKey => $pool) {
+            try {
+                $result = $result && $pool->commit();
+            } catch (\Exception $e) {
+                if (!$this->skipOnFailure) {
+                    throw $e;
+                }
+                unset($this->pools[$poolKey]);
+            }
         }
 
         return $result;
@@ -189,9 +272,16 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface
     public function clearTags(array $tags)
     {
         $result = true;
-        foreach ($this->pools as $pool) {
+        foreach ($this->getPools() as $poolKey => $pool) {
             if ($pool instanceof TaggablePoolInterface) {
-                $result = $result && $pool->clearTags($tags);
+                try {
+                    $result = $result && $pool->clearTags($tags);
+                } catch (\Exception $e) {
+                    if (!$this->skipOnFailure) {
+                        throw $e;
+                    }
+                    unset($this->pools[$poolKey]);
+                }
             }
         }
 
