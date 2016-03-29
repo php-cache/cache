@@ -35,7 +35,7 @@ All pull requests will end up getting run through Style CI, which is required to
 
 Please try to add a test for your pull-request.
 
-* If your test is specific for an adapter/library, but it in the library tests.
+* If your test is specific for an adapter/library, put it in the library tests.
 * If it is adapter agnostic, put it in the src/IntegrationTests directory
 
 You can run the unit-tests by calling `composer test` from the root of the project.
