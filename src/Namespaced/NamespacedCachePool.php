@@ -24,7 +24,7 @@ use Psr\Cache\CacheItemPoolInterface;
 class NamespacedCachePool implements CacheItemPoolInterface
 {
     /**
-     * @type HierarchicalPoolInterface|CacheItemPoolInterface
+     * @type HierarchicalPoolInterface
      */
     private $cachePool;
 

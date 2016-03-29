@@ -12,8 +12,7 @@
 namespace Cache\Namespaced\Tests;
 
 use Cache\Hierarchy\HierarchicalPoolInterface;
-use Psr\Cache\CacheItemPoolInterface;
 
-interface HelperInterface extends HierarchicalPoolInterface, CacheItemPoolInterface
+interface HelperInterface extends HierarchicalPoolInterface
 {
 }
