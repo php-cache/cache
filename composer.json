@@ -41,7 +41,7 @@
         "ext-redis":       "Redis extension is required to use the Redis adapter",
         "ext-mongodb":     "Mongodb extension required to use the Mongodb adapter",
         "mongodb/mongodb": "Mongodb extension required to use the Mongodb adapter",
-        "predis/predis":   "Required to use the Predis adapter.",
+        "predis/predis":   "Required to use the Predis adapter."
     },
     "conflict":    {
         "cache/apc-adapter":           "*",
