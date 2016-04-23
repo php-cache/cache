@@ -9,13 +9,13 @@
  * with this source code in the file LICENSE.
  */
 
-namespace Cache\Adapter\Chain\Exception;
-
-use Cache\Adapter\Common\Exception\CachePoolException;
+namespace Cache\Adapter\Common\Exception;
 
 /**
+ * If an exception is caused by a pool or by the cache storage.
+ *
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class NoPoolAvailableException extends CachePoolException
+class CachePoolException extends CacheException
 {
 }

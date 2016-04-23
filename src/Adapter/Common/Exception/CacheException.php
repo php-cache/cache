@@ -11,13 +11,13 @@
 
 namespace Cache\Adapter\Common\Exception;
 
-use Psr\Cache\CacheException;
+use Psr\Cache\CacheException as CacheExceptionInterface;
 
 /**
  * A base exception. All exceptions in this organization will extend this exception.
  *
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class PHPCacheException extends \RuntimeException implements CacheException
+abstract class CacheException extends \RuntimeException implements CacheExceptionInterface
 {
 }

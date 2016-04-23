@@ -11,8 +11,8 @@
 
 namespace Cache\Adapter\Common;
 
+use Cache\Adapter\Common\Exception\CachePoolException;
 use Cache\Adapter\Common\Exception\InvalidArgumentException;
-use Cache\Adapter\Common\Exception\PHPCacheException;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -264,7 +264,7 @@ abstract class AbstractCachePool implements CacheItemPoolInterface, LoggerAwareI
      * @param \Exception $e
      * @param string     $function
      *
-     * @throws PHPCacheException
+     * @throws CachePoolException
      */
     private function handleException(\Exception $e, $function)
     {
@@ -274,8 +274,8 @@ abstract class AbstractCachePool implements CacheItemPoolInterface, LoggerAwareI
         }
 
         $this->log($level, $e->getMessage(), ['exception' => $e]);
-        if (!$e instanceof PHPCacheException) {
-            $e = new PHPCacheException(sprintf('Exception thrown when executing "%s". ', $function), 0, $e);
+        if (!$e instanceof CachePoolException) {
+            $e = new CachePoolException(sprintf('Exception thrown when executing "%s". ', $function), 0, $e);
         }
 
         throw $e;

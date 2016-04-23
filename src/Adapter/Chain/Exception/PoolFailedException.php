@@ -11,13 +11,13 @@
 
 namespace Cache\Adapter\Chain\Exception;
 
-use Cache\Adapter\Common\Exception\PHPCacheException;
+use Cache\Adapter\Common\Exception\CachePoolException;
 
 /**
  * When a cache pool fails with its operation.
  *
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class PoolFailedException extends PHPCacheException
+class PoolFailedException extends CachePoolException
 {
 }
