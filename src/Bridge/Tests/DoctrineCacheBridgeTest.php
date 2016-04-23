@@ -111,4 +111,46 @@ class DoctrineCacheBridgeTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEmpty($this->bridge->getStats());
     }
+
+    /**
+     * @param string $key
+     * @dataProvider invalidKeys
+     */
+    public function testInvalidKeys($key, $normalizedKey)
+    {
+        $normalizedKey = sprintf('[%s][1]', $normalizedKey);
+        $this->itemMock->shouldReceive('isHit')->andReturn(false);
+        $this->itemMock->shouldReceive('set');
+
+        $this->mock->shouldReceive('getItem')->withArgs([$normalizedKey])->andReturn($this->itemMock);
+        $this->mock->shouldReceive('hasItem')->withArgs([$normalizedKey])->andReturn(false);
+        $this->mock->shouldReceive('deleteItem')->withArgs([$normalizedKey]);
+        $this->mock->shouldReceive('save');
+
+        $this->bridge->contains($key);
+        $this->bridge->save($key, 'foo');
+        $this->bridge->fetch($key);
+        $this->bridge->delete($key);
+    }
+
+    /**
+     * Data provider for invalid keys.
+     *
+     * @return array
+     */
+    public static function invalidKeys()
+    {
+        return [
+            ['{str', '_str'],
+            ['rand{', 'rand_'],
+            ['rand{str', 'rand_str'],
+            ['rand}str', 'rand_str'],
+            ['rand(str', 'rand_str'],
+            ['rand)str', 'rand_str'],
+            ['rand/str', 'rand_str'],
+            ['rand\\str', 'rand_str'],
+            ['rand@str', 'rand_str'],
+            ['rand:str', 'rand_str'],
+        ];
+    }
 }
