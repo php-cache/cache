@@ -12,15 +12,23 @@
 namespace Cache\Adapter\Common;
 
 use Cache\Adapter\Common\Exception\InvalidArgumentException;
+use Cache\Adapter\Common\Exception\PHPCacheException;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * @author Aaron Scherer <aequasi@gmail.com>
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-abstract class AbstractCachePool implements CacheItemPoolInterface
+abstract class AbstractCachePool implements CacheItemPoolInterface, LoggerAwareInterface
 {
+    /**
+     * @type LoggerInterface
+     */
+    private $logger;
+
     /**
      * @type CacheItemInterface[] deferred
      */
@@ -80,7 +88,11 @@ abstract class AbstractCachePool implements CacheItemPoolInterface
         }
 
         $func = function () use ($key) {
-            return $this->fetchObjectFromCache($key);
+            try {
+                return $this->fetchObjectFromCache($key);
+            } catch (\Exception $e) {
+                $this->handleException($e, __FUNCTION__);
+            }
         };
 
         return new CacheItem($key, $func);
@@ -104,7 +116,11 @@ abstract class AbstractCachePool implements CacheItemPoolInterface
      */
     public function hasItem($key)
     {
-        return $this->getItem($key)->isHit();
+        try {
+            return $this->getItem($key)->isHit();
+        } catch (\Exception $e) {
+            $this->handleException($e, __FUNCTION__);
+        }
     }
 
     /**
@@ -115,7 +131,11 @@ abstract class AbstractCachePool implements CacheItemPoolInterface
         // Clear the deferred items
         $this->deferred = [];
 
-        return $this->clearAllObjectsFromCache();
+        try {
+            return $this->clearAllObjectsFromCache();
+        } catch (\Exception $e) {
+            $this->handleException($e, __FUNCTION__);
+        }
     }
 
     /**
@@ -123,7 +143,11 @@ abstract class AbstractCachePool implements CacheItemPoolInterface
      */
     public function deleteItem($key)
     {
-        return $this->deleteItems([$key]);
+        try {
+            return $this->deleteItems([$key]);
+        } catch (\Exception $e) {
+            $this->handleException($e, __FUNCTION__);
+        }
     }
 
     /**
@@ -158,7 +182,11 @@ abstract class AbstractCachePool implements CacheItemPoolInterface
             }
         }
 
-        return $this->storeItemInCache($item, $timeToLive);
+        try {
+            return $this->storeItemInCache($item, $timeToLive);
+        } catch (\Exception $e) {
+            $this->handleException($e, __FUNCTION__);
+        }
     }
 
     /**
@@ -206,5 +234,50 @@ abstract class AbstractCachePool implements CacheItemPoolInterface
                 $key
             ));
         }
+    }
+
+    /**
+     * @param LoggerInterface $logger
+     */
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+
+    /**
+     * Logs with an arbitrary level if the logger exists.
+     *
+     * @param mixed  $level
+     * @param string $message
+     * @param array  $context
+     */
+    protected function log($level, $message, array $context = [])
+    {
+        if ($this->logger !== null) {
+            $this->logger->log($level, $message, $context);
+        }
+    }
+
+    /**
+     * Log exception and rethrow it.
+     *
+     * @param \Exception $e
+     * @param string     $function
+     *
+     * @throws PHPCacheException
+     */
+    private function handleException(\Exception $e, $function)
+    {
+        $level = 'alert';
+        if ($e instanceof InvalidArgumentException) {
+            $level = 'warning';
+        }
+
+        $this->log($level, $e->getMessage(), ['exception' => $e]);
+        if (!$e instanceof PHPCacheException) {
+            $e = new PHPCacheException(sprintf('Exception thrown when executing "%s". ', $function), 0, $e);
+        }
+
+        throw $e;
     }
 }
