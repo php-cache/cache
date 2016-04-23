@@ -180,6 +180,10 @@ abstract class AbstractCachePool implements CacheItemPoolInterface, LoggerAwareI
         if ($item instanceof HasExpirationDateInterface) {
             if (null !== $expirationDate = $item->getExpirationDate()) {
                 $timeToLive = $expirationDate->getTimestamp() - time();
+
+                if ($timeToLive < 0) {
+                    return $this->deleteItem($item->getKey());
+                }
             }
         }
 
