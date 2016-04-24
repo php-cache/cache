@@ -11,6 +11,11 @@
 
 namespace Cache\Adapter\Common\Exception;
 
-class InvalidArgumentException extends CacheException implements \Psr\Cache\InvalidArgumentException
+/**
+ * If an exception is caused by a pool or by the cache storage.
+ *
+ * @author Tobias Nyholm <tobias.nyholm@gmail.com>
+ */
+class CachePoolException extends CacheException
 {
 }

@@ -9,8 +9,15 @@
  * with this source code in the file LICENSE.
  */
 
-namespace Cache\Adapter\Common\Exception;
+namespace Cache\Adapter\Chain\Exception;
 
-class InvalidArgumentException extends CacheException implements \Psr\Cache\InvalidArgumentException
+use Cache\Adapter\Common\Exception\CachePoolException;
+
+/**
+ * When a cache pool fails with its operation.
+ *
+ * @author Tobias Nyholm <tobias.nyholm@gmail.com>
+ */
+class PoolFailedException extends CachePoolException
 {
 }

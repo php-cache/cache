@@ -11,6 +11,13 @@
 
 namespace Cache\Adapter\Common\Exception;
 
-class InvalidArgumentException extends CacheException implements \Psr\Cache\InvalidArgumentException
+use Psr\Cache\CacheException as CacheExceptionInterface;
+
+/**
+ * A base exception. All exceptions in this organization will extend this exception.
+ *
+ * @author Tobias Nyholm <tobias.nyholm@gmail.com>
+ */
+abstract class CacheException extends \RuntimeException implements CacheExceptionInterface
 {
 }
