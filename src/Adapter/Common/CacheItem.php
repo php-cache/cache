@@ -154,7 +154,7 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
         }
 
         if (is_int($time)) {
-            $this->expirationDate = new \DateTime(sprintf('+%sseconds', $time));
+            $this->expirationDate = \DateTime::createFromFormat('U', time() + $time);
         }
 
         return $this;
