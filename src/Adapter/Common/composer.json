@@ -25,6 +25,7 @@
     "require":           {
         "php":                  "^5.5|^7.0",
         "psr/cache":            "^1.0",
+        "psr/log":              "^1.0",
         "cache/taggable-cache": "^0.4"
     },
     "require-dev":       {
