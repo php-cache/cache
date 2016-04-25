@@ -1,40 +1,70 @@
 language: php
+sudo: false
 
 php:
-  - 5.5
-  - 5.6
-  - 7.0
-  # more php versions
+    - 5.5
+    - 5.6
+    - 7.0
 
 env:
-  matrix:
-    - ADAPTER=bar PHPUNIT_FILE=filepath
-    - ADAPTER=foo
-    - ADAPTER=common
+    - BUILD_ALL=true
+    - ADAPTER=Apc
+    - ADAPTER=Apcu
+    - ADAPTER=Chain
+    - ADAPTER=Common
+    - ADAPTER=Doctrine
+    - ADAPTER=Filesystem
+    - ADAPTER=Memcache
+    - ADAPTER=Memcached
+    - ADAPTER=MongoDB
+    - ADAPTER=PHPArray
+    - ADAPTER=Predis
+    - ADAPTER=Redis
+    - ADAPTER=Void
+    - LIBRARY=Bridge
+    - LIBRARY=Hierarchy
+    - LIBRARY=Namespaced
+    - LIBRARY=SessionHandler
+    - LIBRARY=Taggable
 
 matrix:
-  fast_finish: true
+    fast_finish: true
+    exclude:
+        - php: 7.0
+          env: ADAPTER=Memcache
+
+services:
+    - redis
+    - memcached
+    - mongodb
+
+addons:
+  apt:
+    sources:
+      - mongodb-3.2-precise
+    packages:
+      - mongodb-org-server
 
 cache:
-  directories:
-    - "$HOME/.composer/cache"
+    directories:
+      - "$HOME/.composer/cache"
 
 before_install:
-  - openssl aes-256-cbc -K $encrypted_99f52e9ffe4d_key -iv $encrypted_99f52e9ffe4d_iv -in .travis/sshkey.enc -out .travis/sshkey -d
-  - eval "$(ssh-agent -s)" #start the ssh agent
-  - chmod 600 .travis/sshkey # this key should have push access
-  - ssh-add .travis/sshkey # Add the ssh key to travis. This will give travis push access
-
-install:
-
-before_script:
+    - echo "Disable xdebug" && phpenv config-rm xdebug.ini
+    - . ./build/setEnvVariables.sh
+    - mkdir -p ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d
+    - if [ -f "build/php/$TRAVIS_PHP_VERSION/$PROJECT.sh" ]; then . ./build/php/$TRAVIS_PHP_VERSION/$PROJECT.sh; fi
+    - if [ ! -z "$BUILD_ALL" ]; then . ./build/php/all.sh; fi
+    - travis_retry composer self-update
 
 script:
+    - ./build/runTest.sh "$DIR/$PROJECT"
 
 after_success:
-#  - if [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PHP_VERSION" = "7.0" ] && [ "$ADAPTER" = "common" ]; then sh .travis/subsplit.sh; fi;
-
-sudo: true
+    - if [[ $TRAVIS_PHP_VERSION = 7.* ]]; then pip install --user codecov && codecov ; fi
 
 notifications:
-  email: false
+    email: false
+    webhooks:
+        urls:
+            - https://webhooks.gitter.im/e/7b0035a70de31fa976df

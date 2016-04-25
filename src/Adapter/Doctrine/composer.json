@@ -4,16 +4,14 @@
     "type":              "library",
     "license":           "MIT",
     "minimum-stability": "stable",
-    "keywords":
-    [
+    "keywords":          [
         "cache",
         "psr-6",
         "doctrine",
         "tag"
     ],
-    "homepage":          "https://github.com/php-cache/doctrine-adapter",
-    "authors":
-    [
+    "homepage":          "http://www.php-cache.com/en/latest/",
+    "authors":           [
         {
             "name":     "Aaron Scherer",
             "email":    "aequasi@gmail.com",
@@ -25,39 +23,33 @@
             "homepage": "https://github.com/nyholm"
         }
     ],
-    "require":
-    {
-        "psr/cache":            "1.0",
-        "cache/adapter-common": "^0.2",
-        "cache/taggable-cache": "^0.3",
+    "require":           {
+        "php":                  "^5.5|^7.0",
+        "psr/cache":            "^1.0",
+        "cache/adapter-common": "^0.3",
+        "cache/taggable-cache": "^0.4",
         "doctrine/cache":       "^1.3"
     },
-    "require-dev":
-    {
-        "phpunit/phpunit":         "^5.1|^4.0",
-        "mockery/mockery":         "^0.9.4",
-        "cache/integration-tests": "^0.7"
+    "require-dev":       {
+        "phpunit/phpunit":         "^4.0|^5.1",
+        "mockery/mockery":         "^0.9",
+        "cache/integration-tests": "^0.10"
     },
-    "provide":
-    {
-        "psr/cache-implementation": "1.0.0"
+    "provide":           {
+        "psr/cache-implementation": "^1.0"
     },
-    "suggest":      {
+    "suggest":           {
         "ext-apc":       "Allows for caching with Apc",
         "ext-memcache":  "Allows for caching with Memcache",
         "ext-memcached": "Allows for caching with Memcached",
         "ext-redis":     "Allows for caching with Redis"
     },
-    "autoload":
-    {
-        "psr-4": {
-            "Cache\\Adapter\\Doctrine\\": "src/"
-        }
-    },
-    "autoload-dev":
-    {
-        "psr-4": {
-            "Cache\\Adapter\\Doctrine\\Tests\\": "tests/"
-        }
+    "autoload":          {
+        "psr-4":                 {
+            "Cache\\Adapter\\Doctrine\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     }
 }

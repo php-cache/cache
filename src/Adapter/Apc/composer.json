@@ -4,16 +4,13 @@
     "type":              "library",
     "license":           "MIT",
     "minimum-stability": "stable",
-    "keywords":
-    [
+    "keywords":          [
         "cache",
         "psr-6",
-        "apc",
-        "tag"
+        "apc"
     ],
-    "homepage": "https://github.com/php-cache/apc-adapter",
-    "authors":
-    [
+    "homepage":          "http://www.php-cache.com/en/latest/",
+    "authors":           [
         {
             "name":     "Aaron Scherer",
             "email":    "aequasi@gmail.com",
@@ -25,33 +22,28 @@
             "homepage": "https://github.com/nyholm"
         }
     ],
-    "require":
-    {
-        "php":                  "^5.5",
-        "ext-apc":              "*",
-        "psr/cache":            "~1.0",
-        "cache/adapter-common": "^0.2",
-        "cache/taggable-cache": "^0.3"
+    "require":           {
+        "php":                  "^5.5|^7.0",
+        "psr/cache":            "^1.0",
+        "cache/adapter-common": "^0.3",
+        "cache/taggable-cache": "^0.4"
     },
-    "require-dev":
-    {
-        "phpunit/phpunit":         "^5.1|^4.0",
-        "cache/integration-tests": "^0.7"
+    "suggest":          {
+        "ext-apc": "The extension required to use this pool."
     },
-    "provide":
-    {
-        "psr/cache-implementation": "1.0.0"
+    "require-dev":       {
+        "phpunit/phpunit":         "^4.0|^5.1",
+        "cache/integration-tests": "^0.10"
     },
-    "autoload":
-    {
-        "psr-4": {
-            "Cache\\Adapter\\Apc\\": "src/"
-        }
+    "provide":           {
+        "psr/cache-implementation": "^1.0"
     },
-    "autoload-dev":
-    {
-        "psr-4": {
-            "Cache\\Adapter\\Apc\\Tests\\": "tests/"
-        }
+    "autoload":          {
+        "psr-4":                 {
+            "Cache\\Adapter\\Apc\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     }
 }

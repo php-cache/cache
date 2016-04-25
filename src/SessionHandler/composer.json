@@ -1,15 +1,15 @@
 {
-    "name":         "cache/session-handler",
-    "type":         "library",
-    "description":  "An implementation of PHP's SessionHandlerInterface that allows PSR-6",
-    "keywords": [
+    "name":        "cache/session-handler",
+    "type":        "library",
+    "description": "An implementation of PHP's SessionHandlerInterface that allows PSR-6",
+    "keywords":    [
         "cache",
         "psr-6",
         "session handler"
     ],
-    "homepage": "https://github.com/php-cache/session-handler",
-    "license": "MIT",
-    "authors": [
+    "homepage":    "http://www.php-cache.com/en/latest/",
+    "license":     "MIT",
+    "authors":     [
         {
             "name":     "Aaron Scherer",
             "email":    "aequasi@gmail.com",
@@ -21,23 +21,22 @@
             "homepage": "https://github.com/nyholm"
         }
     ],
-    "require": {
-        "php": "^5.5|^7.0",
-        "psr/cache": "~1.0"
+    "require":     {
+        "php":       "^5.5|^7.0",
+        "psr/cache": "^1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^5.1|^4.0",
-        "mockery/mockery": "^0.9.4",
-        "cache/array-adapter": "@stable"
+        "phpunit/phpunit":         "^4.0|^5.1",
+        "mockery/mockery":         "^0.9",
+        "cache/array-adapter":     "@stable",
+        "cache/integration-tests": "^0.10"
     },
-    "autoload": {
-        "psr-4": {
-            "Cache\\SessionHandler\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Cache\\SessionHandler\\Tests\\": "tests/"
-        }
+    "autoload":    {
+        "psr-4":                 {
+            "Cache\\SessionHandler\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     }
 }

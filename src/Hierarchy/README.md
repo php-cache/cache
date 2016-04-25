@@ -1,28 +1,34 @@
 # Hierarchical PSR-6 cache pool 
-[![Build Status](https://travis-ci.org/php-cache/hierarchical-cache.svg?branch=master)](https://travis-ci.org/php-cache/hierarchical-cache) [![codecov.io](https://codecov.io/github/php-cache/hierarchical-cache/coverage.svg?branch=master)](https://codecov.io/github/php-cache/hierarchical-cache?branch=master)
+[![Gitter](https://badges.gitter.im/php-cache/cache.svg)](https://gitter.im/php-cache/cache?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Latest Stable Version](https://poser.pugx.org/cache/hierarchical-cache/v/stable)](https://packagist.org/packages/cache/hierarchical-cache)
+[![Total Downloads](https://poser.pugx.org/cache/hierarchical-cache/downloads)](https://packagist.org/packages/cache/hierarchical-cache)
+[![Monthly Downloads](https://poser.pugx.org/cache/hierarchical-cache/d/monthly.png)](https://packagist.org/packages/cache/hierarchical-cache)
+[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
-This is a implementation for the PSR-6 for an hierarchical cache architecture. 
+This is an implementation for the PSR-6 for an hierarchical cache architecture. 
 
 If you have a cache key like `|users|:uid|followers|:fid|likes` where `:uid` and `:fid` are arbitrary integers. You
  may flush all followers by flushing `|users|:uid|followers`.
- 
-```php
-$user = 4711;
-for ($i = 0; $i < 100; $i++) {
-  $item = $pool->getItem(sprintf('|users|%d|followers|%d|likes', $user, $i));
-  $item->set('Justin Bieber');
-  $pool->save($item);
-}
+  
+It is a part of the PHP Cache organisation. To read about features like tagging and hierarchy support please read 
+the shared documentation at [www.php-cache.com](http://www.php-cache.com). 
 
-$pool->hasItem('|users|4711|followers|12|likes'); // True
+### Install
 
-$pool->deleteItem('|users|4711|followers');
-
-$pool->hasItem('|users|4711|followers|12|likes'); // False
+```bash
+composer require cache/hierarchical-cache
 ```
+ 
+### Use
 
-| Feature | Supported |
-| ------- | --------- | 
-| Flush everything | Yes 
-| Expiration time | Yes
-| Tagging | Yes
+Read the [documentation on usage](http://www.php-cache.com/en/latest/hierarchy/).
+
+### Implement
+
+Read the [documentation on implementation](http://www.php-cache.com/en/latest/implementing-cache-pools/hierarchy/).
+
+### Contribute
+
+Contributions are very welcome! Send a pull request to the [main repository](https://github.com/php-cache/cache) or 
+report any issues you find on the [issue tracker](http://issues.php-cache.com).
+
