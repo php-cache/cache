@@ -12,6 +12,7 @@
 namespace Cache\Adapter\Memcached\Tests;
 
 use Cache\Adapter\Memcached\MemcachedCachePool;
+use Memcached;
 
 trait CreatePoolTrait
 {
@@ -19,13 +20,17 @@ trait CreatePoolTrait
 
     public function createCachePool()
     {
+        if (!class_exists('Memcached')) {
+            $this->markTestSkipped();
+        }
+
         return new MemcachedCachePool($this->getClient());
     }
 
     private function getClient()
     {
         if ($this->client === null) {
-            $this->client = new \Memcached();
+            $this->client = new Memcached();
             $this->client->addServer('localhost', 11211);
         }
 
