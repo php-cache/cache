@@ -24,6 +24,8 @@ $config = ['ttl'=>3600, 'prefix'=>'foobar'];
 $sessionHandler = new Psr6SessionHandler($pool, $config);
 ```
 
+Note that this session handler does no kind of locking, so it will lose or overwrite your session data if you run scripts concurrently. You have been warned.
+
 ### Contribute
 
 Contributions are very welcome! Send a pull request to the [main repository](https://github.com/php-cache/cache) or 
