@@ -20,10 +20,10 @@ use Psr\Cache\CacheItemInterface;
 class ApcuCachePool extends AbstractCachePool
 {
     /**
-     * @var bool
+     * @type bool
      */
     private $skipOnCli;
-    
+
     /**
      * @param bool $skipOnCli
      */
@@ -31,7 +31,7 @@ class ApcuCachePool extends AbstractCachePool
     {
         $this->skipOnCli = $skipOnCli;
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -40,7 +40,7 @@ class ApcuCachePool extends AbstractCachePool
         if ($this->skipIfCli()) {
             return [false, null, []];
         }
-        
+
         $success = false;
         $data    = apcu_fetch($key, $success);
 
@@ -73,17 +73,17 @@ class ApcuCachePool extends AbstractCachePool
         if ($this->skipIfCli()) {
             return false;
         }
-        
+
         if ($ttl < 0) {
             return false;
         }
 
         return apcu_store($item->getKey(), $item->get(), $ttl);
     }
-    
+
     /**
-     * Returns true if CLI and if it should skip on cli
-     * 
+     * Returns true if CLI and if it should skip on cli.
+     *
      * @return bool
      */
     private function skipIfCli()
