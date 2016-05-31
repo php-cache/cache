@@ -21,7 +21,7 @@ composer require cache/psr-6-doctrine-bridge
 use DoctrineCacheBridge\DoctrineCacheBridge;
 
 // Assuming $pool is an instance of \Psr\Cache\CacheItemPoolInterface
-$cacheProvider = new DoctrineBridge($pool);
+$cacheProvider = new DoctrineCacheBridge($pool);
 
 $cacheProvider->contains($key);
 $cacheProvider->fetch($key);
