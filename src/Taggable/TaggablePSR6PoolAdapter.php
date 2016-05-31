@@ -203,7 +203,9 @@ class TaggablePSR6PoolAdapter implements TaggablePoolInterface
             $list = [];
         }
 
-        $list = array_filter($list, function ($value) use ($key) { return $value !== $key; });
+        $list = array_filter($list, function ($value) use ($key) {
+            return $value !== $key;
+        });
 
         $listItem->set($list);
         $this->tagStorePool->save($listItem);
