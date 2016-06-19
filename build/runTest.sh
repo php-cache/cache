@@ -14,8 +14,4 @@ composer install --no-interaction || exit -1
 TEST="./vendor/bin/phpunit"
 if [ ! -z "$BUILD_ALL" ]; then TEST="$TEST --coverage-clover=coverage.xml"; fi
 
-if [ "$TRAVIS_PHP_VERSION" == '7.0' ]; then
-    phpdbg -qrr $TEST || exit -1
-else
-    sh -c "$TEST" || exit -1
-fi
+sh -c "$TEST" || exit -1

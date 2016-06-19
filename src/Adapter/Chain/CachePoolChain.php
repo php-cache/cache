@@ -245,7 +245,7 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface, L
         $result = true;
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
-                $result = $result && $pool->save($item);
+                $result = $pool->save($item) && $result;
             } catch (CachePoolException $e) {
                 $this->handleException($poolKey, __FUNCTION__, $e);
             }
@@ -262,7 +262,7 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface, L
         $result = true;
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
-                $result = $result && $pool->saveDeferred($item);
+                $result = $pool->saveDeferred($item) && $result;
             } catch (CachePoolException $e) {
                 $this->handleException($poolKey, __FUNCTION__, $e);
             }
@@ -279,7 +279,7 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface, L
         $result = true;
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
-                $result = $result && $pool->commit();
+                $result = $pool->commit() && $result;
             } catch (CachePoolException $e) {
                 $this->handleException($poolKey, __FUNCTION__, $e);
             }
@@ -297,7 +297,7 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface, L
         foreach ($this->getPools() as $poolKey => $pool) {
             if ($pool instanceof TaggablePoolInterface) {
                 try {
-                    $result = $result && $pool->clearTags($tags);
+                    $result = $pool->clearTags($tags) && $result;
                 } catch (CachePoolException $e) {
                     $this->handleException($poolKey, __FUNCTION__, $e);
                 }
