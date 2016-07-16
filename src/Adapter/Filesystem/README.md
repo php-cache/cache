@@ -31,6 +31,13 @@ $filesystem        = new Filesystem($filesystemAdapter);
 $pool = new FilesystemCachePool($filesystem);
 ```
 
+You can change the folder the cache pool will write to through the `setFolder` setter:
+
+```php
+$pool = new FilesystemCachePool($filesystem);
+$pool->setFolder('path/to/cache');
+```
+
 ### Contribute
 
 Contributions are very welcome! Send a pull request to the [main repository](https://github.com/php-cache/cache) or 
