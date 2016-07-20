@@ -44,4 +44,13 @@ class FilesystemCachePoolTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($item->isHit());
         $this->assertFalse($this->getFilesystem()->has('cache/test_ttl_null'));
     }
+
+    public function testChangeFolder()
+    {
+        $pool = $this->createCachePool();
+        $pool->setFolder('foobar');
+
+        $pool->save($pool->getItem('test_path'));
+        $this->assertTrue($this->getFilesystem()->has('foobar/test_path'));
+    }
 }
