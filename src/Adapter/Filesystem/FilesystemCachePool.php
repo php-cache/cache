@@ -33,6 +33,8 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
     private $filesystem;
 
     /**
+     * The folder should not begin nor end with a slash. Example: path/to/cache.
+     *
      * @type string
      */
     private $folder;
