@@ -20,7 +20,7 @@ class MemcacheCachePool extends AbstractCachePool
     /**
      * @type Memcache
      */
-    private $cache;
+    protected $cache;
 
     /**
      * @param Memcache $cache

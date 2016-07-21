@@ -30,7 +30,7 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     /**
      * @type \Redis
      */
-    private $cache;
+    protected $cache;
 
     /**
      * @param \Redis $cache

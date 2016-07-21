@@ -31,7 +31,7 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
     /**
      * @type Client
      */
-    private $cache;
+    protected $cache;
 
     /**
      * @param Client $cache
