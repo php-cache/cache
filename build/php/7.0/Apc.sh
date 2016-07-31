@@ -9,7 +9,7 @@ echo "Install APCu Adapter dependencies"
 yes '' | pecl install apcu
 
 echo "Install APCu_bc Adapter dependencies"
-yes '' | pecl install apcu_bc-beta
+yes '' | pecl install apcu_bc-1.0.3
 
 # deleting apc.so from php.ini
 

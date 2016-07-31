@@ -6,10 +6,10 @@ echo "Add php.ini settings"
 phpenv config-add ./build/php/apc.ini
 
 echo "Install APCu Adapter dependencies"
-yes '' | pecl install apcu
+yes '' | pecl install apcu-5.1.5
 
 echo "Install APCu_bc Adapter dependencies"
-yes '' | pecl install apcu_bc-beta
+yes '' | pecl install apcu_bc-1.0.3
 
 # deleting apc.so from php.ini
 
