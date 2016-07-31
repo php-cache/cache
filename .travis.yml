@@ -38,22 +38,16 @@ matrix:
     include:
         - php: "$TRAVIS_PHP_VERSION"
           env: BUILD_ALL=true ADAPTER=MongoDB
-          services:
-            - mongodb
           addons:
             apt:
               sources:
                 - mongodb-3.2-precise
               packages:
                 - mongodb-org-server
-        - php: "$TRAVIS_PHP_VERSION"
-          env: BUILD_ALL=true ADAPTER=Memcache ADAPTER=Memcached
-          services:
-            - memcached
-        - php: "$TRAVIS_PHP_VERSION"
-          env: BUILD_ALL=true ADAPTER=Redis ADAPTER=Predis ADAPTER=Chain
-          services:
-            - redis
+services:
+    - mongodb
+    - memcached
+    - redis
 
 cache:
     directories:
