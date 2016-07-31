@@ -17,12 +17,12 @@
         }
     ],
     "require":     {
-        "php":                      "^5.5|^7.0",
+        "php":                      "^5.5 || ^7.0",
         "doctrine/cache":           "^1.3",
         "psr/cache-implementation": "^1.0"
     },
     "require-dev": {
-        "phpunit/phpunit":         "^4.0|^5.1",
+        "phpunit/phpunit":         "^4.0 || ^5.1",
         "mockery/mockery":         "^0.9",
         "cache/doctrine-adapter":  "@stable",
         "cache/integration-tests": "^0.10"
