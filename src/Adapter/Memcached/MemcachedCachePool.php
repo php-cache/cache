@@ -27,7 +27,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     /**
      * @type \Memcached
      */
-    private $cache;
+    protected $cache;
 
     /**
      * @param \Memcached $cache

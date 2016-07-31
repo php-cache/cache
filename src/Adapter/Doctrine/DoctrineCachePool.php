@@ -32,7 +32,7 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
     /**
      * @type Cache
      */
-    private $cache;
+    protected $cache;
 
     /**
      * @param Cache $cache

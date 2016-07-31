@@ -21,7 +21,7 @@ composer require cache/doctrine-adapter
 
 ```php
 use Doctrine\Common\Cache\MemcachedCache;
-use Cache\Doctrine\CachePool;
+use Cache\Adapter\Doctrine\DoctrineCachePool;
 
 
 $memcached = new \Memcached();
@@ -32,7 +32,7 @@ $doctrineCache = new MemcachedCache();
 $doctrineCache->setMemcached($memcached);
 
 // Wrap Doctrine's cache with the PSR-6 adapter
-$pool = new CachePool($doctrineCache);
+$pool = new DoctrineCachePool($doctrineCache);
 ```
 
 

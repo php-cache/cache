@@ -25,8 +25,6 @@ use Psr\Cache\CacheItemInterface;
  */
 class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInterface
 {
-    const CACHE_PATH = 'cache';
-
     use TaggablePoolTrait;
 
     /**
@@ -35,12 +33,30 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
     private $filesystem;
 
     /**
-     * @param Filesystem $filesystem
+     * The folder should not begin nor end with a slash. Example: path/to/cache.
+     *
+     * @type string
      */
-    public function __construct(Filesystem $filesystem)
+    private $folder;
+
+    /**
+     * @param Filesystem $filesystem
+     * @param string     $folder
+     */
+    public function __construct(Filesystem $filesystem, $folder = 'cache')
     {
+        $this->folder = $folder;
+
         $this->filesystem = $filesystem;
-        $this->filesystem->createDir(self::CACHE_PATH);
+        $this->filesystem->createDir($this->folder);
+    }
+
+    /**
+     * @param string $folder
+     */
+    public function setFolder($folder)
+    {
+        $this->folder = $folder;
     }
 
     /**
@@ -71,8 +87,8 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
      */
     protected function clearAllObjectsFromCache()
     {
-        $this->filesystem->deleteDir(self::CACHE_PATH);
-        $this->filesystem->createDir(self::CACHE_PATH);
+        $this->filesystem->deleteDir($this->folder);
+        $this->filesystem->createDir($this->folder);
 
         return true;
     }
@@ -122,7 +138,7 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
             throw new InvalidArgumentException(sprintf('Invalid key "%s". Valid keys must match [a-zA-Z0-9_\.! ].', $key));
         }
 
-        return sprintf('%s/%s', self::CACHE_PATH, $key);
+        return sprintf('%s/%s', $this->folder, $key);
     }
 
     /**
