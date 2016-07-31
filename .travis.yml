@@ -51,7 +51,8 @@ cache:
       - "$HOME/.composer/cache"
 
 before_install:
-    - echo "Disable xdebug" && phpenv config-rm xdebug.ini
+    - echo "Disable xdebug"
+    - if [[ $TRAVIS_PHP_VERSION != 7.1 ]]; then phpenv config-rm xdebug.ini; fi
     - . ./build/setEnvVariables.sh
     - mkdir -p ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d
     - if [ -f "build/php/$TRAVIS_PHP_VERSION/$PROJECT.sh" ]; then . ./build/php/$TRAVIS_PHP_VERSION/$PROJECT.sh; fi
