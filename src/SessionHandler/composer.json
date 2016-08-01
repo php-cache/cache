@@ -22,11 +22,11 @@
         }
     ],
     "require":     {
-        "php":       "^5.5|^7.0",
+        "php":       "^5.5 || ^7.0",
         "psr/cache": "^1.0"
     },
     "require-dev": {
-        "phpunit/phpunit":         "^4.0|^5.1",
+        "phpunit/phpunit":         "^4.0 || ^5.1",
         "mockery/mockery":         "^0.9",
         "cache/array-adapter":     "@stable",
         "cache/integration-tests": "^0.10"
