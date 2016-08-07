@@ -26,10 +26,9 @@ class NamespacedCachePoolTest extends \PHPUnit_Framework_TestCase
      */
     private function getHierarchyCacheStub()
     {
-        return $this->getMock(
-            HelperInterface::class,
+        return $this->getMockBuilder(HelperInterface::class)->setMethods(
             ['getItem', 'getItems', 'hasItem', 'clear', 'deleteItem', 'deleteItems', 'save', 'saveDeferred', 'commit']
-        );
+        )->getMock();
     }
 
     public function testGetItem()
@@ -114,7 +113,7 @@ class NamespacedCachePoolTest extends \PHPUnit_Framework_TestCase
 
     public function testSave()
     {
-        $item        = $this->getMock(CacheItemInterface::class);
+        $item        = $this->getMockBuilder(CacheItemInterface::class)->getMock();
         $namespace   = 'ns';
         $returnValue = true;
 
@@ -127,7 +126,7 @@ class NamespacedCachePoolTest extends \PHPUnit_Framework_TestCase
 
     public function testSaveDeffered()
     {
-        $item        = $this->getMock(CacheItemInterface::class);
+        $item        = $this->getMockBuilder(CacheItemInterface::class)->getMock();
         $namespace   = 'ns';
         $returnValue = true;
 
