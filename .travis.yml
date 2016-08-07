@@ -29,8 +29,6 @@ env:
 
 matrix:
     fast_finish: true
-    exclude:
-        - php: 7.0
 
 services:
     - redis
