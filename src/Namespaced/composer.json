@@ -20,7 +20,7 @@
     "require":           {
         "php":                      "^5.5 || ^7.0",
         "psr/cache":                "^1.0",
-        "cache/hierarchical-cache": "^0.2"
+        "cache/hierarchical-cache": "^0.3"
     },
     "require-dev":       {
         "phpunit/phpunit":         "^4.0 || ^5.1"
