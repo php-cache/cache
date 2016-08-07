@@ -9,6 +9,7 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 ### Changed
 
 * The `MemcachedCachePool::$cache` is now protected instead of private
+* Using `cache/hierarchical-cache:^0.3`
 
 ## 0.3.1
 
