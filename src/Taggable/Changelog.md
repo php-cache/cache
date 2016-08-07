@@ -4,9 +4,12 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+## 0.4.2
+
 ### Changed
 
 * Updated version for integration tests
+* Made `TaggablePSR6PoolAdapter::getTags` protected instead of private
 
 ## 0.4.1
 
