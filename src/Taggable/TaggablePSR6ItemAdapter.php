@@ -85,6 +85,9 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
         if (is_array($rawItem) && isset($rawItem['value'])) {
             return $rawItem['value'];
         }
+
+        // This is an item stored before we used this fake cache
+        return $rawItem;
     }
 
     /**
