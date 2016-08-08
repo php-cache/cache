@@ -82,7 +82,8 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
     {
         $rawItem = $this->cacheItem->get();
 
-        if (is_array($rawItem) && isset($rawItem['value'])) {
+        // If it is a cache item we created
+        if ($this->isItemCreatedHere($rawItem)) {
             return $rawItem['value'];
         }
 
@@ -181,12 +182,24 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
             if ($this->cacheItem->isHit()) {
                 $rawItem = $this->cacheItem->get();
 
-                if (is_array($rawItem) && isset($rawItem['tags'])) {
+                if ($this->isItemCreatedHere($rawItem)) {
                     $this->tags = $rawItem['tags'];
                 }
             }
 
             $this->initialized = true;
         }
+    }
+
+    /**
+     * Verify that the raw data is a cache item created by this class.
+     *
+     * @param mixed $rawItem
+     *
+     * @return bool
+     */
+    private function isItemCreatedHere($rawItem)
+    {
+        return is_array($rawItem) && isset($rawItem['value']) && isset($rawItem['tags']) && count($rawItem) === 2;
     }
 }
