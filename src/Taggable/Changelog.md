@@ -3,6 +3,11 @@
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release. 
 
 ## UNRELEASED
+## 0.4.3
+
+### Fixed
+
+* Do not lose the data when you start using the `TaggablePSR6PoolAdapter`
 
 ## 0.4.2
 
