@@ -21,7 +21,7 @@ use Cache\Taggable\TaggablePoolTrait;
 use Psr\Cache\CacheItemInterface;
 
 /**
- * Array cache pool. You could set a limit of how many items you wantt to be stored to avoid memory leaks.
+ * Array cache pool. You could set a limit of how many items you want to be stored to avoid memory leaks.
  *
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
