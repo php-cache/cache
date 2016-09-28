@@ -4,6 +4,12 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+## 0.4.2
+
+### Changed
+
+* Rely on `Predis\ClientInterface` instead of `Predis\Client` in `PredisCachePool`
+
 ## 0.4.1
 
 ### Changed
