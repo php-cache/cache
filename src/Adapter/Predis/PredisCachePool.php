@@ -17,7 +17,7 @@ use Cache\Hierarchy\HierarchicalPoolInterface;
 use Cache\Taggable\TaggableItemInterface;
 use Cache\Taggable\TaggablePoolInterface;
 use Cache\Taggable\TaggablePoolTrait;
-use Predis\Client;
+use Predis\ClientInterface as Client;
 use Psr\Cache\CacheItemInterface;
 
 /**
