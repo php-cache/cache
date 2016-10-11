@@ -108,21 +108,26 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
      */
     protected function storeItemInCache(CacheItemInterface $item, $ttl)
     {
-        $file = $this->getFilePath($item->getKey());
-        if ($this->filesystem->has($file)) {
-            $this->filesystem->delete($file);
-        }
-
         $tags = [];
         if ($item instanceof TaggableItemInterface) {
             $tags = $item->getTags();
         }
 
-        return $this->filesystem->write($file, serialize([
-            ($ttl === null ? null : time() + $ttl),
-            $item->get(),
-            $tags,
-        ]));
+        $data = serialize(
+            [
+                ($ttl === null ? null : time() + $ttl),
+                $item->get(),
+                $tags,
+            ]
+        );
+
+        $file = $this->getFilePath($item->getKey());
+        if ($this->filesystem->has($file)) {
+            // Update file if it exists
+            return $this->filesystem->update($file, $data);
+        }
+
+        return $this->filesystem->write($file, $data);
     }
 
     /**
