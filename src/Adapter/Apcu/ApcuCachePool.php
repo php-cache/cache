@@ -88,6 +88,6 @@ class ApcuCachePool extends AbstractCachePool
      */
     private function skipIfCli()
     {
-        return php_sapi_name() === 'cli' && $this->skipOnCli;
+        return $this->skipOnCli && php_sapi_name() === 'cli';
     }
 }
