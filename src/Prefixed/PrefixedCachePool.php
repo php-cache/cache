@@ -33,14 +33,13 @@ class PrefixedCachePool implements CacheItemPoolInterface
     private $prefix;
 
     /**
-     *
      * @param CacheItemPoolInterface $cachePool
-     * @param string $prefix
+     * @param string                 $prefix
      */
     public function __construct(CacheItemPoolInterface $cachePool, $prefix)
     {
         $this->cachePool = $cachePool;
-        $this->prefix = $prefix;
+        $this->prefix    = $prefix;
     }
 
     /**

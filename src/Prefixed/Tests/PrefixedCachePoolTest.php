@@ -34,7 +34,7 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
 
     public function testGetItem()
     {
-        $prefix   = 'ns';
+        $prefix      = 'ns';
         $key         = 'key';
         $returnValue = true;
 
@@ -47,7 +47,7 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
 
     public function testGetItems()
     {
-        $prefix   = 'ns';
+        $prefix      = 'ns';
         $key0        = 'key0';
         $key1        = 'key1';
         $returnValue = true;
@@ -61,7 +61,7 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
 
     public function testHasItem()
     {
-        $prefix   = 'ns';
+        $prefix      = 'ns';
         $key         = 'key';
         $returnValue = true;
 
@@ -74,7 +74,7 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
 
     public function testClear()
     {
-        $prefix   = 'ns';
+        $prefix      = 'ns';
         $key         = 'key';
         $returnValue = true;
 
@@ -87,7 +87,7 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
 
     public function testDeleteItem()
     {
-        $prefix   = 'ns';
+        $prefix      = 'ns';
         $key         = 'key';
         $returnValue = true;
 
@@ -100,7 +100,7 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
 
     public function testDeleteItems()
     {
-        $prefix   = 'ns';
+        $prefix      = 'ns';
         $key0        = 'key0';
         $key1        = 'key1';
         $returnValue = true;
@@ -115,7 +115,7 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
     public function testSave()
     {
         $item        = $this->getMockBuilder(CacheItemInterface::class)->getMock();
-        $prefix   = 'ns';
+        $prefix      = 'ns';
         $returnValue = true;
 
         $stub = $this->getHierarchyCacheStub();
@@ -128,7 +128,7 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
     public function testSaveDeffered()
     {
         $item        = $this->getMockBuilder(CacheItemInterface::class)->getMock();
-        $prefix   = 'ns';
+        $prefix      = 'ns';
         $returnValue = true;
 
         $stub = $this->getHierarchyCacheStub();
@@ -140,7 +140,7 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
 
     public function testCommit()
     {
-        $prefix   = 'ns';
+        $prefix      = 'ns';
         $returnValue = true;
 
         $stub = $this->getHierarchyCacheStub();
