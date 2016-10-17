@@ -1,0 +1,28 @@
+language: php
+sudo: false
+
+matrix:
+    include:
+      - php: 7.0
+
+cache:
+    directories:
+      - "$HOME/.composer/cache"
+
+before_install:
+    - |
+        git diff --name-only | grep -q '.' || {
+          echo "No change on this repo where made, stopping process."
+          exit
+        }
+    - mkdir -p ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d
+    - ./build/php/7.0/Apc.sh
+
+script:
+    - ./vendor/bin/phpunit --coverage-clover=coverage.xml
+
+after_success:
+    - pip install --user codecov && codecov
+
+notifications:
+    email: false
