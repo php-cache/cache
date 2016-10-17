@@ -12,10 +12,6 @@ cache:
     directories:
       - "$HOME/.composer/cache"
 
-before_install:
-    - mkdir -p ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d
-    - ./build/php/7.0/Apcu.sh
-
 install:
     - composer update
 
