@@ -11,7 +11,7 @@ cache:
 
 before_install:
     - mkdir -p ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d
-    - ./build/php/7.0/Apcu.sh
+    - bash <(curl -s https://raw.githubusercontent.com/php-cache/cache/master/build/php/7.0/Apcu.sh)
 
 script:
     - ./vendor/bin/phpunit --coverage-clover=coverage.xml
