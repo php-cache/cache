@@ -3,7 +3,7 @@ sudo: false
 
 matrix:
     include:
-      - php: 7.0
+      - php: 5.6
 
 services:
     - memcached
@@ -14,7 +14,7 @@ cache:
 
 before_install:
     - mkdir -p ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d
-    - bash <(curl -s https://raw.githubusercontent.com/php-cache/cache/master/build/php/7.0/Memcached.sh)
+    - bash <(curl -s https://raw.githubusercontent.com/php-cache/cache/master/build/php/5.6/Memcache.sh)
 
 install:
     - composer update
