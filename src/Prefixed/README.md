@@ -20,8 +20,8 @@ composer require cache/prefixed-cache
 ### Use
 
 ```php
-$hierarchyPool = new RedisCachePool($client);
-$prefixedPool = new PrefixedCachePool($hierarchyPool, 'acme');
+$anyPSR6Pool = new RedisCachePool($client);
+$prefixedPool = new PrefixedCachePool($anyPSR6Pool, 'acme');
 ```
 
 ### Contribute
