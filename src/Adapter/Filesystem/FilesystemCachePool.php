@@ -16,6 +16,7 @@ use Cache\Adapter\Common\Exception\InvalidArgumentException;
 use Cache\Taggable\TaggableItemInterface;
 use Cache\Taggable\TaggablePoolInterface;
 use Cache\Taggable\TaggablePoolTrait;
+use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Filesystem;
 use Psr\Cache\CacheItemInterface;
@@ -127,7 +128,12 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
             return $this->filesystem->update($file, $data);
         }
 
-        return $this->filesystem->write($file, $data);
+        try {
+            return $this->filesystem->write($file, $data);
+        } catch(FileExistsException $e) {
+            // To handle issues when if race conditions occurs, we try to update here.
+            return $this->filesystem->update($file, $data);
+        }
     }
 
     /**
