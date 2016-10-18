@@ -28,6 +28,6 @@ class MemcachedCachePoolTest extends \PHPUnit_Framework_TestCase
         $item->expiresAfter(86400 * 365);
         $pool->save($item);
 
-        $this->assertTrue($pool->getItem('365days')->isHit(), "Item is not stored correctly");
+        $this->assertTrue($pool->getItem('365days')->isHit(), 'Item is not stored correctly');
     }
 }
