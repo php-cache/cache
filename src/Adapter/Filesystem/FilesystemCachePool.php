@@ -131,7 +131,7 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
         try {
             return $this->filesystem->write($file, $data);
         } catch(FileExistsException $e) {
-            // To handle issues when if race conditions occurs, we try to update here.
+            // To handle issues when/if race conditions occurs, we try to update here.
             return $this->filesystem->update($file, $data);
         }
     }
