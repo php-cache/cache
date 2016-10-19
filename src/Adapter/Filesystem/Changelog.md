@@ -4,6 +4,10 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+### Changed
+
+Using `Filesystem::update` instead of `Filesystem::delete` and `Filesystem::write`.
+
 ## 0.3.1
 
 ### Added
