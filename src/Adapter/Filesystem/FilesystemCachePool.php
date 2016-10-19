@@ -66,7 +66,7 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
     protected function fetchObjectFromCache($key)
     {
         $empty = [false, null, []];
-        $file = $this->getFilePath($key);
+        $file  = $this->getFilePath($key);
         if (!$this->filesystem->has($file)) {
             return $empty;
         }
