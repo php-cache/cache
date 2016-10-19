@@ -65,19 +65,25 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
      */
     protected function fetchObjectFromCache($key)
     {
+        $empty = [false, null, []];
         $file = $this->getFilePath($key);
         if (!$this->filesystem->has($file)) {
-            return [false, null, []];
+            return $empty;
         }
 
-        $data = unserialize($this->filesystem->read($file));
+        try {
+            $data = unserialize($this->filesystem->read($file));
+        } catch (FileNotFoundException $e) {
+            return $empty;
+        }
+
         if ($data[0] !== null && time() > $data[0]) {
             foreach ($data[2] as $tag) {
                 $this->removeListItem($this->getTagKey($tag), $key);
             }
             $this->forceClear($key);
 
-            return [false, null, []];
+            return $empty;
         }
 
         return [true, $data[1], $data[2]];
