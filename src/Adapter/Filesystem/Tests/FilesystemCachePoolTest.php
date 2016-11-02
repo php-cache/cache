@@ -20,8 +20,8 @@ class FilesystemCachePoolTest extends \PHPUnit_Framework_TestCase
 
     public function testCleanupOnExpire()
     {
-        $cacheKey = 'test_ttl_null';
-        $cacheFilename = $filename = str_replace('=', '_', base64_encode($cacheKey));
+        $cacheKey   = 'test_ttl_null';
+        $cacheFilename = str_replace('=', '_', base64_encode($cacheKey));
 
         $pool = $this->createCachePool();
 
@@ -29,13 +29,13 @@ class FilesystemCachePoolTest extends \PHPUnit_Framework_TestCase
         $item->set('data');
         $item->expiresAt(new \DateTime('now'));
         $pool->save($item);
-        $this->assertTrue($this->getFilesystem()->has('cache/' . $cacheFilename));
+        $this->assertTrue($this->getFilesystem()->has('cache/'.$cacheFilename));
 
         sleep(1);
 
         $item = $pool->getItem($cacheKey);
         $this->assertFalse($item->isHit());
-        $this->assertFalse($this->getFilesystem()->has('cache/' . $cacheFilename));
+        $this->assertFalse($this->getFilesystem()->has('cache/'.$cacheFilename));
     }
 
     public function testChangeFolder()
@@ -44,6 +44,6 @@ class FilesystemCachePoolTest extends \PHPUnit_Framework_TestCase
         $pool->setFolder('foobar');
 
         $pool->save($pool->getItem('test_path'));
-        $this->assertTrue($this->getFilesystem()->has('foobar/' . str_replace('=', '_', base64_encode('test_path'))));
+        $this->assertTrue($this->getFilesystem()->has('foobar/'.str_replace('=', '_', base64_encode('test_path'))));
     }
 }
