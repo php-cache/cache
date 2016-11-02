@@ -78,7 +78,9 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
             return $empty;
         }
 
-        if ($data[0] !== null && time() > $data[0]) {
+        // Determine ttl from data, remove items if expired
+        $ttl = $data[0] ?: null;
+        if ($ttl !== null && time() > $ttl) {
             foreach ($data[2] as $tag) {
                 $this->removeListItem($this->getTagKey($tag), $key);
             }
@@ -87,7 +89,7 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
             return $empty;
         }
 
-        return [true, $data[1], $data[2]];
+        return [true, $data[1], $data[2], $ttl];
     }
 
     /**

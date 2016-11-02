@@ -47,9 +47,13 @@ abstract class AbstractCachePool implements CacheItemPoolInterface, LoggerAwareI
     /**
      * Fetch an object from the cache implementation.
      *
+     * Some cache pools allow to return `ttl` from a stored item. A timestamp should
+     * be returned to ensure proper behavior when saving a item from a lower pool
+     * to a higher pool within a `CachePoolChain`.
+     *
      * @param string $key
      *
-     * @return array with [isHit, value, [tags]]
+     * @return array with [isHit, value, [tags], [ttl]]
      */
     abstract protected function fetchObjectFromCache($key);
 
