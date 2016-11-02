@@ -20,7 +20,7 @@ class FilesystemCachePoolTest extends \PHPUnit_Framework_TestCase
 
     public function testCleanupOnExpire()
     {
-        $cacheKey   = 'test_ttl_null';
+        $cacheKey      = 'test_ttl_null';
         $cacheFilename = str_replace('=', '_', base64_encode($cacheKey));
 
         $pool = $this->createCachePool();
