@@ -154,10 +154,6 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
         //make the key a safe filename
         $filename = str_replace('=', '_', base64_encode($key));
 
-        if (!preg_match('|^[a-zA-Z0-9_\.! ]+$|', $filename)) {
-            throw new InvalidArgumentException(sprintf('Invalid key "%s". Valid filenames must match [a-zA-Z0-9_\.! ].', $filename));
-        }
-
         return sprintf('%s/%s', $this->folder, $filename);
     }
 
