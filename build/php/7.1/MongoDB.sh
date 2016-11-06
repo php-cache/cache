@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-pecl -q install mongodb
+pecl install -f mongodb-1.1.9
 
