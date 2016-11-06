@@ -85,6 +85,10 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
             $ttl = 0;
         } elseif ($ttl < 0) {
             return false;
+        } elseif ($ttl > 86400 * 30) {
+            // Any time higher than 30 days is interpreted as a unix timestamp date.
+            // https://github.com/memcached/memcached/wiki/Programming#expiration
+            $ttl = time() + $ttl;
         }
 
         $key = $this->getHierarchyKey($item->getKey());

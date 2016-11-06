@@ -1,69 +1,46 @@
 language: php
 sudo: false
 
-php:
-    - 5.5
-    - 5.6
-    - 7.0
-    - 7.1
-
 env:
-    - BUILD_ALL=true
-    - ADAPTER=Apc
-    - ADAPTER=Apcu
-    - ADAPTER=Chain
-    - ADAPTER=Common
-    - ADAPTER=Doctrine
-    - ADAPTER=Filesystem
-    - ADAPTER=Memcache
-    - ADAPTER=Memcached
-    - ADAPTER=MongoDB
-    - ADAPTER=PHPArray
-    - ADAPTER=Predis
-    - ADAPTER=Redis
-    - ADAPTER=Void
-    - LIBRARY=Bridge
-    - LIBRARY=Hierarchy
-    - LIBRARY=Namespaced
-    - LIBRARY=SessionHandler
-    - LIBRARY=Taggable
+  global:
+    - COVERAGE=false
+    - TEST="./vendor/bin/phpunit"
 
 matrix:
+    include:
+      - php: 7.0
+        env: COVERAGE=true
+      - php: 5.5
+      - php: 5.6
     fast_finish: true
-    exclude:
-        - php: 7.0
-          env: ADAPTER=Memcache
-        - php: 7.1
-          env: ADAPTER=Memcache
 
 services:
-    - mongodb
-    - memcached
     - redis
+    - memcached
+    - mongodb
 
 addons:
-    apt:
-      sources:
-        - mongodb-3.2-precise
-      packages:
-        - mongodb-org-server
+  apt:
+    sources:
+      - mongodb-3.2-precise
+    packages:
+      - mongodb-org-server
+
 cache:
     directories:
       - "$HOME/.composer/cache"
 
 before_install:
-    - echo "Disable xdebug"
-    - if [[ $TRAVIS_PHP_VERSION != 7.1 ]]; then phpenv config-rm xdebug.ini; fi
-    - . ./build/setEnvVariables.sh
+    - if [[ $COVERAGE != true ]]; then phpenv config-rm xdebug.ini || true; fi
+    - if [[ $COVERAGE == true ]]; then TEST="$TEST --coverage-clover=coverage.xml"; fi
     - mkdir -p ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d
-    - if [ -f "build/php/$TRAVIS_PHP_VERSION/$PROJECT.sh" ]; then . ./build/php/$TRAVIS_PHP_VERSION/$PROJECT.sh; fi
-    - if [ ! -z "$BUILD_ALL" ]; then . ./build/php/all.sh; fi
+    - ./build/php/all.sh
 
 script:
-    - ./build/runTest.sh "$DIR/$PROJECT"
+    - ./build/runAllTests.sh
 
 after_success:
-    - if [[ $TRAVIS_PHP_VERSION = 7.* ]]; then pip install --user codecov && codecov ; fi
+    - if [[ $COVERAGE  == true ]]; then pip install --user codecov && codecov ; fi
 
 notifications:
     email: false

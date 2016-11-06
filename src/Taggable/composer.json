@@ -28,8 +28,8 @@
     },
     "require-dev": {
         "phpunit/phpunit":         "^4.0 || ^5.1",
-        "cache/integration-tests": "^0.10",
-        "symfony/cache":           "dev-master"
+        "cache/integration-tests": "^0.11",
+        "symfony/cache":           "^3.1"
     },
     "autoload":    {
         "psr-4":                 {
