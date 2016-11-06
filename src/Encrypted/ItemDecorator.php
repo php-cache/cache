@@ -60,7 +60,9 @@ class ItemDecorator implements CacheItemInterface, HasExpirationDateInterface, T
 
         $json = json_encode(['type' => $type, 'value' => $value]);
 
-        return $this->cacheItem->set(Crypto::encrypt($json, $this->key));
+        $this->cacheItem->set(Crypto::encrypt($json, $this->key));
+
+        return $this;
     }
 
     /**
@@ -98,7 +100,9 @@ class ItemDecorator implements CacheItemInterface, HasExpirationDateInterface, T
      */
     public function expiresAt($expiration)
     {
-        return $this->cacheItem->expiresAt($expiration);
+        $this->cacheItem->expiresAt($expiration);
+
+        return $this;
     }
 
     /**
@@ -106,22 +110,37 @@ class ItemDecorator implements CacheItemInterface, HasExpirationDateInterface, T
      */
     public function expiresAfter($time)
     {
-        return $this->cacheItem->expiresAfter($time);
+        $this->cacheItem->expiresAfter($time);
+
+        return $this;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getTags()
     {
         return $this->cacheItem->getTags();
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function addTag($tag)
     {
-        return $this->cacheItem->addTag($tag);
+        $this->cacheItem->addTag($tag);
+
+        return $this;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function setTags(array $tags)
     {
-       return $this->cacheItem->setTags($tags);
+        $this->cacheItem->setTags($tags);
+
+        return $this;
     }
 
     /**
