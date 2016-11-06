@@ -20,12 +20,8 @@
   <php>
     <env name="MONGODB_HOST" value="localhost:27017"/>
     <env name="MONGODB_COLLECTION" value="psr6test.cache"/>
+    <env name="MONGODB_DATABASE" value="test"/>
   </php>
-
-  <logging>
-    <log type="coverage-text" target="php://stdout"/>
-    <log type="coverage-html" target="./coverageReport"/>
-  </logging>
 
   <groups>
     <exclude>

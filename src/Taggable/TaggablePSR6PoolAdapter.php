@@ -227,7 +227,7 @@ class TaggablePSR6PoolAdapter implements TaggablePoolInterface
     /**
      * {@inheritdoc}
      */
-    private function getTagKey($tag)
+    protected function getTagKey($tag)
     {
         return '__tag.'.$tag;
     }

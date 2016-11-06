@@ -59,28 +59,6 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface, L
     }
 
     /**
-     * @param string             $poolKey
-     * @param string             $operation
-     * @param CachePoolException $exception
-     *
-     * @throws PoolFailedException
-     */
-    private function handleException($poolKey, $operation, CachePoolException $exception)
-    {
-        if (!$this->options['skip_on_failure']) {
-            throw $exception;
-        }
-
-        $this->log(
-            'warning',
-            sprintf('Removing pool "%s" from chain because it threw an exception when executing "%s"', $poolKey, $operation),
-            ['exception' => $exception]
-        );
-
-        unset($this->pools[$poolKey]);
-    }
-
-    /**
      * @param OptionsResolver $resolver
      */
     public function configureOptions(OptionsResolver $resolver)
@@ -88,18 +66,6 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface, L
         $resolver->setDefaults([
             'skip_on_failure' => false,
         ]);
-    }
-
-    /**
-     * @return array|\Psr\Cache\CacheItemPoolInterface[]
-     */
-    public function getPools()
-    {
-        if (empty($this->pools)) {
-            throw new NoPoolAvailableException('No valid cache pool available for the chain.');
-        }
-
-        return $this->pools;
     }
 
     /**
@@ -327,5 +293,39 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface, L
         if ($this->logger !== null) {
             $this->logger->log($level, $message, $context);
         }
+    }
+
+    /**
+     * @return array|\Psr\Cache\CacheItemPoolInterface[]
+     */
+    protected function getPools()
+    {
+        if (empty($this->pools)) {
+            throw new NoPoolAvailableException('No valid cache pool available for the chain.');
+        }
+
+        return $this->pools;
+    }
+
+    /**
+     * @param string             $poolKey
+     * @param string             $operation
+     * @param CachePoolException $exception
+     *
+     * @throws PoolFailedException
+     */
+    private function handleException($poolKey, $operation, CachePoolException $exception)
+    {
+        if (!$this->options['skip_on_failure']) {
+            throw $exception;
+        }
+
+        $this->log(
+            'warning',
+            sprintf('Removing pool "%s" from chain because it threw an exception when executing "%s"', $poolKey, $operation),
+            ['exception' => $exception]
+        );
+
+        unset($this->pools[$poolKey]);
     }
 }
