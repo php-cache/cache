@@ -3,20 +3,20 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
 
-namespace Cache\Encrypted;
+namespace Cache\Encryption;
 
 use Defuse\Crypto\Key;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
 /**
- * Encrypt and Decrypt all the stored items.
+ * Wrapps a CacheItemInterface with EncryptedItemDecorator.
  *
  * @author Daniel Bannert <d.bannert@anolilab.de>
  */
@@ -39,7 +39,7 @@ class EncryptedCachePool implements CacheItemPoolInterface
     public function __construct(CacheItemPoolInterface $cachePool, Key $key)
     {
         $this->cachePool = $cachePool;
-        $this->key = $key;
+        $this->key       = $key;
     }
 
     /**
@@ -49,8 +49,8 @@ class EncryptedCachePool implements CacheItemPoolInterface
     {
         $item = $this->cachePool->getItem($key);
 
-        if (! ($item instanceof ItemDecorator)) {
-            return new ItemDecorator($item, $this->key);
+        if (!($item instanceof EncryptedItemDecorator)) {
+            return new EncryptedItemDecorator($item, $this->key);
         }
 
         return $item;
@@ -62,8 +62,8 @@ class EncryptedCachePool implements CacheItemPoolInterface
     public function getItems(array $keys = [])
     {
         return array_map(function (CacheItemInterface $inner) {
-            if (! ($inner instanceof ItemDecorator)) {
-                return new ItemDecorator($inner, $this->key);
+            if (!($inner instanceof EncryptedItemDecorator)) {
+                return new EncryptedItemDecorator($inner, $this->key);
             }
 
             return $inner;
@@ -107,8 +107,8 @@ class EncryptedCachePool implements CacheItemPoolInterface
      */
     public function save(CacheItemInterface $item)
     {
-        if (! ($item instanceof ItemDecorator)) {
-            $item = new ItemDecorator($item, $this->key);
+        if (!($item instanceof EncryptedItemDecorator)) {
+            $item = new EncryptedItemDecorator($item, $this->key);
         }
 
         return $this->cachePool->save($item);
@@ -119,8 +119,8 @@ class EncryptedCachePool implements CacheItemPoolInterface
      */
     public function saveDeferred(CacheItemInterface $item)
     {
-        if (! ($item instanceof ItemDecorator)) {
-            $item = new ItemDecorator($item, $this->key);
+        if (!($item instanceof EncryptedItemDecorator)) {
+            $item = new EncryptedItemDecorator($item, $this->key);
         }
 
         return $this->cachePool->saveDeferred($item);

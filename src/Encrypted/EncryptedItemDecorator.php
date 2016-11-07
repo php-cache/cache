@@ -3,21 +3,26 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
 
-namespace Cache\Encrypted;
+namespace Cache\Encryption;
 
-use Defuse\Crypto\Crypto;
-use Defuse\Crypto\Key;
 use Cache\Adapter\Common\HasExpirationDateInterface;
 use Cache\Taggable\TaggableItemInterface;
+use Defuse\Crypto\Crypto;
+use Defuse\Crypto\Key;
 use Psr\Cache\CacheItemInterface;
 
-class ItemDecorator implements CacheItemInterface, HasExpirationDateInterface, TaggableItemInterface
+/**
+ * Encrypt and Decrypt all the stored items.
+ *
+ * @author Daniel Bannert <d.bannert@anolilab.de>
+ */
+class EncryptedItemDecorator implements CacheItemInterface, HasExpirationDateInterface, TaggableItemInterface
 {
     /**
      * @type CacheItemPoolInterface
@@ -36,7 +41,7 @@ class ItemDecorator implements CacheItemInterface, HasExpirationDateInterface, T
     public function __construct(CacheItemInterface $cacheItem, Key $key)
     {
         $this->cacheItem = $cacheItem;
-        $this->key = $key;
+        $this->key       = $key;
     }
 
     /**

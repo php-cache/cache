@@ -9,11 +9,11 @@
  * with this source code in the file LICENSE.
  */
 
-namespace Cache\Encrypted\Tests;
+namespace Cache\Encryption\Tests;
 
 use Cache\Adapter\PHPArray\ArrayCachePool;
+use Cache\Encryption\EncryptedCachePool;
 use Cache\IntegrationTests\CachePoolTest;
-use Cache\Encrypted\EncryptedCachePool;
 use Defuse\Crypto\Key;
 
 class IntegrationPoolTest extends CachePoolTest

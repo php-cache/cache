@@ -1,12 +1,12 @@
 {
-    "name":        "cache/encrypted-cache",
+    "name":        "cache/encryption-cache",
     "type":        "library",
     "description": "Add tag support to your PSR-6 cache implementation",
     "keywords":    [
         "cache",
         "psr6",
         "encrypted",
-        "taggable"
+        "encryption"
     ],
     "homepage":    "http://www.php-cache.com/en/latest/",
     "license":     "MIT",
@@ -39,7 +39,7 @@
     },
     "autoload":    {
         "psr-4":                 {
-            "Cache\\Encrypted\\": ""
+            "Cache\\Encryption\\": ""
         },
         "exclude-from-classmap": [
             "/Tests/"
