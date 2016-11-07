@@ -25,7 +25,7 @@ use Psr\Cache\CacheItemInterface;
 class EncryptedItemDecorator implements CacheItemInterface, HasExpirationDateInterface, TaggableItemInterface
 {
     /**
-     * @type CacheItemPoolInterface
+     * @type CacheItemInterface
      */
     private $cacheItem;
 
@@ -35,7 +35,7 @@ class EncryptedItemDecorator implements CacheItemInterface, HasExpirationDateInt
     private $key;
 
     /**
-     * @param CacheItemPoolInterface $cacheItem
+     * @param CacheItemInterface $cacheItem
      * @param Key                    $key
      */
     public function __construct(CacheItemInterface $cacheItem, Key $key)
