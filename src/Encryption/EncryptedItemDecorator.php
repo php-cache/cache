@@ -149,6 +149,14 @@ class EncryptedItemDecorator implements CacheItemInterface, HasExpirationDateInt
     }
 
     /**
+     * Creating a copy of the orginal CacheItemInterface object.
+     */
+    public function __clone()
+    {
+        $this->cacheItem = clone $this->cacheItem;
+    }
+
+    /**
      * Transfrom value back to it orginal type.
      *
      * @param array $item
