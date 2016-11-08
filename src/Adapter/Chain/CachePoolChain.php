@@ -44,8 +44,8 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface, L
     /**
      * @param array $pools
      * @param array $options {
-     *     @type bool $skip_on_failure If true we will remove a pool form the chain if it fails.
-     * }
+     * @type bool $skip_on_failure If true we will remove a pool form the chain if it fails.
+     *                       }
      */
     public function __construct(array $pools, array $options = [])
     {
