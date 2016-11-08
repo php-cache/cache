@@ -1,6 +1,7 @@
 # PSR-6 Session handler
 [![Gitter](https://badges.gitter.im/php-cache/cache.svg)](https://gitter.im/php-cache/cache?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Latest Stable Version](https://poser.pugx.org/cache/session-handler/v/stable)](https://packagist.org/packages/cache/session-handler)
+[![codecov.io](https://codecov.io/github/php-cache/session-handler/coverage.svg?branch=master)](https://codecov.io/github/php-cache/session-handler?branch=master)
 [![Total Downloads](https://poser.pugx.org/cache/session-handler/downloads)](https://packagist.org/packages/cache/session-handler)
 [![Monthly Downloads](https://poser.pugx.org/cache/session-handler/d/monthly.png)](https://packagist.org/packages/cache/session-handler)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)

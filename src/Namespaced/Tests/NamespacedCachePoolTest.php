@@ -3,11 +3,12 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
 
 namespace Cache\Namespaced\Tests;
 
@@ -26,10 +27,9 @@ class NamespacedCachePoolTest extends \PHPUnit_Framework_TestCase
      */
     private function getHierarchyCacheStub()
     {
-        return $this->getMock(
-            HelperInterface::class,
+        return $this->getMockBuilder(HelperInterface::class)->setMethods(
             ['getItem', 'getItems', 'hasItem', 'clear', 'deleteItem', 'deleteItems', 'save', 'saveDeferred', 'commit']
-        );
+        )->getMock();
     }
 
     public function testGetItem()
@@ -114,7 +114,7 @@ class NamespacedCachePoolTest extends \PHPUnit_Framework_TestCase
 
     public function testSave()
     {
-        $item        = $this->getMock(CacheItemInterface::class);
+        $item        = $this->getMockBuilder(CacheItemInterface::class)->getMock();
         $namespace   = 'ns';
         $returnValue = true;
 
@@ -127,7 +127,7 @@ class NamespacedCachePoolTest extends \PHPUnit_Framework_TestCase
 
     public function testSaveDeffered()
     {
-        $item        = $this->getMock(CacheItemInterface::class);
+        $item        = $this->getMockBuilder(CacheItemInterface::class)->getMock();
         $namespace   = 'ns';
         $returnValue = true;
 

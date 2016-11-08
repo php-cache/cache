@@ -3,11 +3,12 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
 
 namespace Cache\Taggable;
 
@@ -82,9 +83,13 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
     {
         $rawItem = $this->cacheItem->get();
 
-        if (is_array($rawItem) && isset($rawItem['value'])) {
+        // If it is a cache item we created
+        if ($this->isItemCreatedHere($rawItem)) {
             return $rawItem['value'];
         }
+
+        // This is an item stored before we used this fake cache
+        return $rawItem;
     }
 
     /**
@@ -178,12 +183,24 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
             if ($this->cacheItem->isHit()) {
                 $rawItem = $this->cacheItem->get();
 
-                if (is_array($rawItem) && isset($rawItem['tags'])) {
+                if ($this->isItemCreatedHere($rawItem)) {
                     $this->tags = $rawItem['tags'];
                 }
             }
 
             $this->initialized = true;
         }
+    }
+
+    /**
+     * Verify that the raw data is a cache item created by this class.
+     *
+     * @param mixed $rawItem
+     *
+     * @return bool
+     */
+    private function isItemCreatedHere($rawItem)
+    {
+        return is_array($rawItem) && isset($rawItem['value']) && isset($rawItem['tags']) && count($rawItem) === 2;
     }
 }

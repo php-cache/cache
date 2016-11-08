@@ -3,11 +3,12 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
 
 namespace Cache\Adapter\PHPArray;
 
@@ -21,7 +22,7 @@ use Cache\Taggable\TaggablePoolTrait;
 use Psr\Cache\CacheItemInterface;
 
 /**
- * Array cache pool. You could set a limit of how many items you wantt to be stored to avoid memory leaks.
+ * Array cache pool. You could set a limit of how many items you want to be stored to avoid memory leaks.
  *
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */

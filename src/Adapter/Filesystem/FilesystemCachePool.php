@@ -3,11 +3,12 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
 
 namespace Cache\Adapter\Filesystem;
 
@@ -16,6 +17,7 @@ use Cache\Adapter\Common\Exception\InvalidArgumentException;
 use Cache\Taggable\TaggableItemInterface;
 use Cache\Taggable\TaggablePoolInterface;
 use Cache\Taggable\TaggablePoolTrait;
+use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Filesystem;
 use Psr\Cache\CacheItemInterface;
@@ -64,19 +66,25 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
      */
     protected function fetchObjectFromCache($key)
     {
-        $file = $this->getFilePath($key);
+        $empty = [false, null, []];
+        $file  = $this->getFilePath($key);
         if (!$this->filesystem->has($file)) {
-            return [false, null, []];
+            return $empty;
         }
 
-        $data = unserialize($this->filesystem->read($file));
+        try {
+            $data = unserialize($this->filesystem->read($file));
+        } catch (FileNotFoundException $e) {
+            return $empty;
+        }
+
         if ($data[0] !== null && time() > $data[0]) {
             foreach ($data[2] as $tag) {
                 $this->removeListItem($this->getTagKey($tag), $key);
             }
             $this->forceClear($key);
 
-            return [false, null, []];
+            return $empty;
         }
 
         return [true, $data[1], $data[2]];
@@ -108,21 +116,31 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
      */
     protected function storeItemInCache(CacheItemInterface $item, $ttl)
     {
-        $file = $this->getFilePath($item->getKey());
-        if ($this->filesystem->has($file)) {
-            $this->filesystem->delete($file);
-        }
-
         $tags = [];
         if ($item instanceof TaggableItemInterface) {
             $tags = $item->getTags();
         }
 
-        return $this->filesystem->write($file, serialize([
-            ($ttl === null ? null : time() + $ttl),
-            $item->get(),
-            $tags,
-        ]));
+        $data = serialize(
+            [
+                ($ttl === null ? null : time() + $ttl),
+                $item->get(),
+                $tags,
+            ]
+        );
+
+        $file = $this->getFilePath($item->getKey());
+        if ($this->filesystem->has($file)) {
+            // Update file if it exists
+            return $this->filesystem->update($file, $data);
+        }
+
+        try {
+            return $this->filesystem->write($file, $data);
+        } catch (FileExistsException $e) {
+            // To handle issues when/if race conditions occurs, we try to update here.
+            return $this->filesystem->update($file, $data);
+        }
     }
 
     /**

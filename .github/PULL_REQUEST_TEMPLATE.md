@@ -1,5 +1,5 @@
-| Q             | A
-| ------------- | ---
+| Question      | Answer
+| ------------- | ------
 | Bug fix?      | yes/no
 | New feature?  | yes/no
 | BC breaks?    | yes/no
@@ -9,11 +9,11 @@
 | License       | MIT
 | Doc PR        | reference to the documentation PR, if any
 
-### Desription
+### Description
 
 
 
 ### TODO
 * [ ] Add tests
 * [ ] Add documentation
-* [ ] Updated Changelogs
+* [ ] Updated Changelog.md

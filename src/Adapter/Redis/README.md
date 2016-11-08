@@ -1,6 +1,7 @@
 # Redis PSR-6 Cache pool 
 [![Gitter](https://badges.gitter.im/php-cache/cache.svg)](https://gitter.im/php-cache/cache?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Latest Stable Version](https://poser.pugx.org/cache/redis-adapter/v/stable)](https://packagist.org/packages/cache/redis-adapter)
+[![codecov.io](https://codecov.io/github/php-cache/redis-adapter/coverage.svg?branch=master)](https://codecov.io/github/php-cache/redis-adapter?branch=master)
 [![Total Downloads](https://poser.pugx.org/cache/redis-adapter/downloads)](https://packagist.org/packages/cache/redis-adapter)
 [![Monthly Downloads](https://poser.pugx.org/cache/redis-adapter/d/monthly.png)](https://packagist.org/packages/cache/redis-adapter)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
