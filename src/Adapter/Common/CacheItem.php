@@ -161,6 +161,9 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
         return $this;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getTags()
     {
         $this->initialize();
@@ -168,6 +171,9 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
         return $this->tags;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function addTag($tag)
     {
         $this->initialize();
@@ -177,6 +183,9 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
         return $this;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function setTags(array $tags)
     {
         $this->initialize();
