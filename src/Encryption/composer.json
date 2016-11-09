@@ -1,7 +1,7 @@
 {
     "name":        "cache/encryption-cache",
     "type":        "library",
-    "description": "Add tag support to your PSR-6 cache implementation",
+    "description": "Adds encryption support to your PSR-6 cache implementation",
     "keywords":    [
         "cache",
         "psr6",
