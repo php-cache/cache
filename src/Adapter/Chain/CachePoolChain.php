@@ -20,7 +20,6 @@ use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
@@ -36,6 +35,7 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface, L
      * @type CacheItemPoolInterface[]
      */
     private $pools;
+
     /**
      * @type array
      */
@@ -44,29 +44,18 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface, L
     /**
      * @param array $pools
      * @param array $options {
-     *
-     *     @type bool $skip_on_failure If true we will remove a pool form the chain if it fails.
-     * }
+     * @type bool $skip_on_failure If true we will remove a pool form the chain if it fails.
+     *                       }
      */
     public function __construct(array $pools, array $options = [])
     {
         $this->pools   = $pools;
+
+        if (!isset($options['skip_on_failure'])) {
+            $options['skip_on_failure'] = false;
+        }
+
         $this->options = $options;
-
-        $resolver = new OptionsResolver();
-        $this->configureOptions($resolver);
-
-        $this->options = $resolver->resolve($options);
-    }
-
-    /**
-     * @param OptionsResolver $resolver
-     */
-    public function configureOptions(OptionsResolver $resolver)
-    {
-        $resolver->setDefaults([
-            'skip_on_failure' => false,
-        ]);
     }
 
     /**
