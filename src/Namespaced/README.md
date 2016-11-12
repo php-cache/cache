@@ -6,7 +6,7 @@
 [![Monthly Downloads](https://poser.pugx.org/cache/namespaced-cache/d/monthly.png)](https://packagist.org/packages/cache/namespaced-cache)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
-This is a decorator for a PSR-6 hierarchical cache. It will allow you do use namespaces.
+This is a decorator for a PSR-6 hierarchical cache. It will allow you to use namespaces.
 
 It is a part of the PHP Cache organisation. To read about features like tagging and hierarchy support please read 
 the shared documentation at [www.php-cache.com](http://www.php-cache.com). 
