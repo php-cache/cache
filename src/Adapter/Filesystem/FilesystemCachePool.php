@@ -68,9 +68,6 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
     {
         $empty = [false, null, []];
         $file  = $this->getFilePath($key);
-        if (!$this->filesystem->has($file)) {
-            return $empty;
-        }
 
         try {
             $data = unserialize($this->filesystem->read($file));
