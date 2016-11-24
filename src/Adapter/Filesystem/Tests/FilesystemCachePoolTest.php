@@ -9,7 +9,6 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Filesystem\Tests;
 
 /**
@@ -21,22 +20,22 @@ class FilesystemCachePoolTest extends \PHPUnit_Framework_TestCase
 
     public function testCleanupOnExpire()
     {
-        $cacheKey = 'test_ttl_null';
+        $cacheKey      = 'test_ttl_null';
         $cacheFilename = $filename = str_replace('=', '_', base64_encode($cacheKey));
-        
+
         $pool = $this->createCachePool();
-        
+
         $item = $pool->getItem($cacheKey);
         $item->set('data');
         $item->expiresAt(new \DateTime('now'));
         $pool->save($item);
-        $this->assertTrue($this->getFilesystem()->has('cache/' . $cacheFilename));
-        
+        $this->assertTrue($this->getFilesystem()->has('cache/'.$cacheFilename));
+
         sleep(1);
-        
+
         $item = $pool->getItem($cacheKey);
         $this->assertFalse($item->isHit());
-        $this->assertFalse($this->getFilesystem()->has('cache/' . $cacheFilename));
+        $this->assertFalse($this->getFilesystem()->has('cache/'.$cacheFilename));
     }
 
     public function testChangeFolder()
@@ -45,6 +44,6 @@ class FilesystemCachePoolTest extends \PHPUnit_Framework_TestCase
         $pool->setFolder('foobar');
 
         $pool->save($pool->getItem('test_path'));
-        $this->assertTrue($this->getFilesystem()->has('foobar/' . str_replace('=', '_', base64_encode('test_path'))));
+        $this->assertTrue($this->getFilesystem()->has('foobar/'.str_replace('=', '_', base64_encode('test_path'))));
     }
 }
