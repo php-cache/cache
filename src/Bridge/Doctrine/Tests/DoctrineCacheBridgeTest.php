@@ -10,9 +10,9 @@
  */
 
 
-namespace Cache\Bridge\Tests;
+namespace Cache\Bridge\Doctrine\Tests;
 
-use Cache\Bridge\DoctrineCacheBridge;
+use Cache\Bridge\Doctrine\DoctrineCacheBridge;
 use Mockery as m;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;

@@ -18,7 +18,7 @@ find src -mindepth 2 -type f -name phpunit.xml.dist | while read line; do
    cd $DIR
    pwd
 
-   if [[ "$DIR" != "src/Bridge" && "$DIR" != "src/Hierarchy" && "$DIR" != "src/Namespaced" && "$DIR" != "src/SessionHandler" ]]; then
+   if [[ "$DIR" != "src/Bridge/Doctrine" && "$DIR" != "src/Hierarchy" && "$DIR" != "src/Namespaced" && "$DIR" != "src/SessionHandler" ]]; then
      # Let composer update the composer.json
      composer require --dev --no-update cache/integration-tests:$VERSION
    fi
