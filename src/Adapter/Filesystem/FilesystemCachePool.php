@@ -69,7 +69,10 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
         $file  = $this->getFilePath($key);
 
         try {
-            $data = unserialize($this->filesystem->read($file));
+            $data = @unserialize($this->filesystem->read($file));
+            if ($data === false) {
+                return $empty;
+            }
         } catch (FileNotFoundException $e) {
             return $empty;
         }

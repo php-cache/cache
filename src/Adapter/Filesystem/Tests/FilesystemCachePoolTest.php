@@ -10,6 +10,7 @@
  */
 
 namespace Cache\Adapter\Filesystem\Tests;
+use Cache\Adapter\Common\CacheItem;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
@@ -52,5 +53,18 @@ class FilesystemCachePoolTest extends \PHPUnit_Framework_TestCase
 
         $pool->save($pool->getItem('test_path'));
         $this->assertTrue($this->getFilesystem()->has('foobar/test_path'));
+    }
+    
+    public function testCorruptedCacheFileHandledNicely()
+    {
+        $pool = $this->createCachePool();
+
+        $this->getFilesystem()->write('cache/corrupt','corrupt data');
+        
+        $item = $pool->getItem('corrupt');
+        $this->assertFalse($item->isHit());
+
+        $this->getFilesystem()->delete('cache/corrupt');
+
     }
 }
