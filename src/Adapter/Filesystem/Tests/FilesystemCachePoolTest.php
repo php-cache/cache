@@ -58,7 +58,7 @@ class FilesystemCachePoolTest extends \PHPUnit_Framework_TestCase
     {
         $pool = $this->createCachePool();
 
-        $this->getFilesystem()->write('cache/corrupt','corrupt data');
+        $this->getFilesystem()->write('cache/corrupt', 'corrupt data');
 
         $item = $pool->getItem('corrupt');
         $this->assertFalse($item->isHit());
