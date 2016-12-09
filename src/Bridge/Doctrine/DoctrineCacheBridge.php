@@ -10,7 +10,7 @@
  */
 
 
-namespace Cache\Bridge;
+namespace Cache\Bridge\Doctrine;
 
 use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\Cache\CacheProvider;
