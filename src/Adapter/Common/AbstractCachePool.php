@@ -9,7 +9,6 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Common;
 
 use Cache\Adapter\Common\Exception\CacheException;
@@ -37,23 +36,21 @@ abstract class AbstractCachePool implements CacheItemPoolInterface, LoggerAwareI
     protected $deferred = [];
 
     /**
-     * @param CacheItemInterface $item
-     * @param int|null           $ttl  seconds from now
+     * @param PhpCacheItem $item
+     * @param int|null  $ttl  seconds from now
      *
      * @return bool true if saved
      */
-    abstract protected function storeItemInCache(CacheItemInterface $item, $ttl);
+    abstract protected function storeItemInCache(PhpCacheItem $item, $ttl);
 
     /**
      * Fetch an object from the cache implementation.
      *
-     * Some cache pools allow to return `ttl` from a stored item. A timestamp should
-     * be returned to ensure proper behavior when saving a item from a lower pool
-     * to a higher pool within a `CachePoolChain`.
+     * If it is a cache miss, it MUST return [false, null, [], null]
      *
      * @param string $key
      *
-     * @return array with [isHit, value, [tags], [ttl]]
+     * @return array with [isHit, value, tags[], expirationTimestamp]
      */
     abstract protected function fetchObjectFromCache($key);
 
@@ -182,9 +179,9 @@ abstract class AbstractCachePool implements CacheItemPoolInterface, LoggerAwareI
     public function save(CacheItemInterface $item)
     {
         $timeToLive = null;
-        if ($item instanceof HasExpirationDateInterface) {
-            if (null !== $expirationDate = $item->getExpirationDate()) {
-                $timeToLive = $expirationDate->getTimestamp() - time();
+        if ($item instanceof HasExpirationTimestampInterface) {
+            if (null !== $timestamp = $item->getExpirationTimestamp()) {
+                $timeToLive = $timestamp - time();
 
                 if ($timeToLive < 0) {
                     return $this->deleteItem($item->getKey());

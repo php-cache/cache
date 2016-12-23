@@ -9,13 +9,12 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\MongoDB;
 
 use Cache\Adapter\Common\AbstractCachePool;
+use Cache\Adapter\Common\PhpCacheItem;
 use MongoDB\Collection;
 use MongoDB\Driver\Manager;
-use Psr\Cache\CacheItemInterface;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
@@ -59,16 +58,16 @@ class MongoDBCachePool extends AbstractCachePool
         $object = $this->collection->findOne(['_id' => $key]);
 
         if (!$object || !isset($object->data)) {
-            return [false, null, []];
+            return [false, null, [], null];
         }
 
         if (isset($object->expiresAt)) {
             if ($object->expiresAt < time()) {
-                return [false, null, []];
+                return [false, null, [], null];
             }
         }
 
-        return [true, unserialize($object->data), []];
+        return [true, unserialize($object->data), $object->tags, $object->expirationTimestamp];
     }
 
     /**
@@ -94,11 +93,13 @@ class MongoDBCachePool extends AbstractCachePool
     /**
      * {@inheritdoc}
      */
-    protected function storeItemInCache(CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
         $object = [
-            '_id'  => $item->getKey(),
-            'data' => serialize($item->get()),
+            '_id'                 => $item->getKey(),
+            'data'                => serialize($item->get()),
+            'tags'                => [],
+            'expirationTimestamp' => $item->getExpirationTimestamp(),
         ];
 
         if ($ttl) {

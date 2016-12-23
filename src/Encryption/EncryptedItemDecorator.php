@@ -9,10 +9,9 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Encryption;
 
-use Cache\Adapter\Common\HasExpirationDateInterface;
+use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Taggable\TaggableItemInterface;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
@@ -23,7 +22,7 @@ use Psr\Cache\CacheItemInterface;
  *
  * @author Daniel Bannert <d.bannert@anolilab.de>
  */
-class EncryptedItemDecorator implements CacheItemInterface, HasExpirationDateInterface, TaggableItemInterface
+class EncryptedItemDecorator implements PhpCacheItem, TaggableItemInterface
 {
     /**
      * @type CacheItemInterface
@@ -96,9 +95,9 @@ class EncryptedItemDecorator implements CacheItemInterface, HasExpirationDateInt
     /**
      * {@inheritdoc}
      */
-    public function getExpirationDate()
+    public function getExpirationTimestamp()
     {
-        return $this->cacheItem->getExpirationDate();
+        return $this->cacheItem->getExpirationTimestamp();
     }
 
     /**

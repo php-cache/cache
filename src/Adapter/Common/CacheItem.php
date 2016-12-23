@@ -9,17 +9,15 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Common;
 
 use Cache\Taggable\TaggableItemInterface;
-use Psr\Cache\CacheItemInterface;
 
 /**
  * @author Aaron Scherer <aequasi@gmail.com>
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class CacheItem implements HasExpirationDateInterface, CacheItemInterface, TaggableItemInterface
+class CacheItem implements PhpCacheItem, TaggableItemInterface
 {
     /**
      * @type array
@@ -42,9 +40,13 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
     private $value;
 
     /**
-     * @type \DateTimeInterface|null
+     * The expiration timestamp is the source of truth. This is the UTC timestamp
+     * when the cache item expire. A value of zero means it never expires. A nullvalue
+     * means that no expiration is set.
+     *
+     * @type int|null
      */
-    private $expirationDate = null;
+    private $expirationTimestamp = null;
 
     /**
      * @type bool
@@ -111,8 +113,8 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
             return false;
         }
 
-        if ($this->expirationDate !== null) {
-            return $this->expirationDate > new \DateTime();
+        if ($this->expirationTimestamp !== null) {
+            return $this->expirationTimestamp > time();
         }
 
         return true;
@@ -121,9 +123,9 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
     /**
      * {@inheritdoc}
      */
-    public function getExpirationDate()
+    public function getExpirationTimestamp()
     {
-        return $this->expirationDate;
+        return $this->expirationTimestamp;
     }
 
     /**
@@ -132,9 +134,9 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
     public function expiresAt($expiration)
     {
         if ($expiration instanceof \DateTimeInterface) {
-            $this->expirationDate = clone $expiration;
+            $this->expirationTimestamp = $expiration->getTimestamp();
         } else {
-            $this->expirationDate = $expiration;
+            $this->expirationTimestamp = $expiration;
         }
 
         return $this;
@@ -146,16 +148,13 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
     public function expiresAfter($time)
     {
         if ($time === null) {
-            $this->expirationDate = null;
-        }
-
-        if ($time instanceof \DateInterval) {
-            $this->expirationDate = new \DateTime();
-            $this->expirationDate->add($time);
-        }
-
-        if (is_int($time)) {
-            $this->expirationDate = \DateTime::createFromFormat('U', time() + $time);
+            $this->expirationTimestamp = null;
+        } elseif ($time instanceof \DateInterval) {
+            $date = new \DateTime();
+            $date->add($time);
+            $this->expirationTimestamp = $date->getTimestamp();
+        } elseif (is_int($time)) {
+            $this->expirationTimestamp = time() + $time;
         }
 
         return $this;
@@ -201,14 +200,16 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
     private function initialize()
     {
         if ($this->callable !== null) {
-            $f              = $this->callable;
-            $result         = $f();
-            $this->hasValue = $result[0];
-            $this->value    = $result[1];
-            $this->tags     = isset($result[2]) ? $result[2] : [];
+            // $f will be $adapter->fetchObjectFromCache();
+            $f                         = $this->callable;
+            $result                    = $f();
+            $this->hasValue            = $result[0];
+            $this->value               = $result[1];
+            $this->tags                = isset($result[2]) ? $result[2] : [];
+            $this->expirationTimestamp = null;
 
             if (isset($result[3]) && is_int($result[3])) {
-                $this->expirationDate = new \DateTime('@'.$result[3]);
+                $this->expirationTimestamp = $result[3];
             }
 
             $this->callable = null;

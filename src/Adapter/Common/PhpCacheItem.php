@@ -9,19 +9,13 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Common;
 
+use Psr\Cache\CacheItemInterface;
+
 /**
- * @author Aaron Scherer <aequasi@gmail.com>
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-interface HasExpirationDateInterface
+interface PhpCacheItem extends HasExpirationTimestampInterface, CacheItemInterface
 {
-    /**
-     * The date and time when the object expires.
-     *
-     * @return \DateTimeInterface|null
-     */
-    public function getExpirationDate();
 }

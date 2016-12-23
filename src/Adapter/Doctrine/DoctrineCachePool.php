@@ -9,10 +9,10 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Doctrine;
 
 use Cache\Adapter\Common\AbstractCachePool;
+use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Taggable\TaggableItemInterface;
 use Cache\Taggable\TaggablePoolInterface;
 use Cache\Taggable\TaggablePoolTrait;
@@ -61,7 +61,7 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
     protected function fetchObjectFromCache($key)
     {
         if (false === $data = $this->cache->fetch($key)) {
-            return [false, null, []];
+            return [false, null, [], null];
         }
 
         return unserialize($data);
@@ -92,7 +92,7 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
     /**
      * {@inheritdoc}
      */
-    protected function storeItemInCache(CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
         if ($ttl === null) {
             $ttl = 0;
@@ -102,7 +102,7 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
         if ($item instanceof TaggableItemInterface) {
             $tags = $item->getTags();
         }
-        $data = serialize([true, $item->get(), $tags]);
+        $data = serialize([true, $item->get(), $tags, $item->getExpirationTimestamp()]);
 
         return $this->cache->save($item->getKey(), $data, $ttl);
     }

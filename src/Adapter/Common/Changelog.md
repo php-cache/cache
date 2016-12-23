@@ -4,6 +4,13 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+### Changed
+
+* First parameter to `AbstractCachePool::storeItemInCache` must be a `PhpCacheItem`. 
+* Return value from `AbstractCachePool::fetchObjectFromCache` must be a an array with 4 values. Added expiration timestamp. 
+* `HasExpirationDateInterface` is replaced by `HasExpirationTimestampInterface`
+* We do not work with `\DateTime` anymore. We work with timestamps. 
+
 ## 0.3.3
 
 ### Fixed

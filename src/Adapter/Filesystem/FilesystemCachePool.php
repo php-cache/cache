@@ -9,11 +9,11 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Filesystem;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\Exception\InvalidArgumentException;
+use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Taggable\TaggableItemInterface;
 use Cache\Taggable\TaggablePoolInterface;
 use Cache\Taggable\TaggablePoolTrait;
@@ -66,7 +66,7 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
      */
     protected function fetchObjectFromCache($key)
     {
-        $empty = [false, null, []];
+        $empty = [false, null, [], null];
         $file  = $this->getFilePath($key);
         if (!$this->filesystem->has($file)) {
             return $empty;
@@ -78,10 +78,10 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
             return $empty;
         }
 
-        // Determine ttl from data, remove items if expired
-        $ttl = $data[0] ?: null;
-        if ($ttl !== null && time() > $ttl) {
-            foreach ($data[2] as $tag) {
+        // Determine expirationTimestamp from data, remove items if expired
+        $expirationTimestamp = $data[2] ?: null;
+        if ($expirationTimestamp !== null && time() > $expirationTimestamp) {
+            foreach ($data[1] as $tag) {
                 $this->removeListItem($this->getTagKey($tag), $key);
             }
             $this->forceClear($key);
@@ -89,7 +89,7 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
             return $empty;
         }
 
-        return [true, $data[1], $data[2], $ttl];
+        return [true, $data[0], $data[1], $expirationTimestamp];
     }
 
     /**
@@ -116,7 +116,7 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
     /**
      * {@inheritdoc}
      */
-    protected function storeItemInCache(CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
         $tags = [];
         if ($item instanceof TaggableItemInterface) {
@@ -125,9 +125,9 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
 
         $data = serialize(
             [
-                ($ttl === null ? null : time() + $ttl),
                 $item->get(),
                 $tags,
+                $item->getExpirationTimestamp(),
             ]
         );
 

@@ -9,12 +9,11 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Memcache;
 
 use Cache\Adapter\Common\AbstractCachePool;
+use Cache\Adapter\Common\PhpCacheItem;
 use Memcache;
-use Psr\Cache\CacheItemInterface;
 
 class MemcacheCachePool extends AbstractCachePool
 {
@@ -37,7 +36,7 @@ class MemcacheCachePool extends AbstractCachePool
     protected function fetchObjectFromCache($key)
     {
         if (false === $result = unserialize($this->cache->get($key))) {
-            return [false, null, []];
+            return [false, null, [], null];
         }
 
         return $result;
@@ -64,9 +63,9 @@ class MemcacheCachePool extends AbstractCachePool
     /**
      * {@inheritdoc}
      */
-    protected function storeItemInCache(CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
-        $data = serialize([true, $item->get(), []]);
+        $data = serialize([true, $item->get(), [], $item->getExpirationTimestamp()]);
 
         return $this->cache->set($item->getKey(), $data, 0, $ttl ?: 0);
     }

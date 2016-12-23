@@ -9,10 +9,10 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Redis;
 
 use Cache\Adapter\Common\AbstractCachePool;
+use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
 use Cache\Taggable\TaggableItemInterface;
@@ -47,7 +47,7 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     protected function fetchObjectFromCache($key)
     {
         if (false === $result = unserialize($this->cache->get($this->getHierarchyKey($key)))) {
-            return [false, null, []];
+            return [false, null, [], null];
         }
 
         return $result;
@@ -78,10 +78,10 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     /**
      * {@inheritdoc}
      */
-    protected function storeItemInCache(CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
         $key  = $this->getHierarchyKey($item->getKey());
-        $data = serialize([true, $item->get(), $item->getTags()]);
+        $data = serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]);
         if ($ttl === null || $ttl === 0) {
             return $this->cache->set($key, $data);
         }
