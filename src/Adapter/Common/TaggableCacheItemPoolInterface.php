@@ -56,5 +56,5 @@ interface TaggableCacheItemPoolInterface extends CacheItemPoolInterface
      *
      * @return array|\Traversable|TaggableCacheItemInterface[]
      */
-    public function getItems(array $keys = array());
+    public function getItems(array $keys = []);
 }

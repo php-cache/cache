@@ -12,7 +12,6 @@
 namespace Cache\Adapter\Common;
 
 use Cache\Adapter\Common\Exception\InvalidArgumentException;
-use Cache\Taggable\TaggableItemInterface;
 
 /**
  * @author Aaron Scherer <aequasi@gmail.com>

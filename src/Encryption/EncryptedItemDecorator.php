@@ -12,11 +12,9 @@
 namespace Cache\Encryption;
 
 use Cache\Adapter\Common\PhpCacheItem;
-use Cache\Adapter\Common\TaggableCacheItemInterface;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 use Psr\Cache\CacheItemInterface;
-use Psr\Cache\InvalidArgumentException;
 
 /**
  * Encrypt and Decrypt all the stored items.
@@ -145,6 +143,7 @@ class EncryptedItemDecorator implements PhpCacheItem
     public function addTag($tag)
     {
         $this->cacheItem->addTag($tag);
+
         return $this;
     }
 
@@ -154,9 +153,9 @@ class EncryptedItemDecorator implements PhpCacheItem
     public function addTags(array $tags)
     {
         $this->cacheItem->addTags($tags);
+
         return $this;
     }
-
 
     /**
      * Creating a copy of the orginal CacheItemInterface object.

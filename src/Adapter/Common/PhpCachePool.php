@@ -11,8 +11,6 @@
 
 namespace Cache\Adapter\Common;
 
-use Psr\Cache\CacheItemPoolInterface;
-
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */

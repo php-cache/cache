@@ -23,14 +23,14 @@ use Psr\Cache\InvalidArgumentException;
 interface TaggableCacheItemInterface extends CacheItemInterface
 {
     /**
-     * Get all existing tags
+     * Get all existing tags.
      *
      * @return array
      */
     public function getTags();
 
     /**
-     * Overwrite all tags with a new set of tags
+     * Overwrite all tags with a new set of tags.
      *
      * @param string[] $tags An array of tags
      *
@@ -55,6 +55,7 @@ interface TaggableCacheItemInterface extends CacheItemInterface
      * Add new tags to the collection.
      *
      * @param string[] $tags An array of tags
+     *
      * @throws InvalidArgumentException When a tag is not valid.
      *
      * @return TaggableCacheItemInterface

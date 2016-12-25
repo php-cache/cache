@@ -144,7 +144,6 @@ class TaggablePSR6ItemAdapter implements TaggableCacheItemInterface
         return $this->tag($tags);
     }
 
-
     private function tag($tags)
     {
         if (!is_array($tags)) {
