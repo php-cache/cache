@@ -9,10 +9,10 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Predis;
 
 use Cache\Adapter\Common\AbstractCachePool;
+use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
 use Cache\Taggable\TaggableItemInterface;
@@ -60,7 +60,7 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
     protected function fetchObjectFromCache($key)
     {
         if (false === $result = unserialize($this->cache->get($this->getHierarchyKey($key)))) {
-            return [false, null, []];
+            return [false, null, [], null];
         }
 
         return $result;
@@ -93,14 +93,14 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
     /**
      * {@inheritdoc}
      */
-    protected function storeItemInCache(CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
         if ($ttl < 0) {
             return false;
         }
 
         $key  = $this->getHierarchyKey($item->getKey());
-        $data = serialize([true, $item->get(), $item->getTags()]);
+        $data = serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]);
 
         if ($ttl === null || $ttl === 0) {
             return 'OK' === $this->cache->set($key, $data)->getPayload();

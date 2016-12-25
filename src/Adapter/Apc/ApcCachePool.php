@@ -9,11 +9,10 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Apc;
 
 use Cache\Adapter\Common\AbstractCachePool;
-use Psr\Cache\CacheItemInterface;
+use Cache\Adapter\Common\PhpCacheItem;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
@@ -39,13 +38,17 @@ class ApcCachePool extends AbstractCachePool
     protected function fetchObjectFromCache($key)
     {
         if ($this->skipIfCli()) {
-            return [false, null, []];
+            return [false, null, [], null];
         }
 
-        $success = false;
-        $data    = apc_fetch($key, $success);
+        $success   = false;
+        $cacheData = apc_fetch($key, $success);
+        if (!$success) {
+            return [false, null, []];
+        }
+        list($data, $timestamp, $tags) = unserialize($cacheData);
 
-        return [$success, $data, []];
+        return [$success, $data, $tags, $timestamp];
     }
 
     /**
@@ -69,7 +72,7 @@ class ApcCachePool extends AbstractCachePool
     /**
      * {@inheritdoc}
      */
-    protected function storeItemInCache(CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
         if ($this->skipIfCli()) {
             return false;
@@ -79,7 +82,7 @@ class ApcCachePool extends AbstractCachePool
             return false;
         }
 
-        return apc_store($item->getKey(), $item->get(), $ttl);
+        return apc_store($item->getKey(), serialize([$item->get(), $item->getExpirationTimestamp(), []]), $ttl);
     }
 
     /**

@@ -9,13 +9,12 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Void;
 
 use Cache\Adapter\Common\AbstractCachePool;
+use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Hierarchy\HierarchicalPoolInterface;
 use Cache\Taggable\TaggablePoolInterface;
-use Psr\Cache\CacheItemInterface;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
@@ -27,7 +26,7 @@ class VoidCachePool extends AbstractCachePool implements TaggablePoolInterface, 
      */
     protected function fetchObjectFromCache($key)
     {
-        return [false, null, []];
+        return [false, null, [], null];
     }
 
     /**
@@ -49,7 +48,7 @@ class VoidCachePool extends AbstractCachePool implements TaggablePoolInterface, 
     /**
      * {@inheritdoc}
      */
-    protected function storeItemInCache(CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
         return true;
     }

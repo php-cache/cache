@@ -9,13 +9,12 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Memcached;
 
 use Cache\Adapter\Common\AbstractCachePool;
+use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
-use Psr\Cache\CacheItemInterface;
 
 /**
  * @author Aaron Scherer <aequasi@gmail.com>
@@ -45,7 +44,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     protected function fetchObjectFromCache($key)
     {
         if (false === $result = unserialize($this->cache->get($this->getHierarchyKey($key)))) {
-            return [false, null, []];
+            return [false, null, [], null];
         }
 
         return $result;
@@ -80,7 +79,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     /**
      * {@inheritdoc}
      */
-    protected function storeItemInCache(CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
         if ($ttl === null) {
             $ttl = 0;
@@ -94,7 +93,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
 
         $key = $this->getHierarchyKey($item->getKey());
 
-        return $this->cache->set($key, serialize([true, $item->get(), []]), $ttl);
+        return $this->cache->set($key, serialize([true, $item->get(), [], $item->getExpirationTimestamp()]), $ttl);
     }
 
     /**

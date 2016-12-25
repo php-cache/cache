@@ -9,11 +9,11 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\PHPArray;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\CacheItem;
+use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
 use Cache\Taggable\TaggableItemInterface;
@@ -136,7 +136,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     /**
      * {@inheritdoc}
      */
-    protected function storeItemInCache(CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
         $key               = $this->getHierarchyKey($item->getKey());
         $this->cache[$key] = $item;
