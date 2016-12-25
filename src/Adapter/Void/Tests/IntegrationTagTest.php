@@ -25,7 +25,8 @@ class IntegrationTagTest extends TaggableCachePoolTest
         'testSaveDeferred'                         => 'Void adapter does not save,',
         'testMultipleTags'                         => 'Void adapter does not save,',
         'testRemoveTagWhenItemIsRemoved'           => 'Void adapter does not save,',
-        'testClear'                                => 'Void adapter does not save,',
+        'testClearPool'                            => 'Void adapter does not save,',
+        'testInvalidateTag'                        => 'Void adapter does not save,',
         'testInvalidateTags'                       => 'Void adapter does not save,',
     ];
 
