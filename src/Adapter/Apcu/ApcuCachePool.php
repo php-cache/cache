@@ -49,7 +49,7 @@ class ApcuCachePool extends AbstractCachePool
         if (!$success) {
             return [false, null, [], null];
         }
-        list($data, $timestamp, $tags) = unserialize($cacheData);
+        list($data, $tags, $timestamp) = unserialize($cacheData);
 
         return [$success, $data, $tags, $timestamp];
     }
@@ -85,7 +85,7 @@ class ApcuCachePool extends AbstractCachePool
             return false;
         }
 
-        return apcu_store($item->getKey(), serialize([$item->get(), $item->getExpirationTimestamp(), []]), $ttl);
+        return apcu_store($item->getKey(), serialize([$item->get(), $item->getTags(), $item->getExpirationTimestamp()]), $ttl);
     }
 
     /**

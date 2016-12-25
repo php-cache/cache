@@ -70,7 +70,7 @@ class MongoDBCachePool extends AbstractCachePool
             }
         }
 
-        return [true, unserialize($object->data), $object->tags, $object->expirationTimestamp];
+        return [true, unserialize($object->data), unserialize($object->tags), $object->expirationTimestamp];
     }
 
     /**
@@ -101,7 +101,7 @@ class MongoDBCachePool extends AbstractCachePool
         $object = [
             '_id'                 => $item->getKey(),
             'data'                => serialize($item->get()),
-            'tags'                => [],
+            'tags'                => serialize($item->getTags()),
             'expirationTimestamp' => $item->getExpirationTimestamp(),
         ];
 

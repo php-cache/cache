@@ -95,7 +95,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
 
         $key = $this->getHierarchyKey($item->getKey());
 
-        return $this->cache->set($key, serialize([true, $item->get(), [], $item->getExpirationTimestamp()]), $ttl);
+        return $this->cache->set($key, serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]), $ttl);
     }
 
     /**

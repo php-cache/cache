@@ -349,6 +349,7 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface
             // Remove the tag list
             foreach ($tags as $tag) {
                 $this->removeList($this->getTagKey($tag));
+                $l = $this->getList($this->getTagKey($tag));
             }
         }
 
@@ -382,7 +383,8 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface
      */
     protected function preRemoveItem($key)
     {
-        $tags = $this->getItem($key)->getTags();
+        $item = $this->getItem($key);
+        $tags = $item->getTags();
         foreach ($tags as $tag) {
             $this->removeListItem($this->getTagKey($tag), $key);
         }

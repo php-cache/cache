@@ -47,9 +47,9 @@ class ApcCachePool extends AbstractCachePool
         $success   = false;
         $cacheData = apc_fetch($key, $success);
         if (!$success) {
-            return [false, null, []];
+            return [false, null, [], null];
         }
-        list($data, $timestamp, $tags) = unserialize($cacheData);
+        list($data, $tags, $timestamp) = unserialize($cacheData);
 
         return [$success, $data, $tags, $timestamp];
     }
@@ -85,7 +85,7 @@ class ApcCachePool extends AbstractCachePool
             return false;
         }
 
-        return apc_store($item->getKey(), serialize([$item->get(), $item->getExpirationTimestamp(), []]), $ttl);
+        return apc_store($item->getKey(), serialize([$item->get(), $item->getTags(), $item->getExpirationTimestamp()]), $ttl);
     }
 
     /**

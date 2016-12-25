@@ -68,7 +68,7 @@ class MemcacheCachePool extends AbstractCachePool
      */
     protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
-        $data = serialize([true, $item->get(), [], $item->getExpirationTimestamp()]);
+        $data = serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]);
 
         return $this->cache->set($item->getKey(), $data, 0, $ttl ?: 0);
     }
