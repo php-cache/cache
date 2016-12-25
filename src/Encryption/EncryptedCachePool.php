@@ -141,4 +141,11 @@ class EncryptedCachePool implements PhpCachePool
     {
         return $this->cachePool->invalidateTags($tags);
     }
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidateTag($tag)
+    {
+        return $this->cachePool->invalidateTag($tag);
+    }
 }

@@ -355,6 +355,12 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface
         return $success;
     }
 
+    public function invalidateTag($tag)
+    {
+        return $this->invalidateTags([$tag]);
+    }
+
+
     /**
      * @param PhpCacheItem $item
      */

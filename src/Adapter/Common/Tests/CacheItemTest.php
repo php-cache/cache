@@ -122,17 +122,4 @@ class CacheItemTest extends \PHPUnit_Framework_TestCase
         $item->expiresAfter(1);
         $this->assertEquals((new \DateTime('+1 second'))->getTimestamp(), $item->getExpirationTimestamp());
     }
-
-    public function testTagAccessor()
-    {
-        $item = new CacheItem('test_key');
-        $item->tag(['tag1', 'tag2']);
-        $item->tag('tag3');
-
-        $tags = $item->getTags();
-        $this->assertCount(3, $tags);
-        $this->assertTrue(in_array('tag1', $tags));
-        $this->assertTrue(in_array('tag2', $tags));
-        $this->assertTrue(in_array('tag3', $tags));
-    }
 }

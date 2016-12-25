@@ -11,7 +11,7 @@
 
 namespace Cache\Taggable;
 
-use Cache\Adapter\Common\TagAwarePool;
+use Cache\Adapter\Common\TaggableCacheItemPoolInterface;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
@@ -36,7 +36,7 @@ use Psr\Cache\CacheItemPoolInterface;
  *
  * @author Magnus Nordlander <magnus@fervo.se>
  */
-class TaggablePSR6PoolAdapter implements TagAwarePool
+class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
 {
     /**
      * @type CacheItemPoolInterface
@@ -66,11 +66,11 @@ class TaggablePSR6PoolAdapter implements TagAwarePool
      * @param CacheItemPoolInterface      $cachePool    The pool to which to add tagging capabilities.
      * @param CacheItemPoolInterface|null $tagStorePool The pool to store tags in. If null is passed, the main pool is used.
      *
-     * @return TagAwarePool
+     * @return TaggableCacheItemPoolInterface
      */
     public static function makeTaggable(CacheItemPoolInterface $cachePool, CacheItemPoolInterface $tagStorePool = null)
     {
-        if ($cachePool instanceof TagAwarePool && $tagStorePool === null) {
+        if ($cachePool instanceof TaggableCacheItemPoolInterface && $tagStorePool === null) {
             return $cachePool;
         }
 
@@ -247,9 +247,7 @@ class TaggablePSR6PoolAdapter implements TagAwarePool
     }
 
     /**
-     * @param array $tags
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     public function invalidateTags(array $tags)
     {
@@ -269,6 +267,14 @@ class TaggablePSR6PoolAdapter implements TagAwarePool
         }
 
         return $success;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidateTag($tag)
+    {
+        return $this->invalidateTags([$tag]);
     }
 
     /**

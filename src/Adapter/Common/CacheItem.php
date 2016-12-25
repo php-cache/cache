@@ -18,7 +18,7 @@ use Cache\Taggable\TaggableItemInterface;
  * @author Aaron Scherer <aequasi@gmail.com>
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class CacheItem implements PhpCacheItem, TaggableItemInterface
+class CacheItem implements PhpCacheItem
 {
     /**
      * @type array
@@ -173,8 +173,6 @@ class CacheItem implements PhpCacheItem, TaggableItemInterface
 
     /**
      * {@inheritdoc}
-     *
-     * @deprecated use tag()
      */
     public function addTag($tag)
     {
@@ -185,8 +183,14 @@ class CacheItem implements PhpCacheItem, TaggableItemInterface
 
     /**
      * {@inheritdoc}
-     *
-     * @deprecated use tag()
+     */
+    public function addTags(array $tags)
+    {
+        $this->tag($tags);
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function setTags(array $tags)
     {
@@ -198,9 +202,15 @@ class CacheItem implements PhpCacheItem, TaggableItemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Adds a tag to a cache item.
+     *
+     * @param string|string[] $tags A tag or array of tags
+     *
+     * @throws InvalidArgumentException When $tag is not valid.
+     *
+     * @return TaggableCacheItemInterface
      */
-    public function tag($tags)
+    private function tag($tags)
     {
         $this->initialize();
 

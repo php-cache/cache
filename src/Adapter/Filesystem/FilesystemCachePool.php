@@ -115,15 +115,10 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
      */
     protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
-        $tags = [];
-        if ($item instanceof TaggableItemInterface) {
-            $tags = $item->getTags();
-        }
-
         $data = serialize(
             [
                 $item->get(),
-                $tags,
+                $item->getTags(),
                 $item->getExpirationTimestamp(),
             ]
         );

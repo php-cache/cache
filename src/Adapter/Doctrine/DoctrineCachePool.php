@@ -83,11 +83,7 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
             $ttl = 0;
         }
 
-        $tags = [];
-        if ($item instanceof TaggableItemInterface) {
-            $tags = $item->getTags();
-        }
-        $data = serialize([true, $item->get(), $tags, $item->getExpirationTimestamp()]);
+        $data = serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]);
 
         return $this->cache->save($item->getKey(), $data, $ttl);
     }

@@ -12,7 +12,7 @@
 namespace Cache\Taggable;
 
 use Cache\Adapter\Common\Exception\InvalidArgumentException;
-use Cache\Adapter\Common\TagAwareItem;
+use Cache\Adapter\Common\TaggableCacheItemInterface;
 use Psr\Cache\CacheItemInterface;
 
 /**
@@ -26,7 +26,7 @@ use Psr\Cache\CacheItemInterface;
  *
  * @author Magnus Nordlander <magnus@fervo.se>
  */
-class TaggablePSR6ItemAdapter implements TagAwareItem, CacheItemInterface
+class TaggablePSR6ItemAdapter implements TaggableCacheItemInterface
 {
     /**
      * @type bool
@@ -126,10 +126,26 @@ class TaggablePSR6ItemAdapter implements TagAwareItem, CacheItemInterface
         return $this->tags;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function tag($tags)
+    public function setTags(array $tags)
+    {
+        $this->initializeTags();
+        $this->tags = [];
+
+        return $this->tag($tags);
+    }
+
+    public function addTag($tag)
+    {
+        return $this->tag($tag);
+    }
+
+    public function addTags(array $tags)
+    {
+        return $this->tag($tags);
+    }
+
+
+    private function tag($tags)
     {
         if (!is_array($tags)) {
             $tags = [$tags];

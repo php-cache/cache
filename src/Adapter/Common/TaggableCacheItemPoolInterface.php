@@ -17,10 +17,22 @@ use Psr\Cache\InvalidArgumentException;
 /**
  * Interface for invalidating cached items using tags. This interface is a soon-to-be-PSR.
  *
+ * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  * @author Nicolas Grekas <p@tchwork.com>
  */
-interface TagAwarePool extends CacheItemPoolInterface
+interface TaggableCacheItemPoolInterface extends CacheItemPoolInterface
 {
+    /**
+     * Invalidates cached items using a tag.
+     *
+     * @param string $tag The tag to invalidate
+     *
+     * @throws InvalidArgumentException When $tags is not valid
+     *
+     * @return bool True on success
+     */
+    public function invalidateTag($tag);
+
     /**
      * Invalidates cached items using tags.
      *
@@ -31,4 +43,18 @@ interface TagAwarePool extends CacheItemPoolInterface
      * @return bool True on success
      */
     public function invalidateTags(array $tags);
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return TaggableCacheItemInterface
+     */
+    public function getItem($key);
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return array|\Traversable|TaggableCacheItemInterface[]
+     */
+    public function getItems(array $keys = array());
 }
