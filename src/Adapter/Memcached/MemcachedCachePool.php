@@ -13,6 +13,7 @@ namespace Cache\Adapter\Memcached;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\TagSupportWithArray;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
 
@@ -23,6 +24,7 @@ use Cache\Hierarchy\HierarchicalPoolInterface;
 class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolInterface
 {
     use HierarchicalCachePoolTrait;
+    use TagSupportWithArray;
 
     /**
      * @type \Memcached
@@ -102,5 +104,21 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     protected function getValueFormStore($key)
     {
         return $this->cache->get($key);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    function getDirectValue($name)
+    {
+        return $this->cache->get($name);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    function setDirectValue($name, $value)
+    {
+        $this->cache->set($name, $value);
     }
 }

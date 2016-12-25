@@ -66,8 +66,6 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      */
     protected function clearOneObjectFromCache($key)
     {
-        $this->commit();
-        $this->preRemoveItem($key);
         $keyString = $this->getHierarchyKey($key, $path);
         $this->cache->incr($path);
         $this->clearHierarchyKeyCache();
@@ -87,18 +85,6 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         }
 
         return $this->cache->setex($key, $ttl, $data);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function save(CacheItemInterface $item)
-    {
-        if ($item instanceof TaggableItemInterface) {
-            $this->saveTags($item);
-        }
-
-        return parent::save($item);
     }
 
     /**

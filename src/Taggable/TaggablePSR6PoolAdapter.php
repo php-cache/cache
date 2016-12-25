@@ -12,6 +12,8 @@
 
 namespace Cache\Taggable;
 
+use Cache\Adapter\Common\TagAwareItem;
+use Cache\Adapter\Common\TagAwarePool;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
@@ -36,10 +38,8 @@ use Psr\Cache\CacheItemPoolInterface;
  *
  * @author Magnus Nordlander <magnus@fervo.se>
  */
-class TaggablePSR6PoolAdapter implements TaggablePoolInterface
+class TaggablePSR6PoolAdapter implements TagAwarePool
 {
-    use TaggablePoolTrait;
-
     /**
      * @type CacheItemPoolInterface
      */
@@ -68,11 +68,11 @@ class TaggablePSR6PoolAdapter implements TaggablePoolInterface
      * @param CacheItemPoolInterface      $cachePool    The pool to which to add tagging capabilities.
      * @param CacheItemPoolInterface|null $tagStorePool The pool to store tags in. If null is passed, the main pool is used.
      *
-     * @return TaggablePoolInterface
+     * @return TagAwarePool
      */
     public static function makeTaggable(CacheItemPoolInterface $cachePool, CacheItemPoolInterface $tagStorePool = null)
     {
-        if ($cachePool instanceof TaggablePoolInterface && $tagStorePool === null) {
+        if ($cachePool instanceof TagAwarePool && $tagStorePool === null) {
             return $cachePool;
         }
 
@@ -231,5 +231,62 @@ class TaggablePSR6PoolAdapter implements TaggablePoolInterface
     protected function getTagKey($tag)
     {
         return '__tag.'.$tag;
+    }
+
+    /**
+     * @param TaggablePSR6ItemAdapter $item
+     *
+     * @return $this
+     */
+    private function saveTags(TaggablePSR6ItemAdapter $item)
+    {
+        $tags = $item->getTags();
+        foreach ($tags as $tag) {
+            $this->appendListItem($this->getTagKey($tag), $item->getKey());
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param array $tags
+     *
+     * @return bool
+     */
+    public function invalidateTags(array $tags)
+    {
+        $itemIds = [];
+        foreach ($tags as $tag) {
+            $itemIds = array_merge($itemIds, $this->getList($this->getTagKey($tag)));
+        }
+
+        // Remove all items with the tag
+        $success = $this->deleteItems($itemIds);
+
+        if ($success) {
+            // Remove the tag list
+            foreach ($tags as $tag) {
+                $this->removeList($this->getTagKey($tag));
+            }
+        }
+
+        return $success;
+    }
+
+    /**
+     * Removes the key form all tag lists.
+     *
+     * @param string $key
+     *
+     * @return $this
+     */
+    private function preRemoveItem($key)
+    {
+        $tags = $this->getItem($key)->getTags();
+        foreach ($tags as $tag) {
+            $this->removeListItem($this->getTagKey($tag), $key);
+        }
+
+        return $this;
     }
 }

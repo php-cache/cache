@@ -13,6 +13,7 @@ namespace Cache\Adapter\Doctrine;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\TagSupportWithArray;
 use Cache\Taggable\TaggableItemInterface;
 use Cache\Taggable\TaggablePoolInterface;
 use Cache\Taggable\TaggablePoolTrait;
@@ -46,18 +47,6 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
     /**
      * {@inheritdoc}
      */
-    public function save(CacheItemInterface $item)
-    {
-        if ($item instanceof TaggableItemInterface) {
-            $this->saveTags($item);
-        }
-
-        return parent::save($item);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     protected function fetchObjectFromCache($key)
     {
         if (false === $data = $this->cache->fetch($key)) {
@@ -84,8 +73,6 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
      */
     protected function clearOneObjectFromCache($key)
     {
-        $this->preRemoveItem($key);
-
         return $this->cache->delete($key);
     }
 

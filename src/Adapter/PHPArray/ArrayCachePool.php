@@ -119,7 +119,6 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     protected function clearOneObjectFromCache($key)
     {
         $this->commit();
-        $this->preRemoveItem($key);
         $keyString = $this->getHierarchyKey($key, $path);
         if (isset($this->cache[$path])) {
             $this->cache[$path]++;
@@ -155,18 +154,6 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         }
 
         return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function save(CacheItemInterface $item)
-    {
-        if ($item instanceof TaggableItemInterface) {
-            $this->saveTags($item);
-        }
-
-        return parent::save($item);
     }
 
     /**

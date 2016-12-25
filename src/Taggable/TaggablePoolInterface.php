@@ -20,6 +20,7 @@ use Psr\Cache\InvalidArgumentException;
  * functions not requiring an CacheItemInterface.
  *
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
+ * @deprecated Use Cache\Common\TagAwareAdapter instead
  */
 interface TaggablePoolInterface extends CacheItemPoolInterface
 {

@@ -13,6 +13,7 @@ namespace Cache\Adapter\MongoDB;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\TagSupportWithArray;
 use MongoDB\Collection;
 use MongoDB\Driver\Manager;
 
@@ -22,6 +23,8 @@ use MongoDB\Driver\Manager;
  */
 class MongoDBCachePool extends AbstractCachePool
 {
+    use TagSupportWithArray;
+
     /**
      * @type Collection
      */
@@ -109,5 +112,32 @@ class MongoDBCachePool extends AbstractCachePool
         $this->collection->updateOne(['_id' => $item->getKey()], ['$set' => $object], ['upsert' => true]);
 
         return true;
+    }
+
+
+    /**
+     * {@inheritdoc}
+     */
+    function getDirectValue($name)
+    {
+        $object = $this->collection->findOne(['_id' => $name]);
+        if (!$object || !isset($object->data)) {
+            return null;
+        }
+
+        return unserialize($object->data);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    function setDirectValue($name, $value)
+    {
+        $object = [
+            '_id'  => $name,
+            'data' => serialize($value)
+        ];
+
+        $this->collection->updateOne(['_id' => $name], ['$set' => $object], ['upsert' => true]);
     }
 }

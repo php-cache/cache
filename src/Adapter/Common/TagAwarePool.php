@@ -2,6 +2,7 @@
 
 namespace Cache\Adapter\Common;
 
+use Psr\Cache\CacheItemPoolInterface;
 use \Psr\Cache\InvalidArgumentException;
 
 /**
@@ -9,7 +10,7 @@ use \Psr\Cache\InvalidArgumentException;
  *
  * @author Nicolas Grekas <p@tchwork.com>
  */
-interface TagAwareAdapter
+interface TagAwarePool extends CacheItemPoolInterface
 {
     /**
      * Invalidates cached items using tags.
@@ -21,4 +22,6 @@ interface TagAwareAdapter
      * @throws InvalidArgumentException When $tags is not valid
      */
     public function invalidateTags(array $tags);
+
+
 }

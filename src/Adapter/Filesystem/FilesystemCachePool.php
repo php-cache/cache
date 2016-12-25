@@ -108,8 +108,6 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
      */
     protected function clearOneObjectFromCache($key)
     {
-        $this->preRemoveItem($key);
-
         return $this->forceClear($key);
     }
 
@@ -159,18 +157,6 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
         }
 
         return sprintf('%s/%s', $this->folder, $key);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function save(CacheItemInterface $item)
-    {
-        if ($item instanceof TaggableItemInterface) {
-            $this->saveTags($item);
-        }
-
-        return parent::save($item);
     }
 
     /**

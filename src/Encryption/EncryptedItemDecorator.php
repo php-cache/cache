@@ -16,16 +16,17 @@ use Cache\Taggable\TaggableItemInterface;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 use Psr\Cache\CacheItemInterface;
+use Psr\Cache\InvalidArgumentException;
 
 /**
  * Encrypt and Decrypt all the stored items.
  *
  * @author Daniel Bannert <d.bannert@anolilab.de>
  */
-class EncryptedItemDecorator implements PhpCacheItem, TaggableItemInterface
+class EncryptedItemDecorator implements PhpCacheItem
 {
     /**
-     * @type CacheItemInterface
+     * @type PhpCacheItem
      */
     private $cacheItem;
 
@@ -35,10 +36,10 @@ class EncryptedItemDecorator implements PhpCacheItem, TaggableItemInterface
     private $key;
 
     /**
-     * @param CacheItemInterface $cacheItem
-     * @param Key                $key
+     * @param PhpCacheItem $cacheItem
+     * @param Key          $key
      */
-    public function __construct(CacheItemInterface $cacheItem, Key $key)
+    public function __construct(PhpCacheItem $cacheItem, Key $key)
     {
         $this->cacheItem = $cacheItem;
         $this->key       = $key;
@@ -128,22 +129,9 @@ class EncryptedItemDecorator implements PhpCacheItem, TaggableItemInterface
         return $this->cacheItem->getTags();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function addTag($tag)
+    public function tag($tags)
     {
-        $this->cacheItem->addTag($tag);
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setTags(array $tags)
-    {
-        $this->cacheItem->setTags($tags);
+        $this->cacheItem->tag($tags);
 
         return $this;
     }

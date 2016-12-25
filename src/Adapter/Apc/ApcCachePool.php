@@ -13,12 +13,15 @@ namespace Cache\Adapter\Apc;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\TagSupportWithArray;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
 class ApcCachePool extends AbstractCachePool
 {
+    use TagSupportWithArray;
+
     /**
      * @type bool
      */
@@ -93,5 +96,21 @@ class ApcCachePool extends AbstractCachePool
     private function skipIfCli()
     {
         return $this->skipOnCli && php_sapi_name() === 'cli';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    function getDirectValue($name)
+    {
+        return apc_fetch($name);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    function setDirectValue($name, $value)
+    {
+        apc_store($name, $value);
     }
 }

@@ -45,18 +45,6 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
     /**
      * {@inheritdoc}
      */
-    public function save(CacheItemInterface $item)
-    {
-        if ($item instanceof TaggableItemInterface) {
-            $this->saveTags($item);
-        }
-
-        return parent::save($item);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     protected function fetchObjectFromCache($key)
     {
         if (false === $result = unserialize($this->cache->get($this->getHierarchyKey($key)))) {
@@ -79,10 +67,6 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
      */
     protected function clearOneObjectFromCache($key)
     {
-        // We have to commit here to be able to remove deferred hierarchy items
-        $this->commit();
-
-        $this->preRemoveItem($key);
         $keyString = $this->getHierarchyKey($key, $path);
         $this->cache->incr($path);
         $this->clearHierarchyKeyCache();

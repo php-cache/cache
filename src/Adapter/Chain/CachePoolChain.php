@@ -246,17 +246,24 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface, L
 
     /**
      * {@inheritdoc}
+     * @deprecated use invalidateTags()
      */
     public function clearTags(array $tags)
     {
+        return $this->invalidateTags($tags);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidateTags(array $tags)
+    {
         $result = true;
         foreach ($this->getPools() as $poolKey => $pool) {
-            if ($pool instanceof TaggablePoolInterface) {
-                try {
-                    $result = $pool->clearTags($tags) && $result;
-                } catch (CachePoolException $e) {
-                    $this->handleException($poolKey, __FUNCTION__, $e);
-                }
+            try {
+                $result = $pool->invalidateTags($tags) && $result;
+            } catch (CachePoolException $e) {
+                $this->handleException($poolKey, __FUNCTION__, $e);
             }
         }
 

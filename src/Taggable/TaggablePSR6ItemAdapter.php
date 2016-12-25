@@ -12,6 +12,8 @@
 
 namespace Cache\Taggable;
 
+use Cache\Adapter\Common\Exception\InvalidArgumentException;
+use Cache\Adapter\Common\TagAwareItem;
 use Psr\Cache\CacheItemInterface;
 
 /**
@@ -25,7 +27,7 @@ use Psr\Cache\CacheItemInterface;
  *
  * @author Magnus Nordlander <magnus@fervo.se>
  */
-class TaggablePSR6ItemAdapter implements TaggableItemInterface
+class TaggablePSR6ItemAdapter implements TagAwareItem, CacheItemInterface
 {
     /**
      * @type bool
@@ -53,7 +55,7 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
     /**
      * @param CacheItemInterface $cacheItem
      *
-     * @return TaggableItemInterface
+     * @return TaggablePSR6ItemAdapter
      */
     public static function makeTaggable(CacheItemInterface $cacheItem)
     {
@@ -128,22 +130,30 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
     /**
      * {@inheritdoc}
      */
-    public function setTags(array $tags)
+    public function tag($tags)
     {
-        $this->initialized = true;
-        $this->tags        = $tags;
-        $this->updateTags();
+        if (!is_array($tags)) {
+            $tags = [$tags];
+        }
 
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function addTag($tag)
-    {
         $this->initializeTags();
-        $this->tags[] = $tag;
+
+        foreach ($tags as $tag) {
+            if (!is_string($tag)) {
+                throw new InvalidArgumentException(sprintf('Cache tag must be string, "%s" given', is_object($tag) ? get_class($tag) : gettype($tag)));
+            }
+            if (isset($this->tags[$tag])) {
+                continue;
+            }
+            if (!isset($tag[0])) {
+                throw new InvalidArgumentException('Cache tag length must be greater than zero');
+            }
+            if (isset($tag[strcspn($tag, '{}()/\@:')])) {
+                throw new InvalidArgumentException(sprintf('Cache tag "%s" contains reserved characters {}()/\@:', $tag));
+            }
+            $this->tags[$tag] = $tag;
+        }
+
         $this->updateTags();
 
         return $this;

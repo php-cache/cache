@@ -16,6 +16,12 @@ use Psr\Cache\CacheItemInterface;
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-interface PhpCacheItem extends HasExpirationTimestampInterface, CacheItemInterface
+interface PhpCacheItem extends HasExpirationTimestampInterface, CacheItemInterface, TagAwareItem
 {
+    /**
+     * Get an array with the tags.
+     *
+     * @return array
+     */
+    public function getTags();
 }

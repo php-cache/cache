@@ -11,6 +11,7 @@
 
 namespace Cache\Adapter\Common;
 
+use Cache\Adapter\Common\Exception\InvalidArgumentException;
 use Cache\Taggable\TaggableItemInterface;
 
 /**
@@ -172,12 +173,23 @@ class CacheItem implements PhpCacheItem, TaggableItemInterface
 
     /**
      * {@inheritdoc}
+     * @deprecated use tag()
      */
     public function addTag($tag)
     {
-        $this->initialize();
+        $this->tag($tag);
 
-        $this->tags[] = $tag;
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     * @deprecated use tag()
+     */
+    public function setTags(array $tags)
+    {
+        $this->tags = [];
+        $this->tag($tags);
 
         return $this;
     }
@@ -185,11 +197,28 @@ class CacheItem implements PhpCacheItem, TaggableItemInterface
     /**
      * {@inheritdoc}
      */
-    public function setTags(array $tags)
+    public function tag($tags)
     {
         $this->initialize();
 
-        $this->tags = $tags;
+        if (!is_array($tags)) {
+            $tags = array($tags);
+        }
+        foreach ($tags as $tag) {
+            if (!is_string($tag)) {
+                throw new InvalidArgumentException(sprintf('Cache tag must be string, "%s" given', is_object($tag) ? get_class($tag) : gettype($tag)));
+            }
+            if (isset($this->tags[$tag])) {
+                continue;
+            }
+            if (!isset($tag[0])) {
+                throw new InvalidArgumentException('Cache tag length must be greater than zero');
+            }
+            if (isset($tag[strcspn($tag, '{}()/\@:')])) {
+                throw new InvalidArgumentException(sprintf('Cache tag "%s" contains reserved characters {}()/\@:', $tag));
+            }
+            $this->tags[$tag] = $tag;
+        }
 
         return $this;
     }
