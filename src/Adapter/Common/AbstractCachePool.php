@@ -37,7 +37,7 @@ abstract class AbstractCachePool implements CacheItemPoolInterface, LoggerAwareI
 
     /**
      * @param PhpCacheItem $item
-     * @param int|null  $ttl  seconds from now
+     * @param int|null     $ttl  seconds from now
      *
      * @return bool true if saved
      */
