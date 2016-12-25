@@ -207,6 +207,10 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
             $this->value    = $result[1];
             $this->tags     = isset($result[2]) ? $result[2] : [];
 
+            if (isset($result[3]) && is_int($result[3])) {
+                $this->expirationDate = new \DateTime('@'.$result[3]);
+            }
+
             $this->callable = null;
         }
     }
