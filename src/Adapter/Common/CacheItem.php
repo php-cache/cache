@@ -173,6 +173,7 @@ class CacheItem implements PhpCacheItem, TaggableItemInterface
 
     /**
      * {@inheritdoc}
+     *
      * @deprecated use tag()
      */
     public function addTag($tag)
@@ -184,6 +185,7 @@ class CacheItem implements PhpCacheItem, TaggableItemInterface
 
     /**
      * {@inheritdoc}
+     *
      * @deprecated use tag()
      */
     public function setTags(array $tags)
@@ -202,7 +204,7 @@ class CacheItem implements PhpCacheItem, TaggableItemInterface
         $this->initialize();
 
         if (!is_array($tags)) {
-            $tags = array($tags);
+            $tags = [$tags];
         }
         foreach ($tags as $tag) {
             if (!is_string($tag)) {

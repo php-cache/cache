@@ -109,7 +109,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     /**
      * {@inheritdoc}
      */
-    function getDirectValue($name)
+    public function getDirectValue($name)
     {
         return $this->cache->get($name);
     }
@@ -117,7 +117,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     /**
      * {@inheritdoc}
      */
-    function setDirectValue($name, $value)
+    public function setDirectValue($name, $value)
     {
         $this->cache->set($name, $value);
     }

@@ -101,7 +101,7 @@ class ApcCachePool extends AbstractCachePool
     /**
      * {@inheritdoc}
      */
-    function getDirectValue($name)
+    public function getDirectValue($name)
     {
         return apc_fetch($name);
     }
@@ -109,7 +109,7 @@ class ApcCachePool extends AbstractCachePool
     /**
      * {@inheritdoc}
      */
-    function setDirectValue($name, $value)
+    public function setDirectValue($name, $value)
     {
         apc_store($name, $value);
     }

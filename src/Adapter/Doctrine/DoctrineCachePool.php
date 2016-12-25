@@ -13,13 +13,11 @@ namespace Cache\Adapter\Doctrine;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
-use Cache\Adapter\Common\TagSupportWithArray;
 use Cache\Taggable\TaggableItemInterface;
 use Cache\Taggable\TaggablePoolInterface;
 use Cache\Taggable\TaggablePoolTrait;
 use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\Cache\FlushableCache;
-use Psr\Cache\CacheItemInterface;
 
 /**
  * This is a bridge between PSR-6 and aDoctrine cache.

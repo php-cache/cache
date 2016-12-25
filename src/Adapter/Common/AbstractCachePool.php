@@ -14,9 +14,7 @@ namespace Cache\Adapter\Common;
 use Cache\Adapter\Common\Exception\CacheException;
 use Cache\Adapter\Common\Exception\CachePoolException;
 use Cache\Adapter\Common\Exception\InvalidArgumentException;
-use Cache\Taggable\TaggablePoolInterface;
 use Psr\Cache\CacheItemInterface;
-use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 

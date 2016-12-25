@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of php-cache organization.
+ *
+ * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 namespace Cache\Adapter\Common;
 
 /**
@@ -11,18 +20,20 @@ trait TagSupportWithArray
 {
     /**
      * Get a value from the storage.
+     *
      * @param string $name
      *
      * @return mixed
      */
-    abstract function getDirectValue($name);
+    abstract public function getDirectValue($name);
 
     /**
      * Set a value to the storage.
+     *
      * @param string $name
-     * @param mixed $value
+     * @param mixed  $value
      */
-    abstract function setDirectValue($name, $value);
+    abstract public function setDirectValue($name, $value);
 
     /**
      * {@inheritdoc}
@@ -56,6 +67,7 @@ trait TagSupportWithArray
     protected function removeList($name)
     {
         $this->setDirectValue($name, []);
+
         return true;
     }
 
@@ -70,6 +82,7 @@ trait TagSupportWithArray
                 unset($data[$i]);
             }
         }
+
         return $this->setDirectValue($name, $data);
     }
 }

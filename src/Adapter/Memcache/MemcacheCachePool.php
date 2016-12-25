@@ -76,7 +76,7 @@ class MemcacheCachePool extends AbstractCachePool
     /**
      * {@inheritdoc}
      */
-    function getDirectValue($name)
+    public function getDirectValue($name)
     {
         return $this->cache->get($name);
     }
@@ -84,7 +84,7 @@ class MemcacheCachePool extends AbstractCachePool
     /**
      * {@inheritdoc}
      */
-    function setDirectValue($name, $value)
+    public function setDirectValue($name, $value)
     {
         $this->cache->set($name, $value);
     }

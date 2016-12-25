@@ -114,15 +114,14 @@ class MongoDBCachePool extends AbstractCachePool
         return true;
     }
 
-
     /**
      * {@inheritdoc}
      */
-    function getDirectValue($name)
+    public function getDirectValue($name)
     {
         $object = $this->collection->findOne(['_id' => $name]);
         if (!$object || !isset($object->data)) {
-            return null;
+            return;
         }
 
         return unserialize($object->data);
@@ -131,11 +130,11 @@ class MongoDBCachePool extends AbstractCachePool
     /**
      * {@inheritdoc}
      */
-    function setDirectValue($name, $value)
+    public function setDirectValue($name, $value)
     {
         $object = [
             '_id'  => $name,
-            'data' => serialize($value)
+            'data' => serialize($value),
         ];
 
         $this->collection->updateOne(['_id' => $name], ['$set' => $object], ['upsert' => true]);

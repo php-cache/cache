@@ -12,11 +12,9 @@
 namespace Cache\Encryption;
 
 use Cache\Adapter\Common\PhpCacheItem;
-use Cache\Taggable\TaggableItemInterface;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 use Psr\Cache\CacheItemInterface;
-use Psr\Cache\InvalidArgumentException;
 
 /**
  * Encrypt and Decrypt all the stored items.

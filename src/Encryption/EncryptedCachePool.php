@@ -9,15 +9,11 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Encryption;
 
 use Cache\Adapter\Common\PhpCachePool;
-use Cache\Adapter\Common\TagAwarePool;
 use Defuse\Crypto\Key;
 use Psr\Cache\CacheItemInterface;
-use Psr\Cache\CacheItemPoolInterface;
-use Psr\Cache\InvalidArgumentException;
 
 /**
  * Wrapps a CacheItemInterface with EncryptedItemDecorator.

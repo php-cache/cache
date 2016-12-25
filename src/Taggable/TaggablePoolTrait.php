@@ -9,13 +9,13 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Taggable;
 
 /**
  * Use this trait with a CacheItemPoolInterface to support tagging.
  *
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
+ *
  * @deprecated will be removed in 1.0
  */
 trait TaggablePoolTrait
@@ -24,6 +24,7 @@ trait TaggablePoolTrait
      * @param array $tags
      *
      * @return bool
+     *
      * @deprecated Use invalidateTags
      */
     public function clearTags(array $tags)

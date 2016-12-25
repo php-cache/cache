@@ -9,10 +9,8 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Taggable;
 
-use Cache\Adapter\Common\TagAwareItem;
 use Cache\Adapter\Common\TagAwarePool;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;

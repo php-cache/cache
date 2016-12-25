@@ -1,9 +1,18 @@
 <?php
 
+/*
+ * This file is part of php-cache organization.
+ *
+ * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 namespace Cache\Adapter\Common;
 
 use Psr\Cache\CacheItemPoolInterface;
-use \Psr\Cache\InvalidArgumentException;
+use Psr\Cache\InvalidArgumentException;
 
 /**
  * Interface for invalidating cached items using tags. This interface is a soon-to-be-PSR.
@@ -17,11 +26,9 @@ interface TagAwarePool extends CacheItemPoolInterface
      *
      * @param string[] $tags An array of tags to invalidate
      *
-     * @return bool True on success
-     *
      * @throws InvalidArgumentException When $tags is not valid
+     *
+     * @return bool True on success
      */
     public function invalidateTags(array $tags);
-
-
 }
