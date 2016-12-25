@@ -9,7 +9,6 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Filesystem\Tests;
 
 /**
@@ -53,5 +52,17 @@ class FilesystemCachePoolTest extends \PHPUnit_Framework_TestCase
 
         $pool->save($pool->getItem('test_path'));
         $this->assertTrue($this->getFilesystem()->has('foobar/test_path'));
+    }
+
+    public function testCorruptedCacheFileHandledNicely()
+    {
+        $pool = $this->createCachePool();
+
+        $this->getFilesystem()->write('cache/corrupt', 'corrupt data');
+
+        $item = $pool->getItem('corrupt');
+        $this->assertFalse($item->isHit());
+
+        $this->getFilesystem()->delete('cache/corrupt');
     }
 }

@@ -9,7 +9,6 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Filesystem;
 
 use Cache\Adapter\Common\AbstractCachePool;
@@ -68,12 +67,12 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
     {
         $empty = [false, null, []];
         $file  = $this->getFilePath($key);
-        if (!$this->filesystem->has($file)) {
-            return $empty;
-        }
 
         try {
-            $data = unserialize($this->filesystem->read($file));
+            $data = @unserialize($this->filesystem->read($file));
+            if ($data === false) {
+                return $empty;
+            }
         } catch (FileNotFoundException $e) {
             return $empty;
         }
@@ -153,7 +152,7 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
     private function getFilePath($key)
     {
         if (!preg_match('|^[a-zA-Z0-9_\.! ]+$|', $key)) {
-            throw new InvalidArgumentException(sprintf('Invalid key "%s". Valid keys must match [a-zA-Z0-9_\.! ].', $key));
+            throw new InvalidArgumentException(sprintf('Invalid key "%s". Valid filenames must match [a-zA-Z0-9_\.! ].', $key));
         }
 
         return sprintf('%s/%s', $this->folder, $key);
