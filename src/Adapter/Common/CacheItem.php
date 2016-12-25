@@ -190,6 +190,7 @@ class CacheItem implements PhpCacheItem, TaggableItemInterface
      */
     public function setTags(array $tags)
     {
+        $this->initialize();
         $this->tags = [];
         $this->tag($tags);
 
