@@ -33,7 +33,7 @@
     "require-dev":       {
         "phpunit/phpunit":         "^4.0 || ^5.1",
         "mockery/mockery":         "^0.9",
-        "cache/integration-tests": "^0.11"
+        "cache/integration-tests": "^0.12"
     },
     "provide":           {
         "psr/cache-implementation": "^1.0"
