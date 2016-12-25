@@ -9,7 +9,7 @@ use \Psr\Cache\InvalidArgumentException;
  *
  * @author Nicolas Grekas <p@tchwork.com>
  */
-interface TagAwareAdapterInterface
+interface TagAwareAdapter
 {
     /**
      * Invalidates cached items using tags.

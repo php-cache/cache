@@ -11,7 +11,7 @@ use \Psr\Cache\InvalidArgumentException;
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  * @author Nicolas Grekas <p@tchwork.com>
  */
-interface TaggableItem
+interface TagAwareItem
 {
     /**
      * Adds a tag to a cache item.
