@@ -9,11 +9,9 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Memcache\Tests;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
-use Cache\IntegrationTests\CachePoolTest;
 use Cache\IntegrationTests\TaggableCachePoolTest;
 use Memcache;
 

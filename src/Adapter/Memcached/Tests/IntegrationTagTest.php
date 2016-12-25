@@ -9,10 +9,8 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Memcached\Tests;
 
-use Cache\IntegrationTests\CachePoolTest as BaseTest;
 use Cache\IntegrationTests\TaggableCachePoolTest;
 
 class IntegrationTagTest extends TaggableCachePoolTest

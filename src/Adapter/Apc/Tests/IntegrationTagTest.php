@@ -9,11 +9,9 @@
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Apc\Tests;
 
 use Cache\Adapter\Apc\ApcCachePool;
-use Cache\IntegrationTests\CachePoolTest as BaseTest;
 use Cache\IntegrationTests\TaggableCachePoolTest;
 
 class IntegrationTagTest extends TaggableCachePoolTest
