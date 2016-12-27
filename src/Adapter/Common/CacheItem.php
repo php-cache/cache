@@ -175,6 +175,10 @@ class CacheItem implements PhpCacheItem
      */
     public function addTag($tag)
     {
+        if (!is_string($tag)) {
+            throw new InvalidArgumentException(sprintf('Cache tag must be string, "%s" given', is_object($tag) ? get_class($tag) : gettype($tag)));
+        }
+
         $this->tag($tag);
 
         return $this;
