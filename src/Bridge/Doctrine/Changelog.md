@@ -4,8 +4,6 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
-## 0.3.0
-
 ### Changed
 
 This is a BC break:
