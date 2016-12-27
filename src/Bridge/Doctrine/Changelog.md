@@ -8,7 +8,7 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ### Changed
 
-This is a BC break.
+This is a BC break:
 
 * Changed Namespace from `Cache\Bridge` to `Cache\Bridge\Doctrine`
 
