@@ -11,6 +11,7 @@
 
 namespace Cache\Taggable;
 
+use Cache\Adapter\Common\TaggableCacheItemInterface;
 use Cache\Adapter\Common\TaggableCacheItemPoolInterface;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
@@ -145,6 +146,7 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
      */
     public function save(CacheItemInterface $item)
     {
+        $this->removeTagEntries($item);
         $this->saveTags($item);
 
         return $this->cachePool->save($item->unwrap());
@@ -286,11 +288,20 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
      */
     private function preRemoveItem($key)
     {
-        $tags = $this->getItem($key)->getTags();
-        foreach ($tags as $tag) {
-            $this->removeListItem($this->getTagKey($tag), $key);
-        }
+        $item = $this->getItem($key);
+        $this->removeTagEntries($item);
 
         return $this;
+    }
+
+    /**
+     * @param TaggableCacheItemInterface $item
+     */
+    private function removeTagEntries($item)
+    {
+        $tags = $item->getPreviousTags();
+        foreach ($tags as $tag) {
+            $this->removeListItem($this->getTagKey($tag), $item->getKey());
+        }
     }
 }

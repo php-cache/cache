@@ -122,6 +122,14 @@ class EncryptedItemDecorator implements PhpCacheItem
     /**
      * {@inheritdoc}
      */
+    public function getPreviousTags()
+    {
+        return $this->cacheItem->getPreviousTags();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getTags()
     {
         return $this->cacheItem->getTags();
@@ -133,26 +141,6 @@ class EncryptedItemDecorator implements PhpCacheItem
     public function setTags(array $tags)
     {
         $this->cacheItem->setTags($tags);
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function addTag($tag)
-    {
-        $this->cacheItem->addTag($tag);
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function addTags(array $tags)
-    {
-        $this->cacheItem->addTags($tags);
 
         return $this;
     }

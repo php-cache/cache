@@ -16,4 +16,10 @@ namespace Cache\Adapter\Common;
  */
 interface PhpCacheItem extends HasExpirationTimestampInterface, TaggableCacheItemInterface
 {
+    /**
+     * Get the current tags. These are not the same tags as getPrevious tags.
+     *
+     * @return array
+     */
+    public function getTags();
 }

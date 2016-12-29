@@ -41,6 +41,11 @@ class TaggablePSR6ItemAdapter implements TaggableCacheItemInterface
     /**
      * @type array<string>
      */
+    private $prevTags = [];
+
+    /**
+     * @type array<string>
+     */
     private $tags = [];
 
     /**
@@ -119,28 +124,28 @@ class TaggablePSR6ItemAdapter implements TaggableCacheItemInterface
     /**
      * {@inheritdoc}
      */
-    public function getTags()
+    public function getPreviousTags()
     {
         $this->initializeTags();
 
+        return $this->prevTags;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTags()
+    {
         return $this->tags;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function setTags(array $tags)
     {
-        $this->initializeTags();
         $this->tags = [];
 
-        return $this->tag($tags);
-    }
-
-    public function addTag($tag)
-    {
-        return $this->tag($tag);
-    }
-
-    public function addTags(array $tags)
-    {
         return $this->tag($tags);
     }
 
@@ -208,7 +213,7 @@ class TaggablePSR6ItemAdapter implements TaggableCacheItemInterface
                 $rawItem = $this->cacheItem->get();
 
                 if ($this->isItemCreatedHere($rawItem)) {
-                    $this->tags = $rawItem['tags'];
+                    $this->prevTags = $rawItem['tags'];
                 }
             }
 

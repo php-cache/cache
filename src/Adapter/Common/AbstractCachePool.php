@@ -221,6 +221,7 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface
             throw new InvalidArgumentException('Cache items are not transferable between pools. Item MUST implement PhpCacheItem.');
         }
 
+        $this->removeTagEntries($item);
         $this->saveTags($item);
         $timeToLive = null;
         if (null !== $timestamp = $item->getExpirationTimestamp()) {
@@ -384,12 +385,20 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface
     protected function preRemoveItem($key)
     {
         $item = $this->getItem($key);
-        $tags = $item->getTags();
-        foreach ($tags as $tag) {
-            $this->removeListItem($this->getTagKey($tag), $key);
-        }
+        $this->removeTagEntries($item);
 
         return $this;
+    }
+
+    /**
+     * @param PhpCacheItem $item
+     */
+    private function removeTagEntries(PhpCacheItem $item)
+    {
+        $tags = $item->getPreviousTags();
+        foreach ($tags as $tag) {
+            $this->removeListItem($this->getTagKey($tag), $item->getKey());
+        }
     }
 
     /**

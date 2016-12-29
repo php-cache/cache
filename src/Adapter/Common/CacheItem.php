@@ -22,6 +22,11 @@ class CacheItem implements PhpCacheItem
     /**
      * @type array
      */
+    private $prevTags = [];
+
+    /**
+     * @type array
+     */
     private $tags = [];
 
     /**
@@ -163,33 +168,16 @@ class CacheItem implements PhpCacheItem
     /**
      * {@inheritdoc}
      */
-    public function getTags()
+    public function getPreviousTags()
     {
         $this->initialize();
 
+        return $this->prevTags;
+    }
+
+    public function getTags()
+    {
         return $this->tags;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function addTag($tag)
-    {
-        if (!is_string($tag)) {
-            throw new InvalidArgumentException(sprintf('Cache tag must be string, "%s" given', is_object($tag) ? get_class($tag) : gettype($tag)));
-        }
-
-        $this->tag($tag);
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function addTags(array $tags)
-    {
-        $this->tag($tags);
     }
 
     /**
@@ -197,7 +185,6 @@ class CacheItem implements PhpCacheItem
      */
     public function setTags(array $tags)
     {
-        $this->initialize();
         $this->tags = [];
         $this->tag($tags);
 
@@ -250,7 +237,7 @@ class CacheItem implements PhpCacheItem
             $result                    = $f();
             $this->hasValue            = $result[0];
             $this->value               = $result[1];
-            $this->tags                = isset($result[2]) ? $result[2] : [];
+            $this->prevTags            = isset($result[2]) ? $result[2] : [];
             $this->expirationTimestamp = null;
 
             if (isset($result[3]) && is_int($result[3])) {
