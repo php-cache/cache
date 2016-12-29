@@ -12,6 +12,7 @@
 namespace Cache\Encryption;
 
 use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\TaggableCacheItemInterface;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 use Psr\Cache\CacheItemInterface;
@@ -21,7 +22,7 @@ use Psr\Cache\CacheItemInterface;
  *
  * @author Daniel Bannert <d.bannert@anolilab.de>
  */
-class EncryptedItemDecorator implements PhpCacheItem
+class EncryptedItemDecorator implements TaggableCacheItemInterface
 {
     /**
      * @type PhpCacheItem
@@ -128,7 +129,9 @@ class EncryptedItemDecorator implements PhpCacheItem
     }
 
     /**
-     * {@inheritdoc}
+     * Get the current tags. These are not the same tags as getPrevious tags.
+     *
+     * @return array
      */
     public function getTags()
     {

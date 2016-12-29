@@ -16,4 +16,19 @@ namespace Cache\Adapter\Common;
  */
 interface PhpCachePool extends TaggableCacheItemPoolInterface
 {
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return PhpCacheItem
+     */
+    public function getItem($key);
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return array|\Traversable|PhpCacheItem[]
+     */
+    public function getItems(array $keys = array());
+
 }

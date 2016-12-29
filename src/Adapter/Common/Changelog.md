@@ -4,6 +4,14 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+### Added
+
+* `AbstractCachePool` has 4 new abstract methods: `getList`, `removeList`, `appendListItem` and `removeListItem`.
+* `AbstractCachePool::invalidateTags` and `AbstractCachePool::invalidateTags` 
+* Added interfaces for our items and pools `PhpCachePool` and `PhpCacheItem`
+* Trait to help adapters to support tags. `TagSupportWithArray`.
+* New interfaces for tags. `TaggableCacheItemInterface` and `TaggableCacheItemPoolInterface`
+
 ### Changed
 
 * First parameter to `AbstractCachePool::storeItemInCache` must be a `PhpCacheItem`. 
