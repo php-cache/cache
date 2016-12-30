@@ -28,7 +28,7 @@
         "php":                      "^5.5 || ^7.0",
         "psr/cache":                "^1.0",
         "cache/adapter-common":     "^0.4",
-        "cache/hierarchical-cache": "^0.3",
+        "cache/hierarchical-cache": "^0.4",
         "predis/predis":            "^1.0"
     },
     "require-dev":       {
