@@ -30,5 +30,5 @@ interface PhpCachePool extends TaggableCacheItemPoolInterface
      *
      * @return array|\Traversable|PhpCacheItem[]
      */
-    public function getItems(array $keys = array());
+    public function getItems(array $keys = []);
 }

@@ -13,12 +13,8 @@ namespace Cache\Encryption;
 
 use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Adapter\Common\PhpCachePool;
-use Cache\TagInterop\TaggableCacheItemInterface;
-use Cache\Taggable\TaggablePSR6PoolAdapter;
-use Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Defuse\Crypto\Key;
 use Psr\Cache\CacheItemInterface;
-use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 
 /**

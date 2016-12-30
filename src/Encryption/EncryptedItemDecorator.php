@@ -12,7 +12,6 @@
 namespace Cache\Encryption;
 
 use Cache\Adapter\Common\PhpCacheItem;
-use Cache\TagInterop\TaggableCacheItemInterface;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 use Psr\Cache\CacheItemInterface;

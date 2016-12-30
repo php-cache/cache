@@ -256,6 +256,6 @@ class CacheItem implements PhpCacheItem
     public function moveTagsToPrevious()
     {
         $this->prevTags = $this->tags;
-        $this->tags = [];
+        $this->tags     = [];
     }
 }
