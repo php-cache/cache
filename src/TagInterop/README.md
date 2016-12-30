@@ -1,4 +1,4 @@
-# Encryption PSR-6 Cache pool
+# Tag support for PSR-6 Cache 
 [![Gitter](https://badges.gitter.im/php-cache/cache.svg)](https://gitter.im/php-cache/cache?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Latest Stable Version](https://poser.pugx.org/cache/tag-interop/v/stable)](https://packagist.org/packages/cache/tag-interop)
 [![Total Downloads](https://poser.pugx.org/cache/tag-interop/downloads)](https://packagist.org/packages/cache/tag-interop)
