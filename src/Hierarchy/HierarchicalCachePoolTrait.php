@@ -26,13 +26,13 @@ trait HierarchicalCachePoolTrait
     private $keyCache = [];
 
     /**
-     * Get a value form the store. This must not be an PoolItemInterface.
+     * Get a value from the storage.
      *
-     * @param string $key
+     * @param string $name
      *
-     * @return string|null
+     * @return mixed
      */
-    abstract protected function getValueFormStore($key);
+    abstract public function getDirectValue($name);
 
     /**
      * Get a key to use with the hierarchy. If the key does not start with HierarchicalPoolInterface::SEPARATOR
@@ -62,7 +62,7 @@ trait HierarchicalCachePoolTrait
             if (isset($this->keyCache[$pathKey])) {
                 $index = $this->keyCache[$pathKey];
             } else {
-                $index                    = $this->getValueFormStore($pathKey);
+                $index                    = $this->getDirectValue($pathKey);
                 $this->keyCache[$pathKey] = $index;
             }
 

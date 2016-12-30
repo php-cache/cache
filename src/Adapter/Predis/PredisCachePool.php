@@ -91,7 +91,7 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
     /**
      * {@inheritdoc}
      */
-    protected function getValueFormStore($key)
+    protected function getDirectValue($key)
     {
         return $this->cache->get($key);
     }

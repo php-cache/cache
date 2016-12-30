@@ -101,14 +101,6 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     /**
      * {@inheritdoc}
      */
-    protected function getValueFormStore($key)
-    {
-        return $this->cache->get($key);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getDirectValue($name)
     {
         return $this->cache->get($name);
