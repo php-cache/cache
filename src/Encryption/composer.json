@@ -31,6 +31,7 @@
         "php":                   "^5.5 || ^7.0",
         "defuse/php-encryption": "^2.0",
         "cache/taggable-cache":  "^0.5",
+        "cache/tag-interop":    "^1.0",
         "psr/cache":             "^1.0"
     },
     "require-dev": {
