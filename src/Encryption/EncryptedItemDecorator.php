@@ -22,7 +22,7 @@ use Psr\Cache\CacheItemInterface;
  *
  * @author Daniel Bannert <d.bannert@anolilab.de>
  */
-class EncryptedItemDecorator implements TaggableCacheItemInterface
+class EncryptedItemDecorator implements PhpCacheItem
 {
     /**
      * @type PhpCacheItem
@@ -174,5 +174,15 @@ class EncryptedItemDecorator implements TaggableCacheItemInterface
         settype($value, $item['type']);
 
         return $value;
+    }
+
+    /**
+     * @internal This function should never be used and considered private.
+     *
+     * Move tags from $tags to $prevTags
+     */
+    public function moveTagsToPrevious()
+    {
+        $this->cacheItem->moveTagsToPrevious();
     }
 }

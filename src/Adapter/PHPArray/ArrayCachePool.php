@@ -30,7 +30,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     use HierarchicalCachePoolTrait;
 
     /**
-     * @type array
+     * @type PhpCacheItem[]
      */
     private $cache;
 
@@ -68,9 +68,11 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     protected function getItemWithoutGenerateCacheKey($key)
     {
         if (isset($this->deferred[$key])) {
-            $item = $this->deferred[$key];
+            /** @var CacheItem $item */
+            $item = clone $this->deferred[$key];
+            $item->moveTagsToPrevious();
 
-            return is_object($item) ? clone $item : $item;
+            return $item;
         }
 
         return $this->fetchObjectFromCache($key);
@@ -88,14 +90,19 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     {
         $this->validateKey($key);
         if (isset($this->deferred[$key])) {
-            $item = $this->deferred[$key];
+            /** @var CacheItem $item */
+            $item = clone $this->deferred[$key];
+            $item->moveTagsToPrevious();
 
-            return is_object($item) ? clone $item : $item;
+            return $item;
         }
 
         $storageKey = $this->getHierarchyKey($key);
         if (isset($this->cache[$storageKey])) {
-            return $this->cache[$storageKey];
+            $item = $this->cache[$storageKey];
+            $item->moveTagsToPrevious();
+
+            return $item;
         }
 
         return new CacheItem($key, false);

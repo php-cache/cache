@@ -32,7 +32,7 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface
     private $logger;
 
     /**
-     * @type CacheItemInterface[] deferred
+     * @type PhpCacheItem[] deferred
      */
     protected $deferred = [];
 
@@ -120,9 +120,11 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface
     {
         $this->validateKey($key);
         if (isset($this->deferred[$key])) {
-            $item = $this->deferred[$key];
+            /** @var CacheItem $item */
+            $item = clone $this->deferred[$key];
+            $item->moveTagsToPrevious();
 
-            return is_object($item) ? clone $item : $item;
+            return $item;
         }
 
         $func = function () use ($key) {

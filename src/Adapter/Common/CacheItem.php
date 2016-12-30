@@ -247,4 +247,15 @@ class CacheItem implements PhpCacheItem
             $this->callable = null;
         }
     }
+
+    /**
+     * @internal This function should never be used and considered private.
+     *
+     * Move tags from $tags to $prevTags
+     */
+    public function moveTagsToPrevious()
+    {
+        $this->prevTags = $this->tags;
+        $this->tags = [];
+    }
 }
