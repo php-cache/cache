@@ -12,18 +12,20 @@
 namespace Cache\Encryption;
 
 use Cache\Adapter\Common\PhpCachePool;
-use Cache\Adapter\Common\TaggableCacheItemInterface;
+use Cache\TagInterop\TaggableCacheItemInterface;
 use Cache\Taggable\TaggablePSR6PoolAdapter;
+use Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Defuse\Crypto\Key;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Cache\InvalidArgumentException;
 
 /**
- * Wrapps a CacheItemInterface with EncryptedItemDecorator.
+ * Wraps a CacheItemInterface with EncryptedItemDecorator.
  *
  * @author Daniel Bannert <d.bannert@anolilab.de>
  */
-class EncryptedCachePool implements TaggableCacheItemInterface
+class EncryptedCachePool implements TaggableCacheItemPoolInterface
 {
     /**
      * @type TaggableCacheItemInterface
