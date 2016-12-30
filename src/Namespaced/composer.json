@@ -3,7 +3,7 @@
     "description":       "A decorator that makes your cache support namespaces",
     "type":              "library",
     "license":           "MIT",
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "keywords":          [
         "cache",
         "psr-6",

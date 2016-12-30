@@ -3,7 +3,7 @@
     "description":       "Common classes for PSR-6 adapters",
     "type":              "library",
     "license":           "MIT",
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "keywords":          [
         "cache",
         "psr-6",

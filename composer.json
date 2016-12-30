@@ -63,6 +63,7 @@
         "cache/session-handler":       "*",
         "cache/taggable-cache":        "*"
     },
+    "minimum-stability": "dev",
     "autoload":    {
         "psr-4":                 {
             "Cache\\": "src/"

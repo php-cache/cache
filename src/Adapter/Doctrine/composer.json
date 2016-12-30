@@ -3,7 +3,7 @@
     "description":       "A PSR-6 cache implementation using Doctrine. This implementation supports tags",
     "type":              "library",
     "license":           "MIT",
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "keywords":          [
         "cache",
         "psr-6",

@@ -3,7 +3,6 @@
     "description":       "A helper trait and interface to your PSR-6 cache to support hierarchical keys.",
     "type":              "library",
     "license":           "MIT",
-    "minimum-stability": "stable",
     "keywords":          [
         "cache",
         "psr-6",
@@ -39,6 +38,7 @@
             "/Tests/"
         ]
     },
+    "minimum-stability": "dev",
     "extra": {
         "branch-alias": {
             "dev-master": "0.4-dev"
