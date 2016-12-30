@@ -85,7 +85,7 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     /**
      * {@inheritdoc}
      */
-    protected function getValueFormStore($key)
+    protected function getDirectValue($key)
     {
         return $this->cache->get($key);
     }

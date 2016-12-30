@@ -161,7 +161,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     /**
      * {@inheritdoc}
      */
-    protected function getValueFormStore($key)
+    protected function getDirectValue($key)
     {
         if (isset($this->cache[$key])) {
             return $this->cache[$key];

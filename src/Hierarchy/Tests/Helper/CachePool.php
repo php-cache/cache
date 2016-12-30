@@ -42,7 +42,7 @@ class CachePool
         return $this->getHierarchyKey($key, $pathKey);
     }
 
-    protected function getValueFormStore($key)
+    protected function getDirectValue($key)
     {
         return array_shift($this->storeValues);
     }
