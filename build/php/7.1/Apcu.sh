@@ -4,4 +4,4 @@ echo "Add php.ini settings"
 phpenv config-add ./build/php/apc.ini
 
 echo "Install APCu Adapter dependencies"
-yes '' | pecl install apcu-5.1.5
+yes '' | pecl install apcu
