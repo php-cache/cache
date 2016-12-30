@@ -16,6 +16,6 @@ printf "************************************************************************
 
 if [ "$SLUG" = 'cache/cache' ]; then composer require --no-update mongodb/mongodb:^1.0 predis/predis:^1.0; fi
 
-composer update --no-interaction || exit -1
+composer update --no-interaction || exit 1
 
-sh -c "$TEST" || exit -1
+sh -c "$TEST" || exit 1
