@@ -12,7 +12,7 @@
 namespace Cache\Taggable;
 
 use Cache\Adapter\Common\Exception\InvalidArgumentException;
-use Cache\Adapter\Common\TaggableCacheItemInterface;
+use Cache\TagInterop\TaggableCacheItemInterface;
 use Psr\Cache\CacheItemInterface;
 
 /**

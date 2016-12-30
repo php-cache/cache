@@ -11,12 +11,13 @@
 
 namespace Cache\Adapter\Common;
 
+use Cache\TagInterop\TaggableCacheItemPoolInterface;
+
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
 interface PhpCachePool extends TaggableCacheItemPoolInterface
 {
-
     /**
      * {@inheritdoc}
      *
@@ -30,5 +31,4 @@ interface PhpCachePool extends TaggableCacheItemPoolInterface
      * @return array|\Traversable|PhpCacheItem[]
      */
     public function getItems(array $keys = array());
-
 }

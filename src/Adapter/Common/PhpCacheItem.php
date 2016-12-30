@@ -11,6 +11,8 @@
 
 namespace Cache\Adapter\Common;
 
+use Cache\TagInterop\TaggableCacheItemInterface;
+
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */

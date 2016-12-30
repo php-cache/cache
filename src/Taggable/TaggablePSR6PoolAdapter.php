@@ -11,8 +11,8 @@
 
 namespace Cache\Taggable;
 
-use Cache\Adapter\Common\TaggableCacheItemInterface;
-use Cache\Adapter\Common\TaggableCacheItemPoolInterface;
+use Cache\TagInterop\TaggableCacheItemInterface;
+use Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
