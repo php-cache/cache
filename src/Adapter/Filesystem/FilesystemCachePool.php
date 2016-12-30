@@ -14,8 +14,6 @@ namespace Cache\Adapter\Filesystem;
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\Exception\InvalidArgumentException;
 use Cache\Adapter\Common\PhpCacheItem;
-use Cache\Taggable\TaggablePoolInterface;
-use Cache\Taggable\TaggablePoolTrait;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Filesystem;
@@ -23,10 +21,8 @@ use League\Flysystem\Filesystem;
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInterface
+class FilesystemCachePool extends AbstractCachePool
 {
-    use TaggablePoolTrait;
-
     /**
      * @type Filesystem
      */

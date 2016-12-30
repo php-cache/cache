@@ -16,17 +16,14 @@ use Cache\Adapter\Common\CacheItem;
 use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
-use Cache\Taggable\TaggablePoolInterface;
-use Cache\Taggable\TaggablePoolTrait;
 
 /**
  * Array cache pool. You could set a limit of how many items you want to be stored to avoid memory leaks.
  *
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterface, TaggablePoolInterface
+class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterface
 {
-    use TaggablePoolTrait;
     use HierarchicalCachePoolTrait;
 
     /**

@@ -15,16 +15,13 @@ use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
-use Cache\Taggable\TaggablePoolInterface;
-use Cache\Taggable\TaggablePoolTrait;
 use Predis\ClientInterface as Client;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInterface, TaggablePoolInterface
+class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInterface
 {
-    use TaggablePoolTrait;
     use HierarchicalCachePoolTrait;
 
     /**

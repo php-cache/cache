@@ -27,13 +27,12 @@
         "php":                  "^5.5 || ^7.0",
         "psr/cache":            "^1.0",
         "psr/log":              "^1.0",
-        "cache/adapter-common": "^0.4",
-        "cache/taggable-cache": "^0.4"
+        "cache/adapter-common": "^0.4"
     },
     "require-dev":       {
         "phpunit/phpunit":         "^4.0 || ^5.1",
-        "cache/predis-adapter":    "^0.4",
-        "cache/array-adapter":     "^0.4",
+        "cache/predis-adapter":    "^0.5",
+        "cache/array-adapter":     "^0.5",
         "cache/integration-tests": "^0.13"
     },
     "provide":           {

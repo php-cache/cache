@@ -11,7 +11,7 @@
 
 namespace Cache\Hierarchy;
 
-use Cache\Taggable\TaggablePoolInterface;
+use Cache\Adapter\Common\AbstractCachePool;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
@@ -57,7 +57,7 @@ trait HierarchicalCachePoolTrait
             // 1) $keyString = "foo!tagHash"
             // 2) $keyString = "foo!tagHash![foo_index]!bar!tagHash"
             $keyString .= $name;
-            $pathKey = sha1('path'.TaggablePoolInterface::TAG_SEPARATOR.$keyString);
+            $pathKey = sha1('path'.AbstractCachePool::SEPARATOR_TAG.$keyString);
 
             if (isset($this->keyCache[$pathKey])) {
                 $index = $this->keyCache[$pathKey];
@@ -68,7 +68,7 @@ trait HierarchicalCachePoolTrait
 
             // 1) $keyString = "foo!tagHash![foo_index]!"
             // 2) $keyString = "foo!tagHash![foo_index]!bar!tagHash![bar_index]!"
-            $keyString .= TaggablePoolInterface::TAG_SEPARATOR.$index.TaggablePoolInterface::TAG_SEPARATOR;
+            $keyString .= AbstractCachePool::SEPARATOR_TAG.$index.AbstractCachePool::SEPARATOR_TAG;
         }
 
         // Assert: $pathKey = "path!foo!tagHash![foo_index]!bar!tagHash"
@@ -108,7 +108,7 @@ trait HierarchicalCachePoolTrait
      */
     private function explodeKey($string)
     {
-        list($key, $tag) = explode(TaggablePoolInterface::TAG_SEPARATOR, $string.TaggablePoolInterface::TAG_SEPARATOR);
+        list($key, $tag) = explode(AbstractCachePool::SEPARATOR_TAG, $string.AbstractCachePool::SEPARATOR_TAG);
 
         if ($key === HierarchicalPoolInterface::HIERARCHY_SEPARATOR) {
             $parts = ['root'];
@@ -119,7 +119,7 @@ trait HierarchicalCachePoolTrait
         }
 
         return array_map(function ($level) use ($tag) {
-            return $level.TaggablePoolInterface::TAG_SEPARATOR.$tag;
+            return $level.AbstractCachePool::SEPARATOR_TAG.$tag;
         }, $parts);
     }
 }
