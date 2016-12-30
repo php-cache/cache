@@ -14,12 +14,11 @@ namespace Cache\Adapter\Void;
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Hierarchy\HierarchicalPoolInterface;
-use Cache\Taggable\TaggablePoolInterface;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class VoidCachePool extends AbstractCachePool implements TaggablePoolInterface, HierarchicalPoolInterface
+class VoidCachePool extends AbstractCachePool implements HierarchicalPoolInterface
 {
     /**
      * {@inheritdoc}

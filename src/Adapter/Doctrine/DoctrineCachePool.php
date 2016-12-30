@@ -13,8 +13,6 @@ namespace Cache\Adapter\Doctrine;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
-use Cache\Taggable\TaggablePoolInterface;
-use Cache\Taggable\TaggablePoolTrait;
 use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\Cache\FlushableCache;
 
@@ -24,10 +22,8 @@ use Doctrine\Common\Cache\FlushableCache;
  * @author Aaron Scherer <aequasi@gmail.com>
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterface
+class DoctrineCachePool extends AbstractCachePool
 {
-    use TaggablePoolTrait;
-
     /**
      * @type Cache
      */
