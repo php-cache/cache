@@ -6,7 +6,7 @@
         "cache",
         "psr6",
         "tag",
-        "pse"
+        "psr"
     ],
     "homepage":    "http://www.php-cache.com/en/latest/",
     "license":     "MIT",
@@ -29,6 +29,11 @@
     "autoload":    {
         "psr-4":                 {
             "Cache\\TagInterop\\": ""
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
         }
     }
 }
