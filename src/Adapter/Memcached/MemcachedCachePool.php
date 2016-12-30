@@ -67,7 +67,9 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     {
         $this->commit();
         $key = $this->getHierarchyKey($key, $path);
-        $this->cache->increment($path, 1, 0);
+        if ($path) {
+            $this->cache->increment($path, 1, 0);
+        }
         $this->clearHierarchyKeyCache();
 
         if ($this->cache->delete($key)) {
