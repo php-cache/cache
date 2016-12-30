@@ -11,17 +11,24 @@
 
 namespace Cache\Adapter\Common;
 
-use Cache\TagInterop\TaggableCacheItemInterface;
+use Cache\TagInterop\TaggableCacheItemPoolInterface;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-interface PhpCacheItem extends HasExpirationTimestampInterface, TaggableCacheItemInterface
+interface PhpCachePool extends TaggableCacheItemPoolInterface
 {
     /**
-     * Get the current tags. These are not the same tags as getPrevious tags.
+     * {@inheritdoc}
      *
-     * @return array
+     * @return PhpCacheItem
      */
-    public function getTags();
+    public function getItem($key);
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return array|\Traversable|PhpCacheItem[]
+     */
+    public function getItems(array $keys = []);
 }

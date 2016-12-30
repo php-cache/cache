@@ -14,13 +14,11 @@ namespace Cache\Adapter\Filesystem;
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\Exception\InvalidArgumentException;
 use Cache\Adapter\Common\PhpCacheItem;
-use Cache\Taggable\TaggableItemInterface;
 use Cache\Taggable\TaggablePoolInterface;
 use Cache\Taggable\TaggablePoolTrait;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Filesystem;
-use Psr\Cache\CacheItemInterface;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
@@ -108,8 +106,6 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
      */
     protected function clearOneObjectFromCache($key)
     {
-        $this->preRemoveItem($key);
-
         return $this->forceClear($key);
     }
 
@@ -118,15 +114,10 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
      */
     protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
-        $tags = [];
-        if ($item instanceof TaggableItemInterface) {
-            $tags = $item->getTags();
-        }
-
         $data = serialize(
             [
                 $item->get(),
-                $tags,
+                $item->getTags(),
                 $item->getExpirationTimestamp(),
             ]
         );
@@ -159,18 +150,6 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
         }
 
         return sprintf('%s/%s', $this->folder, $key);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function save(CacheItemInterface $item)
-    {
-        if ($item instanceof TaggableItemInterface) {
-            $this->saveTags($item);
-        }
-
-        return parent::save($item);
     }
 
     /**

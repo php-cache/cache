@@ -13,12 +13,15 @@ namespace Cache\Adapter\Apcu;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\TagSupportWithArray;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
 class ApcuCachePool extends AbstractCachePool
 {
+    use TagSupportWithArray;
+
     /**
      * @type bool
      */
@@ -46,7 +49,7 @@ class ApcuCachePool extends AbstractCachePool
         if (!$success) {
             return [false, null, [], null];
         }
-        list($data, $timestamp, $tags) = unserialize($cacheData);
+        list($data, $tags, $timestamp) = unserialize($cacheData);
 
         return [$success, $data, $tags, $timestamp];
     }
@@ -82,7 +85,7 @@ class ApcuCachePool extends AbstractCachePool
             return false;
         }
 
-        return apcu_store($item->getKey(), serialize([$item->get(), $item->getExpirationTimestamp(), []]), $ttl);
+        return apcu_store($item->getKey(), serialize([$item->get(), $item->getTags(), $item->getExpirationTimestamp()]), $ttl);
     }
 
     /**
@@ -93,5 +96,21 @@ class ApcuCachePool extends AbstractCachePool
     private function skipIfCli()
     {
         return $this->skipOnCli && php_sapi_name() === 'cli';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDirectValue($name)
+    {
+        return apcu_fetch($name);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setDirectValue($name, $value)
+    {
+        apcu_store($name, $value);
     }
 }

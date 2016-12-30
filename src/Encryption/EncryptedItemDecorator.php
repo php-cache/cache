@@ -12,7 +12,6 @@
 namespace Cache\Encryption;
 
 use Cache\Adapter\Common\PhpCacheItem;
-use Cache\Taggable\TaggableItemInterface;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 use Psr\Cache\CacheItemInterface;
@@ -22,10 +21,10 @@ use Psr\Cache\CacheItemInterface;
  *
  * @author Daniel Bannert <d.bannert@anolilab.de>
  */
-class EncryptedItemDecorator implements PhpCacheItem, TaggableItemInterface
+class EncryptedItemDecorator implements PhpCacheItem
 {
     /**
-     * @type CacheItemInterface
+     * @type PhpCacheItem
      */
     private $cacheItem;
 
@@ -35,10 +34,10 @@ class EncryptedItemDecorator implements PhpCacheItem, TaggableItemInterface
     private $key;
 
     /**
-     * @param CacheItemInterface $cacheItem
-     * @param Key                $key
+     * @param PhpCacheItem $cacheItem
+     * @param Key          $key
      */
-    public function __construct(CacheItemInterface $cacheItem, Key $key)
+    public function __construct(PhpCacheItem $cacheItem, Key $key)
     {
         $this->cacheItem = $cacheItem;
         $this->key       = $key;
@@ -123,19 +122,19 @@ class EncryptedItemDecorator implements PhpCacheItem, TaggableItemInterface
     /**
      * {@inheritdoc}
      */
-    public function getTags()
+    public function getPreviousTags()
     {
-        return $this->cacheItem->getTags();
+        return $this->cacheItem->getPreviousTags();
     }
 
     /**
-     * {@inheritdoc}
+     * Get the current tags. These are not the same tags as getPrevious tags.
+     *
+     * @return array
      */
-    public function addTag($tag)
+    public function getTags()
     {
-        $this->cacheItem->addTag($tag);
-
-        return $this;
+        return $this->cacheItem->getTags();
     }
 
     /**
@@ -174,5 +173,15 @@ class EncryptedItemDecorator implements PhpCacheItem, TaggableItemInterface
         settype($value, $item['type']);
 
         return $value;
+    }
+
+    /**
+     * @internal This function should never be used and considered private.
+     *
+     * Move tags from $tags to $prevTags
+     */
+    public function moveTagsToPrevious()
+    {
+        $this->cacheItem->moveTagsToPrevious();
     }
 }

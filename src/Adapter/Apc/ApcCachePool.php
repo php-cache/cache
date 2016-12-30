@@ -13,12 +13,15 @@ namespace Cache\Adapter\Apc;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\TagSupportWithArray;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
 class ApcCachePool extends AbstractCachePool
 {
+    use TagSupportWithArray;
+
     /**
      * @type bool
      */
@@ -44,9 +47,9 @@ class ApcCachePool extends AbstractCachePool
         $success   = false;
         $cacheData = apc_fetch($key, $success);
         if (!$success) {
-            return [false, null, []];
+            return [false, null, [], null];
         }
-        list($data, $timestamp, $tags) = unserialize($cacheData);
+        list($data, $tags, $timestamp) = unserialize($cacheData);
 
         return [$success, $data, $tags, $timestamp];
     }
@@ -82,7 +85,7 @@ class ApcCachePool extends AbstractCachePool
             return false;
         }
 
-        return apc_store($item->getKey(), serialize([$item->get(), $item->getExpirationTimestamp(), []]), $ttl);
+        return apc_store($item->getKey(), serialize([$item->get(), $item->getTags(), $item->getExpirationTimestamp()]), $ttl);
     }
 
     /**
@@ -93,5 +96,21 @@ class ApcCachePool extends AbstractCachePool
     private function skipIfCli()
     {
         return $this->skipOnCli && php_sapi_name() === 'cli';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDirectValue($name)
+    {
+        return apc_fetch($name);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setDirectValue($name, $value)
+    {
+        apc_store($name, $value);
     }
 }

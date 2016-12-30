@@ -11,14 +11,19 @@
 
 namespace Cache\Adapter\Common;
 
-use Cache\Taggable\TaggableItemInterface;
+use Cache\Adapter\Common\Exception\InvalidArgumentException;
 
 /**
  * @author Aaron Scherer <aequasi@gmail.com>
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class CacheItem implements PhpCacheItem, TaggableItemInterface
+class CacheItem implements PhpCacheItem
 {
+    /**
+     * @type array
+     */
+    private $prevTags = [];
+
     /**
      * @type array
      */
@@ -163,23 +168,16 @@ class CacheItem implements PhpCacheItem, TaggableItemInterface
     /**
      * {@inheritdoc}
      */
-    public function getTags()
+    public function getPreviousTags()
     {
         $this->initialize();
 
-        return $this->tags;
+        return $this->prevTags;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function addTag($tag)
+    public function getTags()
     {
-        $this->initialize();
-
-        $this->tags[] = $tag;
-
-        return $this;
+        return $this->tags;
     }
 
     /**
@@ -187,9 +185,43 @@ class CacheItem implements PhpCacheItem, TaggableItemInterface
      */
     public function setTags(array $tags)
     {
+        $this->tags = [];
+        $this->tag($tags);
+
+        return $this;
+    }
+
+    /**
+     * Adds a tag to a cache item.
+     *
+     * @param string|string[] $tags A tag or array of tags
+     *
+     * @throws InvalidArgumentException When $tag is not valid.
+     *
+     * @return TaggableCacheItemInterface
+     */
+    private function tag($tags)
+    {
         $this->initialize();
 
-        $this->tags = $tags;
+        if (!is_array($tags)) {
+            $tags = [$tags];
+        }
+        foreach ($tags as $tag) {
+            if (!is_string($tag)) {
+                throw new InvalidArgumentException(sprintf('Cache tag must be string, "%s" given', is_object($tag) ? get_class($tag) : gettype($tag)));
+            }
+            if (isset($this->tags[$tag])) {
+                continue;
+            }
+            if (!isset($tag[0])) {
+                throw new InvalidArgumentException('Cache tag length must be greater than zero');
+            }
+            if (isset($tag[strcspn($tag, '{}()/\@:')])) {
+                throw new InvalidArgumentException(sprintf('Cache tag "%s" contains reserved characters {}()/\@:', $tag));
+            }
+            $this->tags[$tag] = $tag;
+        }
 
         return $this;
     }
@@ -205,7 +237,7 @@ class CacheItem implements PhpCacheItem, TaggableItemInterface
             $result                    = $f();
             $this->hasValue            = $result[0];
             $this->value               = $result[1];
-            $this->tags                = isset($result[2]) ? $result[2] : [];
+            $this->prevTags            = isset($result[2]) ? $result[2] : [];
             $this->expirationTimestamp = null;
 
             if (isset($result[3]) && is_int($result[3])) {
@@ -214,5 +246,16 @@ class CacheItem implements PhpCacheItem, TaggableItemInterface
 
             $this->callable = null;
         }
+    }
+
+    /**
+     * @internal This function should never be used and considered private.
+     *
+     * Move tags from $tags to $prevTags
+     */
+    public function moveTagsToPrevious()
+    {
+        $this->prevTags = $this->tags;
+        $this->tags     = [];
     }
 }

@@ -13,12 +13,10 @@ namespace Cache\Adapter\Doctrine;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
-use Cache\Taggable\TaggableItemInterface;
 use Cache\Taggable\TaggablePoolInterface;
 use Cache\Taggable\TaggablePoolTrait;
 use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\Cache\FlushableCache;
-use Psr\Cache\CacheItemInterface;
 
 /**
  * This is a bridge between PSR-6 and aDoctrine cache.
@@ -41,18 +39,6 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
     public function __construct(Cache $cache)
     {
         $this->cache = $cache;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function save(CacheItemInterface $item)
-    {
-        if ($item instanceof TaggableItemInterface) {
-            $this->saveTags($item);
-        }
-
-        return parent::save($item);
     }
 
     /**
@@ -84,8 +70,6 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
      */
     protected function clearOneObjectFromCache($key)
     {
-        $this->preRemoveItem($key);
-
         return $this->cache->delete($key);
     }
 
@@ -98,11 +82,7 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
             $ttl = 0;
         }
 
-        $tags = [];
-        if ($item instanceof TaggableItemInterface) {
-            $tags = $item->getTags();
-        }
-        $data = serialize([true, $item->get(), $tags, $item->getExpirationTimestamp()]);
+        $data = serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]);
 
         return $this->cache->save($item->getKey(), $data, $ttl);
     }

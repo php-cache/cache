@@ -13,10 +13,13 @@ namespace Cache\Adapter\Memcache;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\TagSupportWithArray;
 use Memcache;
 
 class MemcacheCachePool extends AbstractCachePool
 {
+    use TagSupportWithArray;
+
     /**
      * @type Memcache
      */
@@ -65,8 +68,24 @@ class MemcacheCachePool extends AbstractCachePool
      */
     protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
-        $data = serialize([true, $item->get(), [], $item->getExpirationTimestamp()]);
+        $data = serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]);
 
         return $this->cache->set($item->getKey(), $data, 0, $ttl ?: 0);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDirectValue($name)
+    {
+        return $this->cache->get($name);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setDirectValue($name, $value)
+    {
+        $this->cache->set($name, $value);
     }
 }

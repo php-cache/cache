@@ -13,6 +13,7 @@ namespace Cache\Adapter\MongoDB;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\TagSupportWithArray;
 use MongoDB\Collection;
 use MongoDB\Driver\Manager;
 
@@ -22,6 +23,8 @@ use MongoDB\Driver\Manager;
  */
 class MongoDBCachePool extends AbstractCachePool
 {
+    use TagSupportWithArray;
+
     /**
      * @type Collection
      */
@@ -67,7 +70,7 @@ class MongoDBCachePool extends AbstractCachePool
             }
         }
 
-        return [true, unserialize($object->data), $object->tags, $object->expirationTimestamp];
+        return [true, unserialize($object->data), unserialize($object->tags), $object->expirationTimestamp];
     }
 
     /**
@@ -98,7 +101,7 @@ class MongoDBCachePool extends AbstractCachePool
         $object = [
             '_id'                 => $item->getKey(),
             'data'                => serialize($item->get()),
-            'tags'                => [],
+            'tags'                => serialize($item->getTags()),
             'expirationTimestamp' => $item->getExpirationTimestamp(),
         ];
 
@@ -109,5 +112,31 @@ class MongoDBCachePool extends AbstractCachePool
         $this->collection->updateOne(['_id' => $item->getKey()], ['$set' => $object], ['upsert' => true]);
 
         return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDirectValue($name)
+    {
+        $object = $this->collection->findOne(['_id' => $name]);
+        if (!$object || !isset($object->data)) {
+            return;
+        }
+
+        return unserialize($object->data);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setDirectValue($name, $value)
+    {
+        $object = [
+            '_id'  => $name,
+            'data' => serialize($value),
+        ];
+
+        $this->collection->updateOne(['_id' => $name], ['$set' => $object], ['upsert' => true]);
     }
 }

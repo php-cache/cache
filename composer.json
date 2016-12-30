@@ -31,7 +31,7 @@
         "defuse/php-encryption":   "^2.0",
         "phpunit/phpunit":         "^4.0 || ^5.1",
         "mockery/mockery":         "^0.9",
-        "cache/integration-tests": "^0.11",
+        "cache/integration-tests": "^0.13",
         "predis/predis": "^1.0",
         "symfony/cache":           "dev-master"
     },
@@ -63,6 +63,7 @@
         "cache/session-handler":       "*",
         "cache/taggable-cache":        "*"
     },
+    "minimum-stability": "dev",
     "autoload":    {
         "psr-4":                 {
             "Cache\\": "src/"

@@ -15,11 +15,9 @@ use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
-use Cache\Taggable\TaggableItemInterface;
 use Cache\Taggable\TaggablePoolInterface;
 use Cache\Taggable\TaggablePoolTrait;
 use Predis\ClientInterface as Client;
-use Psr\Cache\CacheItemInterface;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
@@ -40,18 +38,6 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
     public function __construct(Client $cache)
     {
         $this->cache = $cache;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function save(CacheItemInterface $item)
-    {
-        if ($item instanceof TaggableItemInterface) {
-            $this->saveTags($item);
-        }
-
-        return parent::save($item);
     }
 
     /**
@@ -79,10 +65,6 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
      */
     protected function clearOneObjectFromCache($key)
     {
-        // We have to commit here to be able to remove deferred hierarchy items
-        $this->commit();
-
-        $this->preRemoveItem($key);
         $keyString = $this->getHierarchyKey($key, $path);
         $this->cache->incr($path);
         $this->clearHierarchyKeyCache();

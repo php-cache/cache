@@ -3,7 +3,7 @@
     "description":       "A PSR-6 cache implementation using chain. This implementation supports tags",
     "type":              "library",
     "license":           "MIT",
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "keywords":          [
         "cache",
         "psr-6",
@@ -27,14 +27,14 @@
         "php":                  "^5.5 || ^7.0",
         "psr/cache":            "^1.0",
         "psr/log":              "^1.0",
-        "cache/adapter-common": "^0.3",
+        "cache/adapter-common": "^0.4",
         "cache/taggable-cache": "^0.4"
     },
     "require-dev":       {
         "phpunit/phpunit":         "^4.0 || ^5.1",
         "cache/predis-adapter":    "^0.4",
         "cache/array-adapter":     "^0.4",
-        "cache/integration-tests": "^0.11"
+        "cache/integration-tests": "^0.13"
     },
     "provide":           {
         "psr/cache-implementation": "^1.0"

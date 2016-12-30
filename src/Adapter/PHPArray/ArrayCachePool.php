@@ -16,10 +16,8 @@ use Cache\Adapter\Common\CacheItem;
 use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
-use Cache\Taggable\TaggableItemInterface;
 use Cache\Taggable\TaggablePoolInterface;
 use Cache\Taggable\TaggablePoolTrait;
-use Psr\Cache\CacheItemInterface;
 
 /**
  * Array cache pool. You could set a limit of how many items you want to be stored to avoid memory leaks.
@@ -32,7 +30,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     use HierarchicalCachePoolTrait;
 
     /**
-     * @type array
+     * @type PhpCacheItem[]
      */
     private $cache;
 
@@ -70,9 +68,11 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     protected function getItemWithoutGenerateCacheKey($key)
     {
         if (isset($this->deferred[$key])) {
-            $item = $this->deferred[$key];
+            /** @type CacheItem $item */
+            $item = clone $this->deferred[$key];
+            $item->moveTagsToPrevious();
 
-            return is_object($item) ? clone $item : $item;
+            return $item;
         }
 
         return $this->fetchObjectFromCache($key);
@@ -90,14 +90,19 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     {
         $this->validateKey($key);
         if (isset($this->deferred[$key])) {
-            $item = $this->deferred[$key];
+            /** @type CacheItem $item */
+            $item = clone $this->deferred[$key];
+            $item->moveTagsToPrevious();
 
-            return is_object($item) ? clone $item : $item;
+            return $item;
         }
 
         $storageKey = $this->getHierarchyKey($key);
         if (isset($this->cache[$storageKey])) {
-            return $this->cache[$storageKey];
+            $item = $this->cache[$storageKey];
+            $item->moveTagsToPrevious();
+
+            return $item;
         }
 
         return new CacheItem($key, false);
@@ -119,7 +124,6 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     protected function clearOneObjectFromCache($key)
     {
         $this->commit();
-        $this->preRemoveItem($key);
         $keyString = $this->getHierarchyKey($key, $path);
         if (isset($this->cache[$path])) {
             $this->cache[$path]++;
@@ -155,18 +159,6 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         }
 
         return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function save(CacheItemInterface $item)
-    {
-        if ($item instanceof TaggableItemInterface) {
-            $this->saveTags($item);
-        }
-
-        return parent::save($item);
     }
 
     /**

@@ -60,4 +60,22 @@ class VoidCachePool extends AbstractCachePool implements TaggablePoolInterface, 
     {
         return true;
     }
+
+    protected function getList($name)
+    {
+        return [];
+    }
+
+    protected function removeList($name)
+    {
+        return true;
+    }
+
+    protected function appendListItem($name, $key)
+    {
+    }
+
+    protected function removeListItem($name, $key)
+    {
+    }
 }
