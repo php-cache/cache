@@ -10,14 +10,13 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 * `AbstractCachePool::invalidateTags` and `AbstractCachePool::invalidateTags` 
 * Added interfaces for our items and pools `PhpCachePool` and `PhpCacheItem`
 * Trait to help adapters to support tags. `TagSupportWithArray`.
-* New interfaces for tags. `TaggableCacheItemInterface` and `TaggableCacheItemPoolInterface`
 
 ### Changed
 
 * First parameter to `AbstractCachePool::storeItemInCache` must be a `PhpCacheItem`. 
 * Return value from `AbstractCachePool::fetchObjectFromCache` must be a an array with 4 values. Added expiration timestamp. 
 * `HasExpirationDateInterface` is replaced by `HasExpirationTimestampInterface`
-* We do not work with `\DateTime` anymore. We work with timestamps. 
+* We do not work with `\DateTime` internally anymore. We work with timestamps. 
 
 ## 0.3.3
 
