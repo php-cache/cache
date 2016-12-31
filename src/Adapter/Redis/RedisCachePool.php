@@ -62,7 +62,9 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     protected function clearOneObjectFromCache($key)
     {
         $keyString = $this->getHierarchyKey($key, $path);
-        $this->cache->incr($path);
+        if ($path) {
+            $this->cache->incr($path);
+        }
         $this->clearHierarchyKeyCache();
 
         return $this->cache->del($keyString) >= 0;
