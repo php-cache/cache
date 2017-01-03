@@ -1,12 +1,14 @@
 <?php
 
-namespace Cache\Bridge\Psr16;
+namespace Cache\Bridge\SimpleCache;
 
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\SimpleCache\CacheInterface;
+use Psr\Cache\InvalidArgumentException as CacheInvalidArgumentException;
+use Cache\Bridge\SimpleCache\Exception\InvalidArgumentException;
 
-class Psr16Bridge implements CacheInterface
+class SimpleCacheBridge implements CacheInterface
 {
     /**
      * @var CacheItemPoolInterface
@@ -14,7 +16,7 @@ class Psr16Bridge implements CacheInterface
     protected $cacheItemPool;
 
     /**
-     * Psr16Bridge constructor.
+     * SimpleCacheBridge constructor.
      */
     public function __construct(CacheItemPoolInterface $cacheItemPool)
     {
@@ -28,8 +30,8 @@ class Psr16Bridge implements CacheInterface
     {
         try {
             $item = $this->cacheItemPool->getItem($key);
-        } catch (\Psr\Cache\InvalidArgumentException $e) {
-            throw new Exception\InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
+        } catch (CacheInvalidArgumentException $e) {
+            throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
         }
 
         if (!$item->isHit()) {
@@ -46,8 +48,8 @@ class Psr16Bridge implements CacheInterface
     {
         try {
             $item = $this->cacheItemPool->getItem($key);
-        } catch (\Psr\Cache\InvalidArgumentException $e) {
-            throw new Exception\InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
+        } catch (CacheInvalidArgumentException $e) {
+            throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
         }
 
         $item->set($value);
@@ -63,8 +65,8 @@ class Psr16Bridge implements CacheInterface
     {
         try {
             return $this->cacheItemPool->deleteItem($key);
-        } catch (\Psr\Cache\InvalidArgumentException $e) {
-            throw new Exception\InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
+        } catch (CacheInvalidArgumentException $e) {
+            throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -83,16 +85,18 @@ class Psr16Bridge implements CacheInterface
     {
         if (!is_array($keys)) {
             if (!$keys instanceof \Traversable) {
-                throw new Exception\InvalidArgumentException("\$keys is neither an array nor Traversable");
+                throw new InvalidArgumentException("\$keys is neither an array nor Traversable");
             }
 
+            // Since we need to throw an exception if *any* key is invalid, it doesn't
+            // make sense to wrap iterators or something like that.
             $keys = iterator_to_array($keys);
         }
 
         try {
             $items = $this->cacheItemPool->getItems($keys);
-        } catch (\Psr\Cache\InvalidArgumentException $e) {
-            throw new Exception\InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
+        } catch (CacheInvalidArgumentException $e) {
+            throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
         }
 
         foreach ($items as $key => $item) {
@@ -112,16 +116,18 @@ class Psr16Bridge implements CacheInterface
     {
         if (!is_array($values)) {
             if (!$values instanceof \Traversable) {
-                throw new Exception\InvalidArgumentException("\$values is neither an array nor Traversable");
+                throw new InvalidArgumentException("\$values is neither an array nor Traversable");
             }
 
+            // Since we need to throw an exception if *any* key is invalid, it doesn't
+            // make sense to wrap iterators or something like that.
             $values = iterator_to_array($values);
         }
 
         try {
             $items = $this->cacheItemPool->getItems(array_keys($values));
-        } catch (\Psr\Cache\InvalidArgumentException $e) {
-            throw new Exception\InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
+        } catch (CacheInvalidArgumentException $e) {
+            throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
         }
 
         $itemSuccess = true;
@@ -144,16 +150,18 @@ class Psr16Bridge implements CacheInterface
     {
         if (!is_array($keys)) {
             if (!$keys instanceof \Traversable) {
-                throw new Exception\InvalidArgumentException("\$keys is neither an array nor Traversable");
+                throw new InvalidArgumentException("\$keys is neither an array nor Traversable");
             }
 
+            // Since we need to throw an exception if *any* key is invalid, it doesn't
+            // make sense to wrap iterators or something like that.
             $keys = iterator_to_array($keys);
         }
 
         try {
             return $this->cacheItemPool->deleteItems($keys);
-        } catch (\Psr\Cache\InvalidArgumentException $e) {
-            throw new Exception\InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
+        } catch (CacheInvalidArgumentException $e) {
+            throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -163,11 +171,9 @@ class Psr16Bridge implements CacheInterface
     public function has($key)
     {
         try {
-            $item = $this->cacheItemPool->getItem($key);
-        } catch (\Psr\Cache\InvalidArgumentException $e) {
-            throw new Exception\InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
+            return $this->cacheItemPool->hasItem($key);
+        } catch (CacheInvalidArgumentException $e) {
+            throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
         }
-
-        return $item->isHit();
     }
 }

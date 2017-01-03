@@ -1,8 +1,7 @@
 <?php
 
-namespace Cache\Bridge\Psr16\Exception;
+namespace Cache\Bridge\SimpleCache\Exception;
 
 class CacheException extends \RuntimeException implements \Psr\SimpleCache\CacheException
 {
-
 }

@@ -1,16 +1,16 @@
 <?php
 
-namespace Cache\Bridge\Psr16\Tests;
+namespace Cache\Bridge\SimpleCache\Tests;
 
-use Cache\Bridge\Psr16\Psr16Bridge;
+use Cache\Bridge\SimpleCache\SimpleCacheBridge;
 use Mockery as m;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
-class DoctrineCacheBridgeTest extends \PHPUnit_Framework_TestCase
+class SimpleCacheBridgeTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @type Psr16Bridge
+     * @type SimpleCacheBridge
      */
     private $bridge;
 
@@ -30,14 +30,14 @@ class DoctrineCacheBridgeTest extends \PHPUnit_Framework_TestCase
 
         $this->mock = m::mock(CacheItemPoolInterface::class);
 
-        $this->bridge = new Psr16Bridge($this->mock);
+        $this->bridge = new SimpleCacheBridge($this->mock);
 
         $this->itemMock = m::mock(CacheItemInterface::class);
     }
 
     public function testConstructor()
     {
-        $this->assertInstanceOf(Psr16Bridge::class, $this->bridge);
+        $this->assertInstanceOf(SimpleCacheBridge::class, $this->bridge);
     }
 
     public function testFetch()

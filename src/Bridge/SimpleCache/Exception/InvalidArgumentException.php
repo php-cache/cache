@@ -1,8 +1,7 @@
 <?php
 
-namespace Cache\Bridge\Psr16\Exception;
+namespace Cache\Bridge\SimpleCache\Exception;
 
 class InvalidArgumentException extends CacheException implements \Psr\SimpleCache\InvalidArgumentException
 {
-
 }
