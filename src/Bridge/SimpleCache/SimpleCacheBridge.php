@@ -1,17 +1,26 @@
 <?php
 
+/*
+ * This file is part of php-cache organization.
+ *
+ * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 namespace Cache\Bridge\SimpleCache;
 
+use Cache\Bridge\SimpleCache\Exception\InvalidArgumentException;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
-use Psr\SimpleCache\CacheInterface;
 use Psr\Cache\InvalidArgumentException as CacheInvalidArgumentException;
-use Cache\Bridge\SimpleCache\Exception\InvalidArgumentException;
+use Psr\SimpleCache\CacheInterface;
 
 class SimpleCacheBridge implements CacheInterface
 {
     /**
-     * @var CacheItemPoolInterface
+     * @type CacheItemPoolInterface
      */
     protected $cacheItemPool;
 
@@ -85,7 +94,7 @@ class SimpleCacheBridge implements CacheInterface
     {
         if (!is_array($keys)) {
             if (!$keys instanceof \Traversable) {
-                throw new InvalidArgumentException("\$keys is neither an array nor Traversable");
+                throw new InvalidArgumentException('$keys is neither an array nor Traversable');
             }
 
             // Since we need to throw an exception if *any* key is invalid, it doesn't
@@ -100,7 +109,7 @@ class SimpleCacheBridge implements CacheInterface
         }
 
         foreach ($items as $key => $item) {
-            /** @var $item CacheItemInterface */
+            /** @type $item CacheItemInterface */
             if (!$item->isHit()) {
                 yield $key => $default;
             }
@@ -116,7 +125,7 @@ class SimpleCacheBridge implements CacheInterface
     {
         if (!is_array($values)) {
             if (!$values instanceof \Traversable) {
-                throw new InvalidArgumentException("\$values is neither an array nor Traversable");
+                throw new InvalidArgumentException('$values is neither an array nor Traversable');
             }
 
             // Since we need to throw an exception if *any* key is invalid, it doesn't
@@ -133,7 +142,7 @@ class SimpleCacheBridge implements CacheInterface
         $itemSuccess = true;
 
         foreach ($items as $key => $item) {
-            /** @var $item CacheItemInterface */
+            /* @var $item CacheItemInterface */
             $item->set($values[$key]);
             $item->expiresAfter($ttl);
 
@@ -150,7 +159,7 @@ class SimpleCacheBridge implements CacheInterface
     {
         if (!is_array($keys)) {
             if (!$keys instanceof \Traversable) {
-                throw new InvalidArgumentException("\$keys is neither an array nor Traversable");
+                throw new InvalidArgumentException('$keys is neither an array nor Traversable');
             }
 
             // Since we need to throw an exception if *any* key is invalid, it doesn't
