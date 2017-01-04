@@ -112,9 +112,9 @@ class SimpleCacheBridge implements CacheInterface
             /** @type $item CacheItemInterface */
             if (!$item->isHit()) {
                 yield $key => $default;
+            } else {
+                yield $key => $item->get();
             }
-
-            yield $key => $item->get();
         }
     }
 
