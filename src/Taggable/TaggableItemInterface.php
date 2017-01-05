@@ -16,7 +16,7 @@ use Psr\Cache\CacheItemInterface;
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  *
- * @deprecated Use Cache\Common\TagAwareItem instead
+ * @deprecated Use Cache\TagInterop\TaggableCacheItemInterface instead
  */
 interface TaggableItemInterface extends CacheItemInterface
 {

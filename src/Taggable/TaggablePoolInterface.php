@@ -20,7 +20,7 @@ use Psr\Cache\InvalidArgumentException;
  *
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  *
- * @deprecated Use Cache\Common\TagAwareAdapter instead
+ * @deprecated Use Cache\TagInterop\TaggableCacheItemPoolInterface instead
  */
 interface TaggablePoolInterface extends CacheItemPoolInterface
 {

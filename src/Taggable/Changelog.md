@@ -8,6 +8,13 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 * Support for `TaggableCacheItemPoolInterface`
 
+### Removed
+
+* `TaggablePoolTrait`
+* Deprecated `TaggablePoolInterface` in favor of `Cache\TagInterop\TaggableCacheItemPoolInterface`
+* Deprecated `TaggableItemInterface` in favor of `Cache\TagInterop\TaggableCacheItemInterface`
+* Removed support for `TaggablePoolInterface` and `TaggableItemInterface`
+
 ## 0.4.3
 
 ### Fixed
