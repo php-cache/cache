@@ -25,7 +25,7 @@ before_install:
     - phpenv config-add ./apcu_bc.ini
 
 install:
-    - composer update
+    - composer update --prefer-dist --prefer-stable
 
 script:
     - ./vendor/bin/phpunit --coverage-clover=coverage.xml
