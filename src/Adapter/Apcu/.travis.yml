@@ -20,7 +20,7 @@ before_install:
     - yes '' | pecl install apcu
 
 install:
-    - composer update
+    - composer update --prefer-dist --prefer-stable
 
 script:
     - ./vendor/bin/phpunit --coverage-clover=coverage.xml

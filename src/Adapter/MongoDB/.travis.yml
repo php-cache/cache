@@ -24,7 +24,7 @@ before_install:
     - bash <(curl -s https://raw.githubusercontent.com/php-cache/cache/master/build/php/7.0/MongoDB.sh)
 
 install:
-    - composer update
+    - composer update --prefer-dist --prefer-stable
 
 script:
     - ./vendor/bin/phpunit --coverage-clover=coverage.xml
