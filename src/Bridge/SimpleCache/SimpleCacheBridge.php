@@ -57,12 +57,12 @@ class SimpleCacheBridge implements CacheInterface
     {
         try {
             $item = $this->cacheItemPool->getItem($key);
+            $item->expiresAfter($ttl);
         } catch (CacheInvalidArgumentException $e) {
             throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
         }
 
         $item->set($value);
-        $item->expiresAfter($ttl);
 
         return $this->cacheItemPool->save($item);
     }
@@ -144,7 +144,12 @@ class SimpleCacheBridge implements CacheInterface
         foreach ($items as $key => $item) {
             /* @var $item CacheItemInterface */
             $item->set($values[$key]);
-            $item->expiresAfter($ttl);
+
+            try {
+                $item->expiresAfter($ttl);
+            } catch (CacheInvalidArgumentException $e) {
+                throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
+            }
 
             $itemSuccess = $itemSuccess && $this->cacheItemPool->saveDeferred($item);
         }
