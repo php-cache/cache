@@ -17,6 +17,11 @@ use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException as CacheInvalidArgumentException;
 use Psr\SimpleCache\CacheInterface;
 
+/**
+ * Adds a SimpleCache interface on a PSR-6 cache pool.
+ *
+ * @author Magnus Nordlander <magnus@fervo.se>
+ */
 class SimpleCacheBridge implements CacheInterface
 {
     /**
