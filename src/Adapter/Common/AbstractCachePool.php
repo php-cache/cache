@@ -220,7 +220,8 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface
     public function save(CacheItemInterface $item)
     {
         if (!$item instanceof PhpCacheItem) {
-            throw new InvalidArgumentException('Cache items are not transferable between pools. Item MUST implement PhpCacheItem.');
+            $e = new InvalidArgumentException('Cache items are not transferable between pools. Item MUST implement PhpCacheItem.');
+            $this->handleException($e, __FUNCTION__);
         }
 
         $this->removeTagEntries($item);
@@ -275,16 +276,18 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface
     protected function validateKey($key)
     {
         if (!is_string($key)) {
-            throw new InvalidArgumentException(sprintf(
+            $e = new InvalidArgumentException(sprintf(
                 'Cache key must be string, "%s" given', gettype($key)
             ));
+            $this->handleException($e, __FUNCTION__);
         }
 
         if (preg_match('|[\{\}\(\)/\\\@\:]|', $key)) {
-            throw new InvalidArgumentException(sprintf(
+            $e = new InvalidArgumentException(sprintf(
                 'Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:',
                 $key
             ));
+            $this->handleException($e, __FUNCTION__);
         }
     }
 
