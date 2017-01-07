@@ -26,5 +26,4 @@ trait CreatePoolTrait
     {
         return $this->createCachePool();
     }
-
 }

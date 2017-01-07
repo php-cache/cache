@@ -14,7 +14,7 @@ namespace Cache\Adapter\Apcu\Tests;
 use Cache\Adapter\Apcu\ApcuCachePool;
 use Cache\IntegrationTests\SimpleCacheTest as BaseTest;
 
-class IntegrationSimpleCacheTest extends BaseTest
+class IntegrationSimpleCachelTest extends BaseTest
 {
     public function createSimpleCache()
     {

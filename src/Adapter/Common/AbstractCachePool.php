@@ -502,18 +502,18 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
             }
         }
 
-        $keys = [];
+        $keys        = [];
         $arrayValues = [];
         foreach ($values as $key => $value) {
             if (is_int($key)) {
                 $key = (string) $key;
             }
             $this->validateKey($key);
-            $keys[] = $key;
+            $keys[]            = $key;
             $arrayValues[$key] = $value;
         }
 
-        $items = $this->getItems($keys);
+        $items       = $this->getItems($keys);
         $itemSuccess = true;
         foreach ($items as $key => $item) {
             $item->set($arrayValues[$key]);
