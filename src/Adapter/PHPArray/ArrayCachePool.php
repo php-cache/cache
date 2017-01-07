@@ -80,29 +80,13 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      */
     protected function fetchObjectFromCache($key)
     {
-        // Not used
-    }
-
-    public function getItem($key)
-    {
-        $this->validateKey($key);
-        if (isset($this->deferred[$key])) {
-            /** @type CacheItem $item */
-            $item = clone $this->deferred[$key];
-            $item->moveTagsToPrevious();
-
-            return $item;
+        if (!isset($this->cache[$key])) {
+            return [false, null, [], null];
         }
 
-        $storageKey = $this->getHierarchyKey($key);
-        if (isset($this->cache[$storageKey])) {
-            $item = $this->cache[$storageKey];
-            $item->moveTagsToPrevious();
+        list($data, $tags, $timestamp) = $this->cache[$key];
 
-            return $item;
-        }
-
-        return new CacheItem($key, false);
+        return [true, clone $data, $tags, $timestamp];
     }
 
     /**
@@ -140,7 +124,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
         $key               = $this->getHierarchyKey($item->getKey());
-        $this->cache[$key] = $item;
+        $this->cache[$key] = [clone $item->get(), $item->getTags(), $item->getExpirationTimestamp()];
 
         if ($this->limit !== null) {
             // Remove the oldest value
