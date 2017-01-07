@@ -31,4 +31,9 @@ trait CreatePoolTrait
 
         return $this->doctrineCache;
     }
+
+    public function createSimpleCache()
+    {
+        return $this->createCachePool();
+    }
 }

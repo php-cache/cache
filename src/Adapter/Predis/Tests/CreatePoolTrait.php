@@ -22,6 +22,10 @@ trait CreatePoolTrait
     {
         return new PredisCachePool($this->getClient());
     }
+    public function createSimpleCache()
+    {
+        return $this->createCachePool();
+    }
 
     private function getClient()
     {
