@@ -90,7 +90,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
             $data = clone $data;
         }
 
-        return [true, clone $data, $tags, $timestamp];
+        return [true, $data, $tags, $timestamp];
     }
 
     /**
