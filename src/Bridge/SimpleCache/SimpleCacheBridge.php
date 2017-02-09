@@ -113,6 +113,17 @@ class SimpleCacheBridge implements CacheInterface
             throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
         }
 
+        return $this->generateValues($default, $items);
+    }
+
+    /**
+     * @param $default
+     * @param $items
+     *
+     * @return \Generator
+     */
+    private function generateValues($default, $items)
+    {
         foreach ($items as $key => $item) {
             /** @type $item CacheItemInterface */
             if (!$item->isHit()) {
@@ -132,14 +143,29 @@ class SimpleCacheBridge implements CacheInterface
             if (!$values instanceof \Traversable) {
                 throw new InvalidArgumentException('$values is neither an array nor Traversable');
             }
+        }
 
-            // Since we need to throw an exception if *any* key is invalid, it doesn't
-            // make sense to wrap iterators or something like that.
-            $values = iterator_to_array($values, false);
+        $keys        = [];
+        $arrayValues = [];
+        foreach ($values as $key => $value) {
+            if (is_int($key)) {
+                $key = (string) $key;
+            }
+
+            if (!is_string($key)) {
+                throw new InvalidArgumentException(sprintf('Cache key must be string, "%s" given', gettype($key)));
+            }
+
+            if (preg_match('|[\{\}\(\)/\\\@\:]|', $key)) {
+                throw new InvalidArgumentException(sprintf('Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:', $key));
+            }
+
+            $keys[]            = $key;
+            $arrayValues[$key] = $value;
         }
 
         try {
-            $items = $this->cacheItemPool->getItems(array_keys($values));
+            $items = $this->cacheItemPool->getItems($keys);
         } catch (CacheInvalidArgumentException $e) {
             throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
         }
@@ -148,7 +174,7 @@ class SimpleCacheBridge implements CacheInterface
 
         foreach ($items as $key => $item) {
             /* @var $item CacheItemInterface */
-            $item->set($values[$key]);
+            $item->set($arrayValues[$key]);
 
             try {
                 $item->expiresAfter($ttl);
