@@ -9,21 +9,17 @@
  * with this source code in the file LICENSE.
  */
 
-namespace Cache\Adapter\PHPArray\Tests;
+namespace Cache\Adapter\MongoDB\Tests;
 
-use Cache\Adapter\PHPArray\ArrayCachePool;
+use Cache\Adapter\MongoDB\MongoDBCachePool;
+use Cache\IntegrationTests\SimpleCacheTest;
 
-trait CreatePoolTrait
+class IntegrationSimpleCacheTest extends SimpleCacheTest
 {
-    private $cacheArray = [];
-
-    public function createCachePool()
-    {
-        return new ArrayCachePool(null, $this->cacheArray);
-    }
+    use CreateServerTrait;
 
     public function createSimpleCache()
     {
-        return $this->createCachePool();
+        return new MongoDBCachePool($this->getCollection());
     }
 }

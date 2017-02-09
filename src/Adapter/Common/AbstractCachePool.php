@@ -17,12 +17,13 @@ use Cache\Adapter\Common\Exception\InvalidArgumentException;
 use Psr\Cache\CacheItemInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
+use Psr\SimpleCache\CacheInterface;
 
 /**
  * @author Aaron Scherer <aequasi@gmail.com>
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface
+abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, CacheInterface
 {
     const SEPARATOR_TAG = '!';
 
@@ -281,7 +282,10 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface
             ));
             $this->handleException($e, __FUNCTION__);
         }
-
+        if (!isset($key[0])) {
+            $e =  new InvalidArgumentException('Cache key cannot be an empty string');
+            $this->handleException($e, __FUNCTION__);
+        }
         if (preg_match('|[\{\}\(\)/\\\@\:]|', $key)) {
             $e = new InvalidArgumentException(sprintf(
                 'Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:',
@@ -414,5 +418,141 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface
     protected function getTagKey($tag)
     {
         return 'tag'.self::SEPARATOR_TAG.$tag;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function get($key, $default = null)
+    {
+        $item = $this->getItem($key);
+        if (!$item->isHit()) {
+            return $default;
+        }
+
+        return $item->get();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function set($key, $value, $ttl = null)
+    {
+        $item = $this->getItem($key);
+        $item->set($value);
+        $item->expiresAfter($ttl);
+
+        return $this->save($item);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function delete($key)
+    {
+        return $this->deleteItem($key);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMultiple($keys, $default = null)
+    {
+        if (!is_array($keys)) {
+            if (!$keys instanceof \Traversable) {
+                throw new InvalidArgumentException('$keys is neither an array nor Traversable');
+            }
+
+            // Since we need to throw an exception if *any* key is invalid, it doesn't
+            // make sense to wrap iterators or something like that.
+            $keys = iterator_to_array($keys, false);
+        }
+
+        $items = $this->getItems($keys);
+
+        return $this->generateValues($default, $items);
+    }
+
+    /**
+     * @param $default
+     * @param $items
+     *
+     * @return \Generator
+     */
+    private function generateValues($default, $items)
+    {
+        foreach ($items as $key => $item) {
+            /** @type $item CacheItemInterface */
+            if (!$item->isHit()) {
+                yield $key => $default;
+            } else {
+                yield $key => $item->get();
+            }
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setMultiple($values, $ttl = null)
+    {
+        if (!is_array($values)) {
+            if (!$values instanceof \Traversable) {
+                throw new InvalidArgumentException('$values is neither an array nor Traversable');
+            }
+        }
+
+        $keys        = [];
+        $arrayValues = [];
+        foreach ($values as $key => $value) {
+            if (is_int($key)) {
+                $key = (string) $key;
+            }
+            $this->validateKey($key);
+            $keys[]            = $key;
+            $arrayValues[$key] = $value;
+        }
+
+        $items       = $this->getItems($keys);
+        $itemSuccess = true;
+        foreach ($items as $key => $item) {
+            $item->set($arrayValues[$key]);
+
+            try {
+                $item->expiresAfter($ttl);
+            } catch (InvalidArgumentException $e) {
+                throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
+            }
+
+            $itemSuccess = $itemSuccess && $this->saveDeferred($item);
+        }
+
+        return $itemSuccess && $this->commit();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteMultiple($keys)
+    {
+        if (!is_array($keys)) {
+            if (!$keys instanceof \Traversable) {
+                throw new InvalidArgumentException('$keys is neither an array nor Traversable');
+            }
+
+            // Since we need to throw an exception if *any* key is invalid, it doesn't
+            // make sense to wrap iterators or something like that.
+            $keys = iterator_to_array($keys, false);
+        }
+
+        return $this->deleteItems($keys);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function has($key)
+    {
+        return $this->hasItem($key);
     }
 }

@@ -27,6 +27,11 @@ trait CreatePoolTrait
         return new FilesystemCachePool($this->getFilesystem());
     }
 
+    public function createSimpleCache()
+    {
+        return $this->createCachePool();
+    }
+
     private function getFilesystem()
     {
         if ($this->filesystem === null) {

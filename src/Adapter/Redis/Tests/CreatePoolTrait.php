@@ -31,4 +31,9 @@ trait CreatePoolTrait
 
         return $this->client;
     }
+
+    public function createSimpleCache()
+    {
+        return $this->createCachePool();
+    }
 }

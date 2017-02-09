@@ -104,7 +104,7 @@ class SimpleCacheBridge implements CacheInterface
 
             // Since we need to throw an exception if *any* key is invalid, it doesn't
             // make sense to wrap iterators or something like that.
-            $keys = iterator_to_array($keys);
+            $keys = iterator_to_array($keys, false);
         }
 
         try {
@@ -135,7 +135,7 @@ class SimpleCacheBridge implements CacheInterface
 
             // Since we need to throw an exception if *any* key is invalid, it doesn't
             // make sense to wrap iterators or something like that.
-            $values = iterator_to_array($values);
+            $values = iterator_to_array($values, false);
         }
 
         try {
@@ -174,7 +174,7 @@ class SimpleCacheBridge implements CacheInterface
 
             // Since we need to throw an exception if *any* key is invalid, it doesn't
             // make sense to wrap iterators or something like that.
-            $keys = iterator_to_array($keys);
+            $keys = iterator_to_array($keys, false);
         }
 
         try {

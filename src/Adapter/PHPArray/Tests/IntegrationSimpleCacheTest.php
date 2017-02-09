@@ -11,19 +11,9 @@
 
 namespace Cache\Adapter\PHPArray\Tests;
 
-use Cache\Adapter\PHPArray\ArrayCachePool;
+use Cache\IntegrationTests\SimpleCacheTest;
 
-trait CreatePoolTrait
+class IntegrationSimpleCacheTest extends SimpleCacheTest
 {
-    private $cacheArray = [];
-
-    public function createCachePool()
-    {
-        return new ArrayCachePool(null, $this->cacheArray);
-    }
-
-    public function createSimpleCache()
-    {
-        return $this->createCachePool();
-    }
+    use CreatePoolTrait;
 }

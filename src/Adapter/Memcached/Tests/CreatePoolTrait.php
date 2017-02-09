@@ -22,6 +22,11 @@ trait CreatePoolTrait
         return new MemcachedCachePool($this->getClient());
     }
 
+    public function createSimpleCache()
+    {
+        return $this->createCachePool();
+    }
+
     private function getClient()
     {
         if ($this->client === null) {
