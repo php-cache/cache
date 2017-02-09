@@ -25,6 +25,7 @@ class EncryptedItemDecorator implements PhpCacheItem
 {
     /**
      * The cacheItem should always contain encrypted data.
+     *
      * @type PhpCacheItem
      */
     private $cacheItem;
@@ -53,7 +54,6 @@ class EncryptedItemDecorator implements PhpCacheItem
     }
 
     /**
-     *
      * @return PhpCacheItem
      */
     public function getCacheItem()
@@ -186,7 +186,7 @@ class EncryptedItemDecorator implements PhpCacheItem
     }
 
     /**
-     * Move tags from $tags to $prevTags
+     * Move tags from $tags to $prevTags.
      *
      * @internal This function should never be used and considered private.
      */
