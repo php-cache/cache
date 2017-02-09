@@ -145,7 +145,7 @@ class SimpleCacheBridge implements CacheInterface
             }
         }
 
-        $keys = [];
+        $keys        = [];
         $arrayValues = [];
         foreach ($values as $key => $value) {
             if (is_int($key)) {
@@ -160,7 +160,7 @@ class SimpleCacheBridge implements CacheInterface
                 throw new InvalidArgumentException(sprintf('Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:', $key));
             }
 
-            $keys[] = $key;
+            $keys[]            = $key;
             $arrayValues[$key] = $value;
         }
 
