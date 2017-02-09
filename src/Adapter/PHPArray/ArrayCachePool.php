@@ -128,7 +128,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
         $key               = $this->getHierarchyKey($item->getKey());
-        $value = $item->get();
+        $value             = $item->get();
         if (is_object($value)) {
             $value = clone $value;
         }
