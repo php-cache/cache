@@ -33,7 +33,7 @@
         "phpunit/phpunit":         "^4.0 || ^5.1",
         "cache/predis-adapter":    "^0.5",
         "cache/array-adapter":     "^0.5",
-        "cache/integration-tests": "^0.14"
+        "cache/integration-tests": "^0.16"
     },
     "provide":           {
         "psr/cache-implementation": "^1.0"
