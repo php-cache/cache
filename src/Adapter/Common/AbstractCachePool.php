@@ -465,7 +465,7 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 
             // Since we need to throw an exception if *any* key is invalid, it doesn't
             // make sense to wrap iterators or something like that.
-            $keys = iterator_to_array($keys);
+            $keys = iterator_to_array($keys, false);
         }
 
         $items = $this->getItems($keys);
@@ -542,7 +542,7 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 
             // Since we need to throw an exception if *any* key is invalid, it doesn't
             // make sense to wrap iterators or something like that.
-            $keys = iterator_to_array($keys);
+            $keys = iterator_to_array($keys, false);
         }
 
         return $this->deleteItems($keys);
