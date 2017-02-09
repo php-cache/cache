@@ -80,11 +80,12 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      */
     protected function fetchObjectFromCache($key)
     {
-        if (!isset($this->cache[$key])) {
+        $keyString = $this->getHierarchyKey($key);
+        if (!isset($this->cache[$keyString])) {
             return [false, null, [], null];
         }
 
-        list($data, $tags, $timestamp) = $this->cache[$key];
+        list($data, $tags, $timestamp) = $this->cache[$keyString];
 
         if (is_object($data)) {
             $data = clone $data;
