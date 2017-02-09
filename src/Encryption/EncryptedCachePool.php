@@ -49,13 +49,9 @@ class EncryptedCachePool implements PhpCachePool
      */
     public function getItem($key)
     {
-        $item = $this->cachePool->getItem($key);
+        $items = $this->getItems([$key]);
 
-        if (!($item instanceof EncryptedItemDecorator)) {
-            return new EncryptedItemDecorator($item, $this->key);
-        }
-
-        return $item;
+        return reset($items);
     }
 
     /**
@@ -109,15 +105,11 @@ class EncryptedCachePool implements PhpCachePool
      */
     public function save(CacheItemInterface $item)
     {
-        if (!$item instanceof PhpCacheItem) {
-            throw new InvalidArgumentException('Cache items are not transferable between pools. Item MUST implement PhpCacheItem.');
+        if (!$item instanceof EncryptedItemDecorator) {
+            throw new InvalidArgumentException('Cache items are not transferable between pools. Item MUST implement EncryptedItemDecorator.');
         }
 
-        if (!($item instanceof EncryptedItemDecorator)) {
-            $item = new EncryptedItemDecorator($item, $this->key);
-        }
-
-        return $this->cachePool->save($item);
+        return $this->cachePool->save($item->getCacheItem());
     }
 
     /**
@@ -125,15 +117,11 @@ class EncryptedCachePool implements PhpCachePool
      */
     public function saveDeferred(CacheItemInterface $item)
     {
-        if (!$item instanceof PhpCacheItem) {
-            throw new InvalidArgumentException('Cache items are not transferable between pools. Item MUST implement PhpCacheItem.');
+        if (!$item instanceof EncryptedItemDecorator) {
+            throw new InvalidArgumentException('Cache items are not transferable between pools. Item MUST implement EncryptedItemDecorator.');
         }
 
-        if (!($item instanceof EncryptedItemDecorator)) {
-            $item = new EncryptedItemDecorator($item, $this->key);
-        }
-
-        return $this->cachePool->saveDeferred($item);
+        return $this->cachePool->saveDeferred($item->getCacheItem());
     }
 
     /**
