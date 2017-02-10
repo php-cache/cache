@@ -36,7 +36,7 @@ class EncryptedItemDecorator implements TaggableCacheItemInterface
 
     /**
      * @param TaggableCacheItemInterface $cacheItem
-     * @param Key          $key
+     * @param Key                        $key
      */
     public function __construct(TaggableCacheItemInterface $cacheItem, Key $key)
     {

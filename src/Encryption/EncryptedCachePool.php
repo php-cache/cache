@@ -14,7 +14,6 @@ namespace Cache\Encryption;
 use Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Defuse\Crypto\Key;
 use Psr\Cache\CacheItemInterface;
-use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 
 /**
@@ -36,7 +35,7 @@ class EncryptedCachePool implements TaggableCacheItemPoolInterface
 
     /**
      * @param TaggableCacheItemPoolInterface $cachePool
-     * @param Key          $key
+     * @param Key                            $key
      */
     public function __construct(TaggableCacheItemPoolInterface $cachePool, Key $key)
     {
