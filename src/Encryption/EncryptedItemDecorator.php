@@ -24,6 +24,8 @@ use Psr\Cache\CacheItemInterface;
 class EncryptedItemDecorator implements PhpCacheItem
 {
     /**
+     * The cacheItem should always contain encrypted data.
+     *
      * @type PhpCacheItem
      */
     private $cacheItem;
@@ -49,6 +51,14 @@ class EncryptedItemDecorator implements PhpCacheItem
     public function getKey()
     {
         return $this->cacheItem->getKey();
+    }
+
+    /**
+     * @return PhpCacheItem
+     */
+    public function getCacheItem()
+    {
+        return $this->cacheItem;
     }
 
     /**
@@ -176,9 +186,9 @@ class EncryptedItemDecorator implements PhpCacheItem
     }
 
     /**
-     * @internal This function should never be used and considered private.
+     * Move tags from $tags to $prevTags.
      *
-     * Move tags from $tags to $prevTags
+     * @internal This function should never be used and considered private.
      */
     public function moveTagsToPrevious()
     {
