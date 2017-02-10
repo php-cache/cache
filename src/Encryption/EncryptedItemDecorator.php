@@ -11,22 +11,21 @@
 
 namespace Cache\Encryption;
 
-use Cache\Adapter\Common\PhpCacheItem;
+use Cache\TagInterop\TaggableCacheItemInterface;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
-use Psr\Cache\CacheItemInterface;
 
 /**
  * Encrypt and Decrypt all the stored items.
  *
  * @author Daniel Bannert <d.bannert@anolilab.de>
  */
-class EncryptedItemDecorator implements PhpCacheItem
+class EncryptedItemDecorator implements TaggableCacheItemInterface
 {
     /**
      * The cacheItem should always contain encrypted data.
      *
-     * @type PhpCacheItem
+     * @type TaggableCacheItemInterface
      */
     private $cacheItem;
 
@@ -36,10 +35,10 @@ class EncryptedItemDecorator implements PhpCacheItem
     private $key;
 
     /**
-     * @param PhpCacheItem $cacheItem
-     * @param Key          $key
+     * @param TaggableCacheItemInterface $cacheItem
+     * @param Key                        $key
      */
-    public function __construct(PhpCacheItem $cacheItem, Key $key)
+    public function __construct(TaggableCacheItemInterface $cacheItem, Key $key)
     {
         $this->cacheItem = $cacheItem;
         $this->key       = $key;
@@ -54,7 +53,7 @@ class EncryptedItemDecorator implements PhpCacheItem
     }
 
     /**
-     * @return PhpCacheItem
+     * @return TaggableCacheItemInterface
      */
     public function getCacheItem()
     {
@@ -104,14 +103,6 @@ class EncryptedItemDecorator implements PhpCacheItem
     /**
      * {@inheritdoc}
      */
-    public function getExpirationTimestamp()
-    {
-        return $this->cacheItem->getExpirationTimestamp();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function expiresAt($expiration)
     {
         $this->cacheItem->expiresAt($expiration);
@@ -138,16 +129,6 @@ class EncryptedItemDecorator implements PhpCacheItem
     }
 
     /**
-     * Get the current tags. These are not the same tags as getPrevious tags.
-     *
-     * @return array
-     */
-    public function getTags()
-    {
-        return $this->cacheItem->getTags();
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function setTags(array $tags)
@@ -158,7 +139,7 @@ class EncryptedItemDecorator implements PhpCacheItem
     }
 
     /**
-     * Creating a copy of the orginal CacheItemInterface object.
+     * Creating a copy of the original CacheItemInterface object.
      */
     public function __clone()
     {
@@ -166,7 +147,7 @@ class EncryptedItemDecorator implements PhpCacheItem
     }
 
     /**
-     * Transfrom value back to it orginal type.
+     * Transform value back to it original type.
      *
      * @param array $item
      *
@@ -183,15 +164,5 @@ class EncryptedItemDecorator implements PhpCacheItem
         settype($value, $item['type']);
 
         return $value;
-    }
-
-    /**
-     * Move tags from $tags to $prevTags.
-     *
-     * @internal This function should never be used and considered private.
-     */
-    public function moveTagsToPrevious()
-    {
-        $this->cacheItem->moveTagsToPrevious();
     }
 }

@@ -11,8 +11,7 @@
 
 namespace Cache\Encryption;
 
-use Cache\Adapter\Common\PhpCacheItem;
-use Cache\Adapter\Common\PhpCachePool;
+use Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Defuse\Crypto\Key;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\InvalidArgumentException;
@@ -22,10 +21,10 @@ use Psr\Cache\InvalidArgumentException;
  *
  * @author Daniel Bannert <d.bannert@anolilab.de>
  */
-class EncryptedCachePool implements PhpCachePool
+class EncryptedCachePool implements TaggableCacheItemPoolInterface
 {
     /**
-     * @type PhpCachePool
+     * @type TaggableCacheItemPoolInterface
      */
     private $cachePool;
 
@@ -35,10 +34,10 @@ class EncryptedCachePool implements PhpCachePool
     private $key;
 
     /**
-     * @param PhpCachePool $cachePool
-     * @param Key          $key
+     * @param TaggableCacheItemPoolInterface $cachePool
+     * @param Key                            $key
      */
-    public function __construct(PhpCachePool $cachePool, Key $key)
+    public function __construct(TaggableCacheItemPoolInterface $cachePool, Key $key)
     {
         $this->cachePool = $cachePool;
         $this->key       = $key;
@@ -59,7 +58,7 @@ class EncryptedCachePool implements PhpCachePool
      */
     public function getItems(array $keys = [])
     {
-        return array_map(function (PhpCacheItem $inner) {
+        return array_map(function (CacheItemInterface $inner) {
             if (!($inner instanceof EncryptedItemDecorator)) {
                 return new EncryptedItemDecorator($inner, $this->key);
             }
