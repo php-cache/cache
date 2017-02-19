@@ -3,31 +3,29 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Void;
 
 use Cache\Adapter\Common\AbstractCachePool;
+use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Hierarchy\HierarchicalPoolInterface;
-use Cache\Taggable\TaggablePoolInterface;
-use Psr\Cache\CacheItemInterface;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class VoidCachePool extends AbstractCachePool implements TaggablePoolInterface, HierarchicalPoolInterface
+class VoidCachePool extends AbstractCachePool implements HierarchicalPoolInterface
 {
     /**
      * {@inheritdoc}
      */
     protected function fetchObjectFromCache($key)
     {
-        return [false, null, []];
+        return [false, null, [], null];
     }
 
     /**
@@ -49,7 +47,7 @@ class VoidCachePool extends AbstractCachePool implements TaggablePoolInterface, 
     /**
      * {@inheritdoc}
      */
-    protected function storeItemInCache(CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
         return true;
     }
@@ -60,5 +58,23 @@ class VoidCachePool extends AbstractCachePool implements TaggablePoolInterface, 
     public function clearTags(array $tags)
     {
         return true;
+    }
+
+    protected function getList($name)
+    {
+        return [];
+    }
+
+    protected function removeList($name)
+    {
+        return true;
+    }
+
+    protected function appendListItem($name, $key)
+    {
+    }
+
+    protected function removeListItem($name, $key)
+    {
     }
 }

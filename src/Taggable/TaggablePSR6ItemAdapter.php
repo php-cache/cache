@@ -3,15 +3,16 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Taggable;
 
+use Cache\Adapter\Common\Exception\InvalidArgumentException;
+use Cache\TagInterop\TaggableCacheItemInterface;
 use Psr\Cache\CacheItemInterface;
 
 /**
@@ -25,7 +26,7 @@ use Psr\Cache\CacheItemInterface;
  *
  * @author Magnus Nordlander <magnus@fervo.se>
  */
-class TaggablePSR6ItemAdapter implements TaggableItemInterface
+class TaggablePSR6ItemAdapter implements TaggableCacheItemInterface
 {
     /**
      * @type bool
@@ -36,6 +37,11 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
      * @type CacheItemInterface
      */
     private $cacheItem;
+
+    /**
+     * @type array<string>
+     */
+    private $prevTags = [];
 
     /**
      * @type array<string>
@@ -53,7 +59,7 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
     /**
      * @param CacheItemInterface $cacheItem
      *
-     * @return TaggableItemInterface
+     * @return TaggablePSR6ItemAdapter
      */
     public static function makeTaggable(CacheItemInterface $cacheItem)
     {
@@ -118,10 +124,18 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
     /**
      * {@inheritdoc}
      */
-    public function getTags()
+    public function getPreviousTags()
     {
         $this->initializeTags();
 
+        return $this->prevTags;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTags()
+    {
         return $this->tags;
     }
 
@@ -130,20 +144,35 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
      */
     public function setTags(array $tags)
     {
-        $this->initialized = true;
-        $this->tags        = $tags;
-        $this->updateTags();
+        $this->tags = [];
 
-        return $this;
+        return $this->tag($tags);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function addTag($tag)
+    private function tag($tags)
     {
+        if (!is_array($tags)) {
+            $tags = [$tags];
+        }
+
         $this->initializeTags();
-        $this->tags[] = $tag;
+
+        foreach ($tags as $tag) {
+            if (!is_string($tag)) {
+                throw new InvalidArgumentException(sprintf('Cache tag must be string, "%s" given', is_object($tag) ? get_class($tag) : gettype($tag)));
+            }
+            if (isset($this->tags[$tag])) {
+                continue;
+            }
+            if (!isset($tag[0])) {
+                throw new InvalidArgumentException('Cache tag length must be greater than zero');
+            }
+            if (isset($tag[strcspn($tag, '{}()/\@:')])) {
+                throw new InvalidArgumentException(sprintf('Cache tag "%s" contains reserved characters {}()/\@:', $tag));
+            }
+            $this->tags[$tag] = $tag;
+        }
+
         $this->updateTags();
 
         return $this;
@@ -184,7 +213,7 @@ class TaggablePSR6ItemAdapter implements TaggableItemInterface
                 $rawItem = $this->cacheItem->get();
 
                 if ($this->isItemCreatedHere($rawItem)) {
-                    $this->tags = $rawItem['tags'];
+                    $this->prevTags = $rawItem['tags'];
                 }
             }
 

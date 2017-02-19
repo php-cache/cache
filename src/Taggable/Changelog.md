@@ -1,8 +1,20 @@
 # Changelog
 
-The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release. 
+The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
 ## UNRELEASED
+
+### Added
+
+* Support for `TaggableCacheItemPoolInterface`
+
+### Removed
+
+* `TaggablePoolTrait`
+* Deprecated `TaggablePoolInterface` in favor of `Cache\TagInterop\TaggableCacheItemPoolInterface`
+* Deprecated `TaggableItemInterface` in favor of `Cache\TagInterop\TaggableCacheItemInterface`
+* Removed support for `TaggablePoolInterface` and `TaggableItemInterface`
+
 ## 0.4.3
 
 ### Fixed
@@ -24,13 +36,13 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## 0.4.0
 
-This is a big BC break. The API is rewritten and how we store tags has changed. Each tag is a key to a list in the 
-cache storage. The list contains keys to items that uses that tag. 
+This is a big BC break. The API is rewritten and how we store tags has changed. Each tag is a key to a list in the
+cache storage. The list contains keys to items that uses that tag.
 
 * The `TaggableItemInterface` is completely rewritten. It extends `CacheItemInterface` and has three methods: `getTags`, `setTags` and `addTag`.
-* The `TaggablePoolInterface` is also rewritten. It has a new `clearTags` function. 
-* The `TaggablePoolTrait` has new methods to manipulate the list of tags. 
+* The `TaggablePoolInterface` is also rewritten. It has a new `clearTags` function.
+* The `TaggablePoolTrait` has new methods to manipulate the list of tags.
 
-## 0.3.1 
+## 0.3.1
 
 No changelog before this version

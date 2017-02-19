@@ -3,24 +3,28 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Common;
 
-use Cache\Taggable\TaggableItemInterface;
-use Psr\Cache\CacheItemInterface;
+use Cache\Adapter\Common\Exception\InvalidArgumentException;
+use Cache\TagInterop\TaggableCacheItemInterface;
 
 /**
  * @author Aaron Scherer <aequasi@gmail.com>
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class CacheItem implements HasExpirationDateInterface, CacheItemInterface, TaggableItemInterface
+class CacheItem implements PhpCacheItem
 {
+    /**
+     * @type array
+     */
+    private $prevTags = [];
+
     /**
      * @type array
      */
@@ -42,9 +46,13 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
     private $value;
 
     /**
-     * @type \DateTimeInterface|null
+     * The expiration timestamp is the source of truth. This is the UTC timestamp
+     * when the cache item expire. A value of zero means it never expires. A nullvalue
+     * means that no expiration is set.
+     *
+     * @type int|null
      */
-    private $expirationDate = null;
+    private $expirationTimestamp = null;
 
     /**
      * @type bool
@@ -111,8 +119,8 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
             return false;
         }
 
-        if ($this->expirationDate !== null) {
-            return $this->expirationDate > new \DateTime();
+        if ($this->expirationTimestamp !== null) {
+            return $this->expirationTimestamp > time();
         }
 
         return true;
@@ -121,9 +129,9 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
     /**
      * {@inheritdoc}
      */
-    public function getExpirationDate()
+    public function getExpirationTimestamp()
     {
-        return $this->expirationDate;
+        return $this->expirationTimestamp;
     }
 
     /**
@@ -132,9 +140,11 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
     public function expiresAt($expiration)
     {
         if ($expiration instanceof \DateTimeInterface) {
-            $this->expirationDate = clone $expiration;
+            $this->expirationTimestamp = $expiration->getTimestamp();
+        } elseif (is_int($expiration) || null === $expiration) {
+            $this->expirationTimestamp = $expiration;
         } else {
-            $this->expirationDate = $expiration;
+            throw new InvalidArgumentException('Cache item ttl/expiresAt must be of type integer or \DateTimeInterface.');
         }
 
         return $this;
@@ -146,16 +156,15 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
     public function expiresAfter($time)
     {
         if ($time === null) {
-            $this->expirationDate = null;
-        }
-
-        if ($time instanceof \DateInterval) {
-            $this->expirationDate = new \DateTime();
-            $this->expirationDate->add($time);
-        }
-
-        if (is_int($time)) {
-            $this->expirationDate = \DateTime::createFromFormat('U', time() + $time);
+            $this->expirationTimestamp = null;
+        } elseif ($time instanceof \DateInterval) {
+            $date = new \DateTime();
+            $date->add($time);
+            $this->expirationTimestamp = $date->getTimestamp();
+        } elseif (is_int($time)) {
+            $this->expirationTimestamp = time() + $time;
+        } else {
+            throw new InvalidArgumentException('Cache item ttl/expiresAfter must be of type integer or \DateInterval.');
         }
 
         return $this;
@@ -164,23 +173,16 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
     /**
      * {@inheritdoc}
      */
+    public function getPreviousTags()
+    {
+        $this->initialize();
+
+        return $this->prevTags;
+    }
+
     public function getTags()
     {
-        $this->initialize();
-
         return $this->tags;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function addTag($tag)
-    {
-        $this->initialize();
-
-        $this->tags[] = $tag;
-
-        return $this;
     }
 
     /**
@@ -188,9 +190,43 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
      */
     public function setTags(array $tags)
     {
+        $this->tags = [];
+        $this->tag($tags);
+
+        return $this;
+    }
+
+    /**
+     * Adds a tag to a cache item.
+     *
+     * @param string|string[] $tags A tag or array of tags
+     *
+     * @throws InvalidArgumentException When $tag is not valid.
+     *
+     * @return TaggableCacheItemInterface
+     */
+    private function tag($tags)
+    {
         $this->initialize();
 
-        $this->tags = $tags;
+        if (!is_array($tags)) {
+            $tags = [$tags];
+        }
+        foreach ($tags as $tag) {
+            if (!is_string($tag)) {
+                throw new InvalidArgumentException(sprintf('Cache tag must be string, "%s" given', is_object($tag) ? get_class($tag) : gettype($tag)));
+            }
+            if (isset($this->tags[$tag])) {
+                continue;
+            }
+            if (!isset($tag[0])) {
+                throw new InvalidArgumentException('Cache tag length must be greater than zero');
+            }
+            if (isset($tag[strcspn($tag, '{}()/\@:')])) {
+                throw new InvalidArgumentException(sprintf('Cache tag "%s" contains reserved characters {}()/\@:', $tag));
+            }
+            $this->tags[$tag] = $tag;
+        }
 
         return $this;
     }
@@ -201,13 +237,30 @@ class CacheItem implements HasExpirationDateInterface, CacheItemInterface, Tagga
     private function initialize()
     {
         if ($this->callable !== null) {
-            $f              = $this->callable;
-            $result         = $f();
-            $this->hasValue = $result[0];
-            $this->value    = $result[1];
-            $this->tags     = isset($result[2]) ? $result[2] : [];
+            // $f will be $adapter->fetchObjectFromCache();
+            $f                         = $this->callable;
+            $result                    = $f();
+            $this->hasValue            = $result[0];
+            $this->value               = $result[1];
+            $this->prevTags            = isset($result[2]) ? $result[2] : [];
+            $this->expirationTimestamp = null;
+
+            if (isset($result[3]) && is_int($result[3])) {
+                $this->expirationTimestamp = $result[3];
+            }
 
             $this->callable = null;
         }
+    }
+
+    /**
+     * @internal This function should never be used and considered private.
+     *
+     * Move tags from $tags to $prevTags
+     */
+    public function moveTagsToPrevious()
+    {
+        $this->prevTags = $this->tags;
+        $this->tags     = [];
     }
 }

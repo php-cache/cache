@@ -9,6 +9,7 @@
     ],
     "homepage":    "http://www.php-cache.com/en/latest/",
     "license":     "MIT",
+    "minimum-stability": "dev",
     "authors":     [
         {
             "name":     "Aaron Scherer",
@@ -28,7 +29,7 @@
     "require-dev": {
         "phpunit/phpunit":         "^4.0 || ^5.1",
         "mockery/mockery":         "^0.9",
-        "cache/array-adapter":     "^0.4"
+        "cache/array-adapter":     "^0.5"
     },
     "autoload":    {
         "psr-4":                 {
@@ -37,5 +38,10 @@
         "exclude-from-classmap": [
             "/Tests/"
         ]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.3-dev"
+        }
     }
 }

@@ -9,6 +9,7 @@
     ],
     "homepage":    "http://www.php-cache.com/en/latest/",
     "license":     "MIT",
+    "minimum-stability": "dev",
     "authors":     [
         {
             "name":     "Aaron Scherer",
@@ -28,10 +29,15 @@
     },
     "autoload":    {
         "psr-4":                 {
-            "Cache\\Bridge\\": ""
+            "Cache\\Bridge\\Doctrine\\": ""
         },
         "exclude-from-classmap": [
             "/Tests/"
         ]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "3.0-dev"
+        }
     }
 }

@@ -6,10 +6,16 @@ env:
     - COVERAGE=false
     - TEST="./vendor/bin/phpunit"
 
+branches:
+  except:
+    - /^analysis-.*$/
+    - /^patch-.*$/
+
 matrix:
     include:
       - php: 7.0
         env: COVERAGE=true
+      - php: 7.1
       - php: 5.5
       - php: 5.6
     fast_finish: true

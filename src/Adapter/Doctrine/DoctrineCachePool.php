@@ -3,22 +3,18 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Doctrine;
 
 use Cache\Adapter\Common\AbstractCachePool;
-use Cache\Taggable\TaggableItemInterface;
-use Cache\Taggable\TaggablePoolInterface;
-use Cache\Taggable\TaggablePoolTrait;
+use Cache\Adapter\Common\PhpCacheItem;
 use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\Cache\FlushableCache;
-use Psr\Cache\CacheItemInterface;
 
 /**
  * This is a bridge between PSR-6 and aDoctrine cache.
@@ -26,10 +22,8 @@ use Psr\Cache\CacheItemInterface;
  * @author Aaron Scherer <aequasi@gmail.com>
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterface
+class DoctrineCachePool extends AbstractCachePool
 {
-    use TaggablePoolTrait;
-
     /**
      * @type Cache
      */
@@ -46,22 +40,10 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
     /**
      * {@inheritdoc}
      */
-    public function save(CacheItemInterface $item)
-    {
-        if ($item instanceof TaggableItemInterface) {
-            $this->saveTags($item);
-        }
-
-        return parent::save($item);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     protected function fetchObjectFromCache($key)
     {
         if (false === $data = $this->cache->fetch($key)) {
-            return [false, null, []];
+            return [false, null, [], null];
         }
 
         return unserialize($data);
@@ -84,25 +66,19 @@ class DoctrineCachePool extends AbstractCachePool implements TaggablePoolInterfa
      */
     protected function clearOneObjectFromCache($key)
     {
-        $this->preRemoveItem($key);
-
         return $this->cache->delete($key);
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function storeItemInCache(CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
         if ($ttl === null) {
             $ttl = 0;
         }
 
-        $tags = [];
-        if ($item instanceof TaggableItemInterface) {
-            $tags = $item->getTags();
-        }
-        $data = serialize([true, $item->get(), $tags]);
+        $data = serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]);
 
         return $this->cache->save($item->getKey(), $data, $ttl);
     }

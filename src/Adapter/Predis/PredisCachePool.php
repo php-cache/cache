@@ -3,30 +3,25 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Predis;
 
 use Cache\Adapter\Common\AbstractCachePool;
+use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
-use Cache\Taggable\TaggableItemInterface;
-use Cache\Taggable\TaggablePoolInterface;
-use Cache\Taggable\TaggablePoolTrait;
 use Predis\ClientInterface as Client;
-use Psr\Cache\CacheItemInterface;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInterface, TaggablePoolInterface
+class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInterface
 {
-    use TaggablePoolTrait;
     use HierarchicalCachePoolTrait;
 
     /**
@@ -45,22 +40,10 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
     /**
      * {@inheritdoc}
      */
-    public function save(CacheItemInterface $item)
-    {
-        if ($item instanceof TaggableItemInterface) {
-            $this->saveTags($item);
-        }
-
-        return parent::save($item);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     protected function fetchObjectFromCache($key)
     {
         if (false === $result = unserialize($this->cache->get($this->getHierarchyKey($key)))) {
-            return [false, null, []];
+            return [false, null, [], null];
         }
 
         return $result;
@@ -79,12 +62,10 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
      */
     protected function clearOneObjectFromCache($key)
     {
-        // We have to commit here to be able to remove deferred hierarchy items
-        $this->commit();
-
-        $this->preRemoveItem($key);
         $keyString = $this->getHierarchyKey($key, $path);
-        $this->cache->incr($path);
+        if ($path) {
+            $this->cache->incr($path);
+        }
         $this->clearHierarchyKeyCache();
 
         return $this->cache->del($keyString) >= 0;
@@ -93,14 +74,14 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
     /**
      * {@inheritdoc}
      */
-    protected function storeItemInCache(CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
         if ($ttl < 0) {
             return false;
         }
 
         $key  = $this->getHierarchyKey($item->getKey());
-        $data = serialize([true, $item->get(), $item->getTags()]);
+        $data = serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]);
 
         if ($ttl === null || $ttl === 0) {
             return 'OK' === $this->cache->set($key, $data)->getPayload();
@@ -112,7 +93,7 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
     /**
      * {@inheritdoc}
      */
-    protected function getValueFormStore($key)
+    protected function getDirectValue($key)
     {
         return $this->cache->get($key);
     }

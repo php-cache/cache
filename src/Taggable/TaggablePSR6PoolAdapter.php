@@ -3,15 +3,16 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Taggable;
 
+use Cache\TagInterop\TaggableCacheItemInterface;
+use Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
@@ -36,10 +37,8 @@ use Psr\Cache\CacheItemPoolInterface;
  *
  * @author Magnus Nordlander <magnus@fervo.se>
  */
-class TaggablePSR6PoolAdapter implements TaggablePoolInterface
+class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
 {
-    use TaggablePoolTrait;
-
     /**
      * @type CacheItemPoolInterface
      */
@@ -68,11 +67,11 @@ class TaggablePSR6PoolAdapter implements TaggablePoolInterface
      * @param CacheItemPoolInterface      $cachePool    The pool to which to add tagging capabilities.
      * @param CacheItemPoolInterface|null $tagStorePool The pool to store tags in. If null is passed, the main pool is used.
      *
-     * @return TaggablePoolInterface
+     * @return TaggableCacheItemPoolInterface
      */
     public static function makeTaggable(CacheItemPoolInterface $cachePool, CacheItemPoolInterface $tagStorePool = null)
     {
-        if ($cachePool instanceof TaggablePoolInterface && $tagStorePool === null) {
+        if ($cachePool instanceof TaggableCacheItemPoolInterface && $tagStorePool === null) {
             return $cachePool;
         }
 
@@ -147,6 +146,7 @@ class TaggablePSR6PoolAdapter implements TaggablePoolInterface
      */
     public function save(CacheItemInterface $item)
     {
+        $this->removeTagEntries($item);
         $this->saveTags($item);
 
         return $this->cachePool->save($item->unwrap());
@@ -231,5 +231,77 @@ class TaggablePSR6PoolAdapter implements TaggablePoolInterface
     protected function getTagKey($tag)
     {
         return '__tag.'.$tag;
+    }
+
+    /**
+     * @param TaggablePSR6ItemAdapter $item
+     *
+     * @return $this
+     */
+    private function saveTags(TaggablePSR6ItemAdapter $item)
+    {
+        $tags = $item->getTags();
+        foreach ($tags as $tag) {
+            $this->appendListItem($this->getTagKey($tag), $item->getKey());
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidateTags(array $tags)
+    {
+        $itemIds = [];
+        foreach ($tags as $tag) {
+            $itemIds = array_merge($itemIds, $this->getList($this->getTagKey($tag)));
+        }
+
+        // Remove all items with the tag
+        $success = $this->deleteItems($itemIds);
+
+        if ($success) {
+            // Remove the tag list
+            foreach ($tags as $tag) {
+                $this->removeList($this->getTagKey($tag));
+            }
+        }
+
+        return $success;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidateTag($tag)
+    {
+        return $this->invalidateTags([$tag]);
+    }
+
+    /**
+     * Removes the key form all tag lists.
+     *
+     * @param string $key
+     *
+     * @return $this
+     */
+    private function preRemoveItem($key)
+    {
+        $item = $this->getItem($key);
+        $this->removeTagEntries($item);
+
+        return $this;
+    }
+
+    /**
+     * @param TaggableCacheItemInterface $item
+     */
+    private function removeTagEntries($item)
+    {
+        $tags = $item->getPreviousTags();
+        foreach ($tags as $tag) {
+            $this->removeListItem($this->getTagKey($tag), $item->getKey());
+        }
     }
 }

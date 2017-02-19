@@ -3,19 +3,17 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
-
 
 namespace Cache\Adapter\Chain;
 
 use Cache\Adapter\Chain\Exception\NoPoolAvailableException;
 use Cache\Adapter\Chain\Exception\PoolFailedException;
 use Cache\Adapter\Common\Exception\CachePoolException;
-use Cache\Taggable\TaggablePoolInterface;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -24,7 +22,7 @@ use Psr\Log\LoggerInterface;
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface, LoggerAwareInterface
+class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
 {
     /**
      * @type LoggerInterface
@@ -44,8 +42,8 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface, L
     /**
      * @param array $pools
      * @param array $options {
-     * @type bool $skip_on_failure If true we will remove a pool form the chain if it fails.
-     *                       }
+     * @type  bool  $skip_on_failure If true we will remove a pool form the chain if it fails.
+     *                      }
      */
     public function __construct(array $pools, array $options = [])
     {
@@ -246,17 +244,33 @@ class CachePoolChain implements CacheItemPoolInterface, TaggablePoolInterface, L
 
     /**
      * {@inheritdoc}
+     *
+     * @deprecated use invalidateTags()
      */
     public function clearTags(array $tags)
     {
+        return $this->invalidateTags($tags);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidateTag($tag)
+    {
+        return $this->invalidateTags([$tag]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidateTags(array $tags)
+    {
         $result = true;
         foreach ($this->getPools() as $poolKey => $pool) {
-            if ($pool instanceof TaggablePoolInterface) {
-                try {
-                    $result = $pool->clearTags($tags) && $result;
-                } catch (CachePoolException $e) {
-                    $this->handleException($poolKey, __FUNCTION__, $e);
-                }
+            try {
+                $result = $pool->invalidateTags($tags) && $result;
+            } catch (CachePoolException $e) {
+                $this->handleException($poolKey, __FUNCTION__, $e);
             }
         }
 

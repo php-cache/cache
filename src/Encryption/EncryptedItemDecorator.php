@@ -3,30 +3,29 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Encryption;
 
-use Cache\Adapter\Common\HasExpirationDateInterface;
-use Cache\Taggable\TaggableItemInterface;
+use Cache\TagInterop\TaggableCacheItemInterface;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
-use Psr\Cache\CacheItemInterface;
 
 /**
  * Encrypt and Decrypt all the stored items.
  *
  * @author Daniel Bannert <d.bannert@anolilab.de>
  */
-class EncryptedItemDecorator implements CacheItemInterface, HasExpirationDateInterface, TaggableItemInterface
+class EncryptedItemDecorator implements TaggableCacheItemInterface
 {
     /**
-     * @type CacheItemInterface
+     * The cacheItem should always contain encrypted data.
+     *
+     * @type TaggableCacheItemInterface
      */
     private $cacheItem;
 
@@ -36,10 +35,10 @@ class EncryptedItemDecorator implements CacheItemInterface, HasExpirationDateInt
     private $key;
 
     /**
-     * @param CacheItemInterface $cacheItem
-     * @param Key                $key
+     * @param TaggableCacheItemInterface $cacheItem
+     * @param Key                        $key
      */
-    public function __construct(CacheItemInterface $cacheItem, Key $key)
+    public function __construct(TaggableCacheItemInterface $cacheItem, Key $key)
     {
         $this->cacheItem = $cacheItem;
         $this->key       = $key;
@@ -51,6 +50,14 @@ class EncryptedItemDecorator implements CacheItemInterface, HasExpirationDateInt
     public function getKey()
     {
         return $this->cacheItem->getKey();
+    }
+
+    /**
+     * @return TaggableCacheItemInterface
+     */
+    public function getCacheItem()
+    {
+        return $this->cacheItem;
     }
 
     /**
@@ -96,14 +103,6 @@ class EncryptedItemDecorator implements CacheItemInterface, HasExpirationDateInt
     /**
      * {@inheritdoc}
      */
-    public function getExpirationDate()
-    {
-        return $this->cacheItem->getExpirationDate();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function expiresAt($expiration)
     {
         $this->cacheItem->expiresAt($expiration);
@@ -124,19 +123,9 @@ class EncryptedItemDecorator implements CacheItemInterface, HasExpirationDateInt
     /**
      * {@inheritdoc}
      */
-    public function getTags()
+    public function getPreviousTags()
     {
-        return $this->cacheItem->getTags();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function addTag($tag)
-    {
-        $this->cacheItem->addTag($tag);
-
-        return $this;
+        return $this->cacheItem->getPreviousTags();
     }
 
     /**
@@ -150,7 +139,7 @@ class EncryptedItemDecorator implements CacheItemInterface, HasExpirationDateInt
     }
 
     /**
-     * Creating a copy of the orginal CacheItemInterface object.
+     * Creating a copy of the original CacheItemInterface object.
      */
     public function __clone()
     {
@@ -158,7 +147,7 @@ class EncryptedItemDecorator implements CacheItemInterface, HasExpirationDateInt
     }
 
     /**
-     * Transfrom value back to it orginal type.
+     * Transform value back to it original type.
      *
      * @param array $item
      *

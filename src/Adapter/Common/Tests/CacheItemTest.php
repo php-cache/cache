@@ -3,12 +3,11 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
-
 
 namespace Cache\Adapter\Common\Tests;
 
@@ -80,46 +79,47 @@ class CacheItemTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($item->isHit());
     }
 
-    public function testGetExpirationDate()
+    public function testGetExpirationTimestamp()
     {
         $item = new CacheItem('test_key');
 
-        $this->assertNull($item->getExpirationDate());
+        $this->assertNull($item->getExpirationTimestamp());
 
-        $date = new \DateTime();
+        $timestamp = time();
 
         $ref  = new \ReflectionObject($item);
-        $prop = $ref->getProperty('expirationDate');
+        $prop = $ref->getProperty('expirationTimestamp');
         $prop->setAccessible(true);
-        $prop->setValue($item, $date);
+        $prop->setValue($item, $timestamp);
 
-        $this->assertEquals($date, $item->getExpirationDate());
+        $this->assertEquals($timestamp, $item->getExpirationTimestamp());
     }
 
     public function testExpiresAt()
     {
         $item = new CacheItem('test_key');
 
-        $this->assertNull($item->getExpirationDate());
+        $this->assertNull($item->getExpirationTimestamp());
 
-        $item->expiresAt(new \DateTime('+1 second'));
+        $time = time() + 1;
+        $item->expiresAt($time);
 
-        $this->assertEquals(new \DateTime('+1 second'), $item->getExpirationDate());
+        $this->assertEquals($time, $item->getExpirationTimestamp());
     }
 
     public function testExpiresAfter()
     {
         $item = new CacheItem('test_key');
 
-        $this->assertNull($item->getExpirationDate());
+        $this->assertNull($item->getExpirationTimestamp());
 
         $item->expiresAfter(null);
         $this->assertNull($this->getExpectedException());
 
         $item->expiresAfter(new \DateInterval('PT1S'));
-        $this->assertEquals(new \DateTime('+1 second'), $item->getExpirationDate());
+        $this->assertEquals((new \DateTime('+1 second'))->getTimestamp(), $item->getExpirationTimestamp());
 
         $item->expiresAfter(1);
-        $this->assertEquals(new \DateTime('+1 second'), $item->getExpirationDate());
+        $this->assertEquals((new \DateTime('+1 second'))->getTimestamp(), $item->getExpirationTimestamp());
     }
 }

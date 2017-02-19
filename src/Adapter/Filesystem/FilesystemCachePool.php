@@ -3,32 +3,26 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Filesystem;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\Exception\InvalidArgumentException;
-use Cache\Taggable\TaggableItemInterface;
-use Cache\Taggable\TaggablePoolInterface;
-use Cache\Taggable\TaggablePoolTrait;
+use Cache\Adapter\Common\PhpCacheItem;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Filesystem;
-use Psr\Cache\CacheItemInterface;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInterface
+class FilesystemCachePool extends AbstractCachePool
 {
-    use TaggablePoolTrait;
-
     /**
      * @type Filesystem
      */
@@ -66,20 +60,22 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
      */
     protected function fetchObjectFromCache($key)
     {
-        $empty = [false, null, []];
+        $empty = [false, null, [], null];
         $file  = $this->getFilePath($key);
-        if (!$this->filesystem->has($file)) {
-            return $empty;
-        }
 
         try {
-            $data = unserialize($this->filesystem->read($file));
+            $data = @unserialize($this->filesystem->read($file));
+            if ($data === false) {
+                return $empty;
+            }
         } catch (FileNotFoundException $e) {
             return $empty;
         }
 
-        if ($data[0] !== null && time() > $data[0]) {
-            foreach ($data[2] as $tag) {
+        // Determine expirationTimestamp from data, remove items if expired
+        $expirationTimestamp = $data[2] ?: null;
+        if ($expirationTimestamp !== null && time() > $expirationTimestamp) {
+            foreach ($data[1] as $tag) {
                 $this->removeListItem($this->getTagKey($tag), $key);
             }
             $this->forceClear($key);
@@ -87,7 +83,7 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
             return $empty;
         }
 
-        return [true, $data[1], $data[2]];
+        return [true, $data[0], $data[1], $expirationTimestamp];
     }
 
     /**
@@ -106,26 +102,19 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
      */
     protected function clearOneObjectFromCache($key)
     {
-        $this->preRemoveItem($key);
-
         return $this->forceClear($key);
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function storeItemInCache(CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
-        $tags = [];
-        if ($item instanceof TaggableItemInterface) {
-            $tags = $item->getTags();
-        }
-
         $data = serialize(
             [
-                ($ttl === null ? null : time() + $ttl),
                 $item->get(),
-                $tags,
+                $item->getTags(),
+                $item->getExpirationTimestamp(),
             ]
         );
 
@@ -153,22 +142,10 @@ class FilesystemCachePool extends AbstractCachePool implements TaggablePoolInter
     private function getFilePath($key)
     {
         if (!preg_match('|^[a-zA-Z0-9_\.! ]+$|', $key)) {
-            throw new InvalidArgumentException(sprintf('Invalid key "%s". Valid keys must match [a-zA-Z0-9_\.! ].', $key));
+            throw new InvalidArgumentException(sprintf('Invalid key "%s". Valid filenames must match [a-zA-Z0-9_\.! ].', $key));
         }
 
         return sprintf('%s/%s', $this->folder, $key);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function save(CacheItemInterface $item)
-    {
-        if ($item instanceof TaggableItemInterface) {
-            $this->saveTags($item);
-        }
-
-        return parent::save($item);
     }
 
     /**

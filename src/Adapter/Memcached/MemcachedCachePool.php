@@ -3,19 +3,19 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Memcached;
 
 use Cache\Adapter\Common\AbstractCachePool;
+use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\TagSupportWithArray;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
-use Psr\Cache\CacheItemInterface;
 
 /**
  * @author Aaron Scherer <aequasi@gmail.com>
@@ -24,6 +24,7 @@ use Psr\Cache\CacheItemInterface;
 class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolInterface
 {
     use HierarchicalCachePoolTrait;
+    use TagSupportWithArray;
 
     /**
      * @type \Memcached
@@ -45,7 +46,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     protected function fetchObjectFromCache($key)
     {
         if (false === $result = unserialize($this->cache->get($this->getHierarchyKey($key)))) {
-            return [false, null, []];
+            return [false, null, [], null];
         }
 
         return $result;
@@ -66,7 +67,9 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     {
         $this->commit();
         $key = $this->getHierarchyKey($key, $path);
-        $this->cache->increment($path, 1, 0);
+        if ($path) {
+            $this->cache->increment($path, 1, 0);
+        }
         $this->clearHierarchyKeyCache();
 
         if ($this->cache->delete($key)) {
@@ -80,7 +83,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     /**
      * {@inheritdoc}
      */
-    protected function storeItemInCache(CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
         if ($ttl === null) {
             $ttl = 0;
@@ -94,14 +97,22 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
 
         $key = $this->getHierarchyKey($item->getKey());
 
-        return $this->cache->set($key, serialize([true, $item->get(), []]), $ttl);
+        return $this->cache->set($key, serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]), $ttl);
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function getValueFormStore($key)
+    public function getDirectValue($name)
     {
-        return $this->cache->get($key);
+        return $this->cache->get($name);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setDirectValue($name, $value)
+    {
+        $this->cache->set($name, $value);
     }
 }

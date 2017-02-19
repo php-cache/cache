@@ -3,28 +3,28 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Encryption;
 
+use Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Defuse\Crypto\Key;
 use Psr\Cache\CacheItemInterface;
-use Psr\Cache\CacheItemPoolInterface;
+use Psr\Cache\InvalidArgumentException;
 
 /**
- * Wrapps a CacheItemInterface with EncryptedItemDecorator.
+ * Wraps a CacheItemInterface with EncryptedItemDecorator.
  *
  * @author Daniel Bannert <d.bannert@anolilab.de>
  */
-class EncryptedCachePool implements CacheItemPoolInterface
+class EncryptedCachePool implements TaggableCacheItemPoolInterface
 {
     /**
-     * @type CacheItemPoolInterface
+     * @type TaggableCacheItemPoolInterface
      */
     private $cachePool;
 
@@ -34,10 +34,10 @@ class EncryptedCachePool implements CacheItemPoolInterface
     private $key;
 
     /**
-     * @param CacheItemPoolInterface $cachePool
-     * @param Key                    $key
+     * @param TaggableCacheItemPoolInterface $cachePool
+     * @param Key                            $key
      */
-    public function __construct(CacheItemPoolInterface $cachePool, Key $key)
+    public function __construct(TaggableCacheItemPoolInterface $cachePool, Key $key)
     {
         $this->cachePool = $cachePool;
         $this->key       = $key;
@@ -48,13 +48,9 @@ class EncryptedCachePool implements CacheItemPoolInterface
      */
     public function getItem($key)
     {
-        $item = $this->cachePool->getItem($key);
+        $items = $this->getItems([$key]);
 
-        if (!($item instanceof EncryptedItemDecorator)) {
-            return new EncryptedItemDecorator($item, $this->key);
-        }
-
-        return $item;
+        return reset($items);
     }
 
     /**
@@ -108,11 +104,11 @@ class EncryptedCachePool implements CacheItemPoolInterface
      */
     public function save(CacheItemInterface $item)
     {
-        if (!($item instanceof EncryptedItemDecorator)) {
-            $item = new EncryptedItemDecorator($item, $this->key);
+        if (!$item instanceof EncryptedItemDecorator) {
+            throw new InvalidArgumentException('Cache items are not transferable between pools. Item MUST implement EncryptedItemDecorator.');
         }
 
-        return $this->cachePool->save($item);
+        return $this->cachePool->save($item->getCacheItem());
     }
 
     /**
@@ -120,11 +116,11 @@ class EncryptedCachePool implements CacheItemPoolInterface
      */
     public function saveDeferred(CacheItemInterface $item)
     {
-        if (!($item instanceof EncryptedItemDecorator)) {
-            $item = new EncryptedItemDecorator($item, $this->key);
+        if (!$item instanceof EncryptedItemDecorator) {
+            throw new InvalidArgumentException('Cache items are not transferable between pools. Item MUST implement EncryptedItemDecorator.');
         }
 
-        return $this->cachePool->saveDeferred($item);
+        return $this->cachePool->saveDeferred($item->getCacheItem());
     }
 
     /**
@@ -133,5 +129,21 @@ class EncryptedCachePool implements CacheItemPoolInterface
     public function commit()
     {
         return $this->cachePool->commit();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidateTags(array $tags)
+    {
+        return $this->cachePool->invalidateTags($tags);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function invalidateTag($tag)
+    {
+        return $this->cachePool->invalidateTag($tag);
     }
 }

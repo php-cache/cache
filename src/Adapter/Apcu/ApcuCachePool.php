@@ -3,23 +3,25 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\Apcu;
 
 use Cache\Adapter\Common\AbstractCachePool;
-use Psr\Cache\CacheItemInterface;
+use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\TagSupportWithArray;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
 class ApcuCachePool extends AbstractCachePool
 {
+    use TagSupportWithArray;
+
     /**
      * @type bool
      */
@@ -39,13 +41,17 @@ class ApcuCachePool extends AbstractCachePool
     protected function fetchObjectFromCache($key)
     {
         if ($this->skipIfCli()) {
-            return [false, null, []];
+            return [false, null, [], null];
         }
 
-        $success = false;
-        $data    = apcu_fetch($key, $success);
+        $success   = false;
+        $cacheData = apcu_fetch($key, $success);
+        if (!$success) {
+            return [false, null, [], null];
+        }
+        list($data, $tags, $timestamp) = unserialize($cacheData);
 
-        return [$success, $data, []];
+        return [$success, $data, $tags, $timestamp];
     }
 
     /**
@@ -69,7 +75,7 @@ class ApcuCachePool extends AbstractCachePool
     /**
      * {@inheritdoc}
      */
-    protected function storeItemInCache(CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
         if ($this->skipIfCli()) {
             return false;
@@ -79,7 +85,7 @@ class ApcuCachePool extends AbstractCachePool
             return false;
         }
 
-        return apcu_store($item->getKey(), $item->get(), $ttl);
+        return apcu_store($item->getKey(), serialize([$item->get(), $item->getTags(), $item->getExpirationTimestamp()]), $ttl);
     }
 
     /**
@@ -90,5 +96,21 @@ class ApcuCachePool extends AbstractCachePool
     private function skipIfCli()
     {
         return $this->skipOnCli && php_sapi_name() === 'cli';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDirectValue($name)
+    {
+        return apcu_fetch($name);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setDirectValue($name, $value)
+    {
+        apcu_store($name, $value);
     }
 }

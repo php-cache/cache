@@ -3,36 +3,31 @@
 /*
  * This file is part of php-cache organization.
  *
- * (c) 2015-2016 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
 
-
 namespace Cache\Adapter\PHPArray;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\CacheItem;
+use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
-use Cache\Taggable\TaggableItemInterface;
-use Cache\Taggable\TaggablePoolInterface;
-use Cache\Taggable\TaggablePoolTrait;
-use Psr\Cache\CacheItemInterface;
 
 /**
  * Array cache pool. You could set a limit of how many items you want to be stored to avoid memory leaks.
  *
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterface, TaggablePoolInterface
+class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterface
 {
-    use TaggablePoolTrait;
     use HierarchicalCachePoolTrait;
 
     /**
-     * @type array
+     * @type PhpCacheItem[]
      */
     private $cache;
 
@@ -70,9 +65,11 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     protected function getItemWithoutGenerateCacheKey($key)
     {
         if (isset($this->deferred[$key])) {
-            $item = $this->deferred[$key];
+            /** @type CacheItem $item */
+            $item = clone $this->deferred[$key];
+            $item->moveTagsToPrevious();
 
-            return is_object($item) ? clone $item : $item;
+            return $item;
         }
 
         return $this->fetchObjectFromCache($key);
@@ -83,24 +80,18 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      */
     protected function fetchObjectFromCache($key)
     {
-        // Not used
-    }
-
-    public function getItem($key)
-    {
-        $this->validateKey($key);
-        if (isset($this->deferred[$key])) {
-            $item = $this->deferred[$key];
-
-            return is_object($item) ? clone $item : $item;
+        $keyString = $this->getHierarchyKey($key);
+        if (!isset($this->cache[$keyString])) {
+            return [false, null, [], null];
         }
 
-        $storageKey = $this->getHierarchyKey($key);
-        if (isset($this->cache[$storageKey])) {
-            return $this->cache[$storageKey];
+        list($data, $tags, $timestamp) = $this->cache[$keyString];
+
+        if (is_object($data)) {
+            $data = clone $data;
         }
 
-        return new CacheItem($key, false);
+        return [true, $data, $tags, $timestamp];
     }
 
     /**
@@ -119,7 +110,6 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     protected function clearOneObjectFromCache($key)
     {
         $this->commit();
-        $this->preRemoveItem($key);
         $keyString = $this->getHierarchyKey($key, $path);
         if (isset($this->cache[$path])) {
             $this->cache[$path]++;
@@ -136,10 +126,14 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     /**
      * {@inheritdoc}
      */
-    protected function storeItemInCache(CacheItemInterface $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
         $key               = $this->getHierarchyKey($item->getKey());
-        $this->cache[$key] = $item;
+        $value             = $item->get();
+        if (is_object($value)) {
+            $value = clone $value;
+        }
+        $this->cache[$key] = [$value, $item->getTags(), $item->getExpirationTimestamp()];
 
         if ($this->limit !== null) {
             // Remove the oldest value
@@ -160,19 +154,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     /**
      * {@inheritdoc}
      */
-    public function save(CacheItemInterface $item)
-    {
-        if ($item instanceof TaggableItemInterface) {
-            $this->saveTags($item);
-        }
-
-        return parent::save($item);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getValueFormStore($key)
+    protected function getDirectValue($key)
     {
         if (isset($this->cache[$key])) {
             return $this->cache[$key];

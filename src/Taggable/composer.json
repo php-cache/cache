@@ -10,11 +10,17 @@
     ],
     "homepage":    "http://www.php-cache.com/en/latest/",
     "license":     "MIT",
+    "minimum-stability": "dev",
     "authors":     [
         {
             "name":     "Aaron Scherer",
             "email":    "aequasi@gmail.com",
             "homepage": "https://github.com/aequasi"
+        },
+        {
+            "name":     "Magnus Nordlander",
+            "email":    "magnus@fervo.se",
+            "homepage": "https://github.com/magnusnordlander"
         },
         {
             "name":     "Tobias Nyholm",
@@ -24,12 +30,17 @@
     ],
     "require":     {
         "php":       "^5.5 || ^7.0",
-        "psr/cache": "^1.0"
+        "psr/cache": "^1.0",
+        "cache/adapter-common": "^0.4",
+        "cache/tag-interop": "^1.0"
     },
     "require-dev": {
         "phpunit/phpunit":         "^4.0 || ^5.1",
-        "cache/integration-tests": "^0.11",
+        "cache/integration-tests": "^0.16",
         "symfony/cache":           "^3.1"
+    },
+    "conflict": {
+        "cache/adapter-common": "<0.4"
     },
     "autoload":    {
         "psr-4":                 {
@@ -38,5 +49,10 @@
         "exclude-from-classmap": [
             "/Tests/"
         ]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.5-dev"
+        }
     }
 }
