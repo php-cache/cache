@@ -376,10 +376,25 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
      */
     protected function saveTags(PhpCacheItem $item)
     {
-        $tags = $item->getTags();
-        foreach ($tags as $tag) {
-            $this->appendListItem($this->getTagKey($tag), $item->getKey());
+        $previousTags = $item->getPreviousTags();
+        $currentTags  = $item->getTags();
+        $myCacheKey   = $item->getKey();
+
+        // Remove the item from the tags item list, of removed tags
+        $removedTags = array_diff($previousTags, $currentTags);
+        foreach ($removedTags as $removedTag) {
+            $tagCacheKey = $this->getTagKey($removedTag);
+            $this->removeListItem($tagCacheKey, $myCacheKey);
         }
+
+        // Add to tags item list it's been added to
+        $missingTags = array_diff($currentTags, $previousTags);
+        foreach ($missingTags as $missingTag) {
+            $tagCacheKey = $this->getTagKey($missingTag);
+            $this->appendListItem($tagCacheKey, $myCacheKey);
+        }
+
+        return $this;
     }
 
     /**

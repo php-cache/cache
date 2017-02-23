@@ -146,7 +146,6 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
      */
     public function save(CacheItemInterface $item)
     {
-        $this->removeTagEntries($item);
         $this->saveTags($item);
 
         return $this->cachePool->save($item->unwrap());
@@ -204,9 +203,18 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
             $list = [];
         }
 
+        // Remove anny duplicates.
+        $list = array_unique($list);
+
         $list = array_filter($list, function ($value) use ($key) {
             return $value !== $key;
         });
+
+        if ([] === $list) {
+            $this->tagStorePool->deleteItem($name);
+
+            return;
+        }
 
         $listItem->set($list);
         $this->tagStorePool->save($listItem);
@@ -240,9 +248,22 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
      */
     private function saveTags(TaggablePSR6ItemAdapter $item)
     {
-        $tags = $item->getTags();
-        foreach ($tags as $tag) {
-            $this->appendListItem($this->getTagKey($tag), $item->getKey());
+        $previousTags = $item->getPreviousTags();
+        $currentTags  = $item->getTags();
+        $myCacheKey   = $item->getKey();
+
+        // Remove the item from the tags item list, of removed tags
+        $removedTags = array_diff($previousTags, $currentTags);
+        foreach ($removedTags as $removedTag) {
+            $tagCacheKey = $this->getTagKey($removedTag);
+            $this->removeListItem($tagCacheKey, $myCacheKey);
+        }
+
+        // Add to tags item list it's been added to
+        $missingTags = array_diff($currentTags, $previousTags);
+        foreach ($missingTags as $missingTag) {
+            $tagCacheKey = $this->getTagKey($missingTag);
+            $this->appendListItem($tagCacheKey, $myCacheKey);
         }
 
         return $this;

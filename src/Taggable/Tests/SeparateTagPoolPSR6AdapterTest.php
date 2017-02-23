@@ -11,11 +11,10 @@
 
 namespace Cache\Taggable\Tests;
 
-use Cache\IntegrationTests\TaggableCachePoolTest;
 use Cache\Taggable\TaggablePSR6PoolAdapter;
 use Symfony\Component\Cache\Adapter\ArrayAdapter as SymfonyArrayAdapter;
 
-class SeparateTagPoolPSR6AdapterTest extends TaggableCachePoolTest
+class SeparateTagPoolPSR6AdapterTest extends SameTagPoolTaggablePSR6AdapterTest
 {
     public function createCachePool()
     {
