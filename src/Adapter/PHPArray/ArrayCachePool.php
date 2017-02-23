@@ -167,7 +167,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     protected function getList($name)
     {
         if (!isset($this->cache[$name])) {
-            $this->cache[$name] = [];
+            return [];
         }
 
         return $this->cache[$name];
@@ -188,6 +188,10 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      */
     protected function appendListItem($name, $key)
     {
+        if (!isset($this->cache[$name])) {
+            $this->cache[$name] = [];
+        }
+
         $this->cache[$name][] = $key;
     }
 
@@ -196,10 +200,18 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      */
     protected function removeListItem($name, $key)
     {
+        if (!isset($this->cache[$name])) {
+            return;
+        }
+
         foreach ($this->cache[$name] as $i => $item) {
             if ($item === $key) {
                 unset($this->cache[$name][$i]);
             }
+        }
+
+        if ($this->cache[$name] === []) {
+            $this->removeList($name);
         }
     }
 }

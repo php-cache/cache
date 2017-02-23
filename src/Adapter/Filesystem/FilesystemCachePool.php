@@ -156,10 +156,10 @@ class FilesystemCachePool extends AbstractCachePool
         $file = $this->getFilePath($name);
 
         if (!$this->filesystem->has($file)) {
-            $this->filesystem->write($file, serialize([]));
+            return [];
         }
 
-        return unserialize($this->filesystem->read($file));
+        return array_unique(unserialize($this->filesystem->read($file)));
     }
 
     /**
@@ -168,7 +168,9 @@ class FilesystemCachePool extends AbstractCachePool
     protected function removeList($name)
     {
         $file = $this->getFilePath($name);
-        $this->filesystem->delete($file);
+        if ($this->filesystem->has($file)) {
+            $this->filesystem->delete($file);
+        }
     }
 
     /**
@@ -179,7 +181,12 @@ class FilesystemCachePool extends AbstractCachePool
         $list   = $this->getList($name);
         $list[] = $key;
 
-        return $this->filesystem->update($this->getFilePath($name), serialize($list));
+        $file = $this->getFilePath($name);
+        if ($this->filesystem->has($file)) {
+            return $this->filesystem->update($file, serialize($list));
+        }
+
+        return $this->filesystem->write($file, serialize($list));
     }
 
     /**
@@ -187,6 +194,8 @@ class FilesystemCachePool extends AbstractCachePool
      */
     protected function removeListItem($name, $key)
     {
+        $file = $this->getFilePath($name);
+
         $list = $this->getList($name);
         foreach ($list as $i => $item) {
             if ($item === $key) {
@@ -194,7 +203,19 @@ class FilesystemCachePool extends AbstractCachePool
             }
         }
 
-        return $this->filesystem->update($this->getFilePath($name), serialize($list));
+        if ($list === []) {
+            if ($this->filesystem->has($file)) {
+                $this->removeList($name);
+            }
+
+            return;
+        }
+
+        if ($this->filesystem->has($file)) {
+            return $this->filesystem->update($file, serialize($list));
+        }
+
+        return $this->filesystem->write($file, serialize($list));
     }
 
     /**

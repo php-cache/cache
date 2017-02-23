@@ -100,7 +100,7 @@ class DoctrineCachePool extends AbstractCachePool
             return [];
         }
 
-        return $list;
+        return array_unique($list);
     }
 
     /**
@@ -132,6 +132,13 @@ class DoctrineCachePool extends AbstractCachePool
                 unset($list[$i]);
             }
         }
+
+        if ($list === []) {
+            $this->removeList($name);
+
+            return;
+        }
+
         $this->cache->save($name, $list);
     }
 }
