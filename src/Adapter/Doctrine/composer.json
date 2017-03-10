@@ -1,6 +1,6 @@
 {
     "name":              "cache/doctrine-adapter",
-    "description":       "A PSR-6 cache implementation using Doctrine. This implementation supports tags",
+    "description":       "A PSR-6 cache implementation using Doctrine. This implementation supports tags.",
     "type":              "library",
     "license":           "MIT",
     "minimum-stability": "dev",

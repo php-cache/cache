@@ -17,7 +17,7 @@ use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\Cache\FlushableCache;
 
 /**
- * This is a bridge between PSR-6 and aDoctrine cache.
+ * This is a bridge between PSR-6 and Doctrine cache.
  *
  * @author Aaron Scherer <aequasi@gmail.com>
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
