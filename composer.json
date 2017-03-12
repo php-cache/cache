@@ -35,7 +35,7 @@
         "cache/integration-tests": "^0.16",
         "predis/predis":           "^1.0",
         "symfony/cache":           "dev-master",
-        "illuminate/cache":        "^5.0"
+        "illuminate/cache":        "^5.4"
     },
     "suggest":     {
         "ext-apc":         "APC extension is required to use the APC Adapter",
