@@ -180,6 +180,9 @@ class CacheItem implements PhpCacheItem
         return $this->prevTags;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getTags()
     {
         return $this->tags;
