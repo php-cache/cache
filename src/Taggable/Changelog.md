@@ -4,6 +4,8 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+## 0.5.0
+
 ### Added
 
 * Support for `TaggableCacheItemPoolInterface`
