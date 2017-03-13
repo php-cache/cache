@@ -1,17 +1,23 @@
 {
-    "name":              "cache/memcache-adapter",
-    "description":       "A PSR-6 cache implementation using memcache. This implementation supports tags",
+    "name":              "cache/illuminate-adapter",
+    "description":       "A PSR-6 cache implementation using Illuminate. This implementation supports tags",
     "type":              "library",
     "license":           "MIT",
     "minimum-stability": "dev",
     "keywords":          [
         "cache",
         "psr-6",
-        "memcache",
+        "illuminate",
+        "laravel",
         "tag"
     ],
     "homepage":          "http://www.php-cache.com/en/latest/",
     "authors":           [
+        {
+            "name":     "Florian Voutzinos",
+            "email":    "florian@voutzinos.com",
+            "homepage": "https://github.com/florianv"
+        },
         {
             "name":     "Aaron Scherer",
             "email":    "aequasi@gmail.com",
@@ -27,26 +33,20 @@
         "php":                  "^5.6 || ^7.0",
         "psr/cache":            "^1.0",
         "psr/simple-cache":     "^1.0",
-        "cache/adapter-common": "^0.4"
+        "cache/adapter-common": "^0.4",
+        "illuminate/cache":     "^5.4"
     },
     "require-dev":       {
         "phpunit/phpunit":         "^4.0 || ^5.1",
+        "mockery/mockery":         "^0.9",
         "cache/integration-tests": "^0.16"
-    },
-    "suggest":          {
-        "ext-memcache": "The extension required to use this pool."
     },
     "provide":           {
         "psr/cache-implementation": "^1.0"
     },
     "autoload":          {
-        "psr-4": {
-            "Cache\\Adapter\\Memcache\\": ""
-        }
-    },
-    "autoload-dev":      {
         "psr-4":                 {
-            "Cache\\Adapter\\Memcache\\Tests\\": "Tests/"
+            "Cache\\Adapter\\Illuminate\\": ""
         },
         "exclude-from-classmap": [
             "/Tests/"
@@ -54,7 +54,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "0.3-dev"
+            "dev-master": "0.1-dev"
         }
     }
 }
