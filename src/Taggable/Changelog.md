@@ -8,12 +8,18 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 * Support for `TaggableCacheItemPoolInterface`
 
+### Changed
+
+* The behavior of `TaggablePSR6ItemAdapter::getTags()` has changed. It will not return the tags stored in the cache storage. 
+
 ### Removed
 
 * `TaggablePoolTrait`
 * Deprecated `TaggablePoolInterface` in favor of `Cache\TagInterop\TaggableCacheItemPoolInterface`
 * Deprecated `TaggableItemInterface` in favor of `Cache\TagInterop\TaggableCacheItemInterface`
 * Removed support for `TaggablePoolInterface` and `TaggableItemInterface`
+* `TaggablePSR6ItemAdapter::getTags()`. Use `TaggablePSR6ItemAdapter::getPreviousTags()`
+* `TaggablePSR6ItemAdapter::addTag()`. Use `TaggablePSR6ItemAdapter::setTags()`
 
 ## 0.4.3
 
