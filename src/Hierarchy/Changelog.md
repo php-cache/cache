@@ -4,9 +4,15 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+## 0.4.0
+
 ### Changed
 
 * `HierarchicalCachePoolTrait::getValueFormStore` was renamed to `HierarchicalCachePoolTrait::getDirectValue`
+
+### Removed
+
+* Dependency to `cache/taggable-cache`. 
 
 ## 0.3.0
 
