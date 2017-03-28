@@ -1,7 +1,7 @@
 # PSR 6 Doctrine Bridge
 [![Gitter](https://badges.gitter.im/php-cache/cache.svg)](https://gitter.im/php-cache/cache?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Latest Stable Version](https://poser.pugx.org/cache/psr-6-doctrine-bridge/v/stable)](https://packagist.org/packages/cache/psr-6-doctrine-bridge)
-[![codecov.io](https://codecov.io/github/php-cache/psr-6-doctrine-bridge/coverage.svg?branch=master)](https://codecov.io/github/php-cache/psr-6-doctrine-bridge?branch=master)
+[![codecov.io](https://codecov.io/github/php-cache/doctrine-bridge/coverage.svg?branch=master)](https://codecov.io/github/php-cache/doctrine-bridge?branch=master)
 [![Total Downloads](https://poser.pugx.org/cache/psr-6-doctrine-bridge/downloads)](https://packagist.org/packages/cache/psr-6-doctrine-bridge)
 [![Monthly Downloads](https://poser.pugx.org/cache/psr-6-doctrine-bridge/d/monthly.png)](https://packagist.org/packages/cache/psr-6-doctrine-bridge)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
