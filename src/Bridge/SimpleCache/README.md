@@ -6,7 +6,7 @@
 [![Monthly Downloads](https://poser.pugx.org/cache/simple-cache-bridge/d/monthly.png)](https://packagist.org/packages/cache/simple-cache-bridge)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
-This is a PSR-6 cache implementation using PHP array. It is a part of the PHP Cache organisation. To read about 
+This is a bridge that converts a PSR-6 cache implementation to PSR-16 (SimpleCache). It is a part of the PHP Cache organisation. To read about 
 features like tagging and hierarchy support please read the shared documentation at [www.php-cache.com](http://www.php-cache.com). 
 
 ### Install
