@@ -4,6 +4,12 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+## 0.4.1
+
+### Changed
+
+- We now support cache/hierarchical-cache: ^0.4
+
 ## 0.4.0
 
 ### Added
