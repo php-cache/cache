@@ -230,6 +230,6 @@ class TaggablePSR6ItemAdapter implements TaggableCacheItemInterface
      */
     private function isItemCreatedHere($rawItem)
     {
-        return is_array($rawItem) && isset($rawItem['value']) && isset($rawItem['tags']) && count($rawItem) === 2;
+        return is_array($rawItem) && array_key_exists('value', $rawItem) && array_key_exists('tags', $rawItem) && count($rawItem) === 2;
     }
 }
