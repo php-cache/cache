@@ -4,6 +4,12 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+## 0.5.1
+
+### Fixed
+
+* Bug on `TaggablePSR6ItemAdapter::isItemCreatedHere` where item value was `null`.
+
 ## 0.5.0
 
 ### Added
