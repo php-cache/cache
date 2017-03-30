@@ -20,6 +20,7 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 * `CacheItem::getExpirationDate()`. Use `CacheItem::getExpirationTimestamp()`
 * `CacheItem::getTags()`. Use `CacheItem::getPreviousTags()`
 * `CacheItem::addTag()`. Use `CacheItem::setTags()`
+* Dropped PHP 5.5 support
 
 ## 0.2.2
 
