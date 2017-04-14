@@ -42,12 +42,12 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
     /**
      * @param array $pools
      * @param array $options {
-     * @type  bool  $skip_on_failure If true we will remove a pool form the chain if it fails.
+     * @type  bool $skip_on_failure If true we will remove a pool form the chain if it fails.
      *                      }
      */
     public function __construct(array $pools, array $options = [])
     {
-        $this->pools   = $pools;
+        $this->pools = $pools;
 
         if (!isset($options['skip_on_failure'])) {
             $options['skip_on_failure'] = false;
@@ -61,8 +61,8 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
      */
     public function getItem($key)
     {
-        $found     = false;
-        $result    = null;
+        $found = false;
+        $result = null;
         $needsSave = [];
 
         foreach ($this->getPools() as $poolKey => $pool) {
@@ -70,7 +70,7 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
                 $item = $pool->getItem($key);
 
                 if ($item->isHit()) {
-                    $found  = true;
+                    $found = true;
                     $result = $item;
                     break;
                 }
@@ -97,8 +97,9 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
      */
     public function getItems(array $keys = [])
     {
-        $hits  = [];
-        $items = [];
+        $hits = [];
+        $loadedItems = [];
+        $keysCount = count($keys);
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
                 $items = $pool->getItems($keys);
@@ -107,10 +108,11 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
                 foreach ($items as $item) {
                     if ($item->isHit()) {
                         $hits[$item->getKey()] = $item;
+                        unset($keys[array_search($item->getKey(), $keys)]);
                     }
+                    $loadedItems[$item->getKey()] = $item;
                 }
-
-                if (count($hits) === count($keys)) {
+                if (count($hits) === $keysCount) {
                     return $hits;
                 }
             } catch (CachePoolException $e) {
@@ -118,8 +120,7 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
             }
         }
 
-        // We need to accept that some items where not hits.
-        return array_merge($hits, $items);
+        return array_merge($hits, $loadedItems);
     }
 
     /**
@@ -288,9 +289,9 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
     /**
      * Logs with an arbitrary level if the logger exists.
      *
-     * @param mixed  $level
+     * @param mixed $level
      * @param string $message
-     * @param array  $context
+     * @param array $context
      */
     protected function log($level, $message, array $context = [])
     {
@@ -312,8 +313,8 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
     }
 
     /**
-     * @param string             $poolKey
-     * @param string             $operation
+     * @param string $poolKey
+     * @param string $operation
      * @param CachePoolException $exception
      *
      * @throws PoolFailedException
@@ -326,7 +327,8 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
 
         $this->log(
             'warning',
-            sprintf('Removing pool "%s" from chain because it threw an exception when executing "%s"', $poolKey, $operation),
+            sprintf('Removing pool "%s" from chain because it threw an exception when executing "%s"', $poolKey,
+                $operation),
             ['exception' => $exception]
         );
 
