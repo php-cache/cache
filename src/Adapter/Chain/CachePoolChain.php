@@ -120,7 +120,7 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
             }
         }
 
-        return array_merge($hits, $loadedItems);
+        return array_merge($loadedItems, $hits);
     }
 
     /**
@@ -327,8 +327,7 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
 
         $this->log(
             'warning',
-            sprintf('Removing pool "%s" from chain because it threw an exception when executing "%s"', $poolKey,
-                $operation),
+            sprintf('Removing pool "%s" from chain because it threw an exception when executing "%s"', $poolKey, $operation),
             ['exception' => $exception]
         );
 
