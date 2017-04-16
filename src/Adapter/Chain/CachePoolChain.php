@@ -99,6 +99,7 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
     {
         $hits = [];
         $loadedItems = [];
+        $notFoundItems = [];
         $keysCount = count($keys);
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
@@ -109,14 +110,36 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
                     if ($item->isHit()) {
                         $hits[$item->getKey()] = $item;
                         unset($keys[array_search($item->getKey(), $keys)]);
+                    } else {
+                        $notFoundItems[$poolKey][$item->getKey()] = $item->getKey();
                     }
                     $loadedItems[$item->getKey()] = $item;
                 }
                 if (count($hits) === $keysCount) {
-                    return $hits;
+                    break;
                 }
             } catch (CachePoolException $e) {
                 $this->handleException($poolKey, __FUNCTION__, $e);
+            }
+        }
+
+        if (!empty($hits) && !empty($notFoundItems)) {
+            foreach ($notFoundItems as $poolKey => $itemKeys) {
+                try {
+                    $pool = $this->getPools()[$poolKey];
+                    $found = false;
+                    foreach ($itemKeys as $itemKey) {
+                        if (!empty($hits[$itemKey])) {
+                            $found = true;
+                            $pool->saveDeferred($hits[$itemKey]);
+                        }
+                    }
+                    if ($found) {
+                        $pool->commit();
+                    }
+                } catch (CachePoolException $e) {
+                    $this->handleException($poolKey, __FUNCTION__, $e);
+                }
             }
         }
 
@@ -327,7 +350,8 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
 
         $this->log(
             'warning',
-            sprintf('Removing pool "%s" from chain because it threw an exception when executing "%s"', $poolKey, $operation),
+            sprintf('Removing pool "%s" from chain because it threw an exception when executing "%s"', $poolKey,
+                $operation),
             ['exception' => $exception]
         );
 
