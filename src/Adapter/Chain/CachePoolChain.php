@@ -97,10 +97,10 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
      */
     public function getItems(array $keys = [])
     {
-        $hits        = [];
-        $loadedItems = [];
+        $hits          = [];
+        $loadedItems   = [];
         $notFoundItems = [];
-        $keysCount   = count($keys);
+        $keysCount     = count($keys);
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
                 $items = $pool->getItems($keys);
@@ -126,7 +126,7 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
         if (!empty($hits) && !empty($notFoundItems)) {
             foreach ($notFoundItems as $poolKey => $itemKeys) {
                 try {
-                    $pool = $this->getPools()[$poolKey];
+                    $pool  = $this->getPools()[$poolKey];
                     $found = false;
                     foreach ($itemKeys as $itemKey) {
                         if (!empty($hits[$itemKey])) {
