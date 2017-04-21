@@ -47,7 +47,7 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
      */
     public function __construct(array $pools, array $options = [])
     {
-        $this->pools   = $pools;
+        $this->pools = $pools;
 
         if (!isset($options['skip_on_failure'])) {
             $options['skip_on_failure'] = false;
@@ -97,8 +97,9 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
      */
     public function getItems(array $keys = [])
     {
-        $hits  = [];
-        $items = [];
+        $hits        = [];
+        $loadedItems = [];
+        $keysCount   = count($keys);
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
                 $items = $pool->getItems($keys);
@@ -107,10 +108,11 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
                 foreach ($items as $item) {
                     if ($item->isHit()) {
                         $hits[$item->getKey()] = $item;
+                        unset($keys[array_search($item->getKey(), $keys)]);
                     }
+                    $loadedItems[$item->getKey()] = $item;
                 }
-
-                if (count($hits) === count($keys)) {
+                if (count($hits) === $keysCount) {
                     return $hits;
                 }
             } catch (CachePoolException $e) {
@@ -118,8 +120,7 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
             }
         }
 
-        // We need to accept that some items where not hits.
-        return array_merge($hits, $items);
+        return array_merge($loadedItems, $hits);
     }
 
     /**
