@@ -42,7 +42,7 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
     /**
      * @param array $pools
      * @param array $options {
-     * @type  bool $skip_on_failure If true we will remove a pool form the chain if it fails.
+     * @type  bool  $skip_on_failure If true we will remove a pool form the chain if it fails.
      *                      }
      */
     public function __construct(array $pools, array $options = [])
@@ -61,8 +61,8 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
      */
     public function getItem($key)
     {
-        $found = false;
-        $result = null;
+        $found     = false;
+        $result    = null;
         $needsSave = [];
 
         foreach ($this->getPools() as $poolKey => $pool) {
@@ -70,7 +70,7 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
                 $item = $pool->getItem($key);
 
                 if ($item->isHit()) {
-                    $found = true;
+                    $found  = true;
                     $result = $item;
                     break;
                 }
@@ -97,9 +97,9 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
      */
     public function getItems(array $keys = [])
     {
-        $hits = [];
+        $hits        = [];
         $loadedItems = [];
-        $keysCount = count($keys);
+        $keysCount   = count($keys);
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
                 $items = $pool->getItems($keys);
@@ -289,9 +289,9 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
     /**
      * Logs with an arbitrary level if the logger exists.
      *
-     * @param mixed $level
+     * @param mixed  $level
      * @param string $message
-     * @param array $context
+     * @param array  $context
      */
     protected function log($level, $message, array $context = [])
     {
@@ -313,8 +313,8 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
     }
 
     /**
-     * @param string $poolKey
-     * @param string $operation
+     * @param string             $poolKey
+     * @param string             $operation
      * @param CachePoolException $exception
      *
      * @throws PoolFailedException
