@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of php-cache organization.
+ *
+ * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 namespace Cache\Adapter\Chain\Tests;
 
 use Cache\Adapter\Chain\CachePoolChain;
@@ -7,19 +16,17 @@ use Cache\Adapter\Common\CacheItem;
 use Cache\Adapter\PHPArray\ArrayCachePool;
 
 /**
- * Class ChainPoolTest
- * @package Cache\Adapter\Chain\Tests
+ * Class ChainPoolTest.
  */
 class CachePoolChainTest extends \PHPUnit_Framework_TestCase
 {
-
     public function testGetItemStoreToPrevious()
     {
-        $firstPool = new ArrayCachePool();
+        $firstPool  = new ArrayCachePool();
         $secondPool = new ArrayCachePool();
-        $chainPool = new CachePoolChain([$firstPool, $secondPool]);
+        $chainPool  = new CachePoolChain([$firstPool, $secondPool]);
 
-        $key = 'test_key';
+        $key  = 'test_key';
         $item = new CacheItem($key, true, 'value');
         $item->expiresAfter(60);
         $secondPool->save($item);
@@ -39,11 +46,11 @@ class CachePoolChainTest extends \PHPUnit_Framework_TestCase
 
     public function testGetItemsStoreToPrevious()
     {
-        $firstPool = new ArrayCachePool();
+        $firstPool  = new ArrayCachePool();
         $secondPool = new ArrayCachePool();
-        $chainPool = new CachePoolChain([$firstPool, $secondPool]);
+        $chainPool  = new CachePoolChain([$firstPool, $secondPool]);
 
-        $key = 'test_key';
+        $key  = 'test_key';
         $item = new CacheItem($key, true, 'value');
         $item->expiresAfter(60);
         $secondPool->save($item);
