@@ -90,4 +90,22 @@ class CachePoolChainTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($loadedItem->isHit());
         $this->assertEquals($secondExpirationTime, $loadedItem->getExpirationTimestamp());
     }
+
+    public function testGetItemsWithEmptyCache()
+    {
+        $firstPool  = new ArrayCachePool();
+        $secondPool = new ArrayCachePool();
+        $chainPool  = new CachePoolChain([$firstPool, $secondPool]);
+
+        $key  = 'test_key';
+        $key2 = 'test_key2';
+
+        $items = $chainPool->getItems([$key, $key2]);
+
+        $this->assertArrayHasKey($key, $items);
+        $this->assertArrayHasKey($key2, $items);
+
+        $this->assertFalse($items[$key]->isHit());
+        $this->assertFalse($items[$key2]->isHit());
+    }
 }
