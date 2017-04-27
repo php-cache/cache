@@ -4,6 +4,13 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+## 0.5.1
+
+### Fixed
+
+* Fixed issue with generator
+* Make sure `getItems` always save values back to previous pools
+
 ## 0.5.0
 
 ### Added
