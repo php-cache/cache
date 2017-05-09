@@ -41,6 +41,31 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    public function testGetItem()
+    {
+        $namespace = 'ns';
+        $nsPool    = new NamespacedCachePool($this->cache, $namespace);
+
+        $item = $nsPool->getItem('key');
+        $this->assertEquals("|$namespace|key", $item->getKey());
+    }
+
+    public function testGetItems()
+    {
+        $namespace = 'ns';
+        $nsPool    = new NamespacedCachePool($this->cache, $namespace);
+
+        $items = $nsPool->getItems(['key0', 'key1']);
+
+        $str = "|$namespace|key0";
+        $this->assertTrue(isset($items[$str]));
+        $this->assertEquals($str, $items[$str]->getKey());
+
+        $str = "|$namespace|key1";
+        $this->assertTrue(isset($items[$str]));
+        $this->assertEquals($str, $items[$str]->getKey());
+    }
+
     public function testSave()
     {
         $namespace = 'ns';
