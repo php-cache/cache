@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of php-cache organization.
+ *
+ * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 namespace Cache\Namespaced\Tests;
 
 use Cache\Adapter\Memcached\MemcachedCachePool;
@@ -8,14 +17,12 @@ use Cache\Namespaced\NamespacedCachePool;
 use Psr\Cache\CacheItemPoolInterface;
 
 /**
- *
- *
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
 class IntegrationTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var CacheItemPoolInterface|HierarchicalPoolInterface
+     * @type CacheItemPoolInterface|HierarchicalPoolInterface
      */
     private $cache;
 
@@ -37,7 +44,7 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
     public function testSave()
     {
         $namespace = 'ns';
-        $nsPool = new NamespacedCachePool($this->cache, $namespace);
+        $nsPool    = new NamespacedCachePool($this->cache, $namespace);
 
         $item = $nsPool->getItem('key');
         $item->set('foo');
@@ -50,7 +57,7 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
     public function testSaveDeferred()
     {
         $namespace = 'ns';
-        $nsPool = new NamespacedCachePool($this->cache, $namespace);
+        $nsPool    = new NamespacedCachePool($this->cache, $namespace);
 
         $item = $nsPool->getItem('key');
         $item->set('foo');
