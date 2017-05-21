@@ -1,0 +1,49 @@
+{
+    "name":              "cache/wincache-adapter",
+    "description":       "A PSR-6 cache implementation using WinCache. This implementation supports tags",
+    "type":              "library",
+    "license":           "MIT",
+    "minimum-stability": "stable",
+    "keywords":          [
+        "cache",
+        "psr-6",
+        "WinCache"
+    ],
+    "homepage":          "http://www.php-cache.com/en/latest/",
+    "authors":           [
+        {
+            "name":     "Aaron Scherer",
+            "email":    "aequasi@gmail.com",
+            "homepage": "https://github.com/aequasi"
+        },
+        {
+            "name":     "Tobias Nyholm",
+            "email":    "tobias.nyholm@gmail.com",
+            "homepage": "https://github.com/nyholm"
+        }
+    ],
+    "require":           {
+        "php":                  "^5.5|^7.0",
+        "psr/cache":            "^1.0",
+        "cache/adapter-common": "^0.3",
+        "cache/taggable-cache": "^0.4"
+    },
+    "suggest":          {
+        "ext-wincache": "The extension required to use this pool."
+    },
+    "require-dev":       {
+        "phpunit/phpunit":         "^4.0|^5.1",
+        "cache/integration-tests": "^0.10"
+    },
+    "provide":           {
+        "psr/cache-implementation": "^1.0"
+    },
+    "autoload":          {
+        "psr-4":                 {
+            "Cache\\Adapter\\WinCache\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
+    }
+}
