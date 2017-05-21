@@ -4,6 +4,12 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+## 0.1.2
+
+### Fixed
+
+Typos, documentation and general package improvements.
+
 ## 0.1.1
 
 ### Changed
