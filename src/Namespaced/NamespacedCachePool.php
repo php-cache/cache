@@ -13,7 +13,6 @@ namespace Cache\Namespaced;
 
 use Cache\Hierarchy\HierarchicalPoolInterface;
 use Psr\Cache\CacheItemInterface;
-use Psr\Cache\CacheItemPoolInterface;
 
 /**
  * Prefix all the stored items with a namespace. Also make sure you can clear all items
@@ -21,7 +20,7 @@ use Psr\Cache\CacheItemPoolInterface;
  *
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class NamespacedCachePool implements CacheItemPoolInterface
+class NamespacedCachePool implements HierarchicalPoolInterface
 {
     /**
      * @type HierarchicalPoolInterface
