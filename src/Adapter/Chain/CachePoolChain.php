@@ -14,6 +14,7 @@ namespace Cache\Adapter\Chain;
 use Cache\Adapter\Chain\Exception\NoPoolAvailableException;
 use Cache\Adapter\Chain\Exception\PoolFailedException;
 use Cache\Adapter\Common\Exception\CachePoolException;
+use Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -22,7 +23,7 @@ use Psr\Log\LoggerInterface;
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
+class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface, TaggableCacheItemPoolInterface
 {
     /**
      * @type LoggerInterface
