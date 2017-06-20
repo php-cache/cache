@@ -34,7 +34,7 @@
         "mockery/mockery":         "^0.9",
         "cache/integration-tests": "^0.16",
         "predis/predis":           "^1.0",
-        "symfony/cache":           "dev-master",
+        "symfony/cache":           "^3.1",
         "illuminate/cache":        "^5.4"
     },
     "suggest":     {
@@ -67,6 +67,7 @@
         "cache/illuminate-adapter":    "*"
     },
     "minimum-stability": "dev",
+    "prefer-stable"    : true,
     "autoload":    {
         "psr-4":                 {
             "Cache\\": "src/"
