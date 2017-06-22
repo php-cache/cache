@@ -1,8 +1,14 @@
 # Change Log
 
-The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release. 
+The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
 ## UNRELEASED
+
+## 0.1.3
+
+### Added
+
+NamespacedCachePool implements HierarchicalPoolInterface
 
 ## 0.1.2
 
