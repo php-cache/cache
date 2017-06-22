@@ -62,6 +62,7 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
      */
     protected function clearOneObjectFromCache($key)
     {
+        $path = null;
         $keyString = $this->getHierarchyKey($key, $path);
         if ($path) {
             $this->cache->incr($path);
