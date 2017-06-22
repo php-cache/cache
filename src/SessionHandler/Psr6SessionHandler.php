@@ -44,8 +44,6 @@ class Psr6SessionHandler implements \SessionHandlerInterface
      *
      * @param CacheItemPoolInterface $cache   A Cache instance
      * @param array                  $options An associative array of cache options
-     *
-     * @throws \InvalidArgumentException When unsupported options are passed
      */
     public function __construct(CacheItemPoolInterface $cache, array $options = [])
     {
