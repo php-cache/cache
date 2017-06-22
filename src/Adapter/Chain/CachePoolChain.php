@@ -63,6 +63,7 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
     {
         $found     = false;
         $result    = null;
+        $item      = null;
         $needsSave = [];
 
         foreach ($this->getPools() as $poolKey => $pool) {
