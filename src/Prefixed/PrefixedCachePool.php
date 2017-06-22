@@ -11,7 +11,6 @@
 
 namespace Cache\Prefixed;
 
-use Cache\Hierarchy\HierarchicalPoolInterface;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
@@ -23,7 +22,7 @@ use Psr\Cache\CacheItemPoolInterface;
 class PrefixedCachePool implements CacheItemPoolInterface
 {
     /**
-     * @type HierarchicalPoolInterface
+     * @type CacheItemPoolInterface
      */
     private $cachePool;
 
