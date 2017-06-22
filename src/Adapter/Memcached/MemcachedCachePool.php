@@ -66,7 +66,8 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     protected function clearOneObjectFromCache($key)
     {
         $this->commit();
-        $key = $this->getHierarchyKey($key, $path);
+        $path = null;
+        $key  = $this->getHierarchyKey($key, $path);
         if ($path) {
             $this->cache->increment($path, 1, 0);
         }
