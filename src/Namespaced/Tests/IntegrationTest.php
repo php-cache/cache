@@ -15,6 +15,7 @@ use Cache\Adapter\Memcached\MemcachedCachePool;
 use Cache\Hierarchy\HierarchicalPoolInterface;
 use Cache\Namespaced\NamespacedCachePool;
 use Psr\Cache\CacheItemPoolInterface;
+use Memcached;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
@@ -28,7 +29,7 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $cache = new \Memcached();
+        $cache = new Memcached();
         $cache->addServer('localhost', 11211);
 
         $this->cache = new MemcachedCachePool($cache);
