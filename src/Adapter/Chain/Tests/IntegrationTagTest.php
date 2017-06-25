@@ -12,29 +12,14 @@
 namespace Cache\Adapter\Chain\Tests;
 
 use Cache\Adapter\Chain\CachePoolChain;
-use Cache\Adapter\PHPArray\ArrayCachePool;
-use Cache\Adapter\Predis\PredisCachePool;
 use Cache\IntegrationTests\TaggableCachePoolTest;
-use Predis\Client;
 
 class IntegrationTagTest extends TaggableCachePoolTest
 {
-    private $adapters;
+    use CreatePoolTrait;
 
     public function createCachePool()
     {
         return new CachePoolChain($this->getAdapters());
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getAdapters()
-    {
-        if ($this->adapters === null) {
-            $this->adapters = [new PredisCachePool(new Client('tcp:/127.0.0.1:6379')), new ArrayCachePool()];
-        }
-
-        return $this->adapters;
     }
 }

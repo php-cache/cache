@@ -30,7 +30,7 @@
     },
     "require-dev": {
         "defuse/php-encryption":   "^2.0",
-        "phpunit/phpunit":         "^4.0 || ^5.1",
+        "phpunit/phpunit":         "^5.7.21",
         "mockery/mockery":         "^0.9",
         "cache/integration-tests": "^0.16",
         "predis/predis":           "^1.0",

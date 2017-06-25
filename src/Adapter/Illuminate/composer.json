@@ -4,6 +4,7 @@
     "type":              "library",
     "license":           "MIT",
     "minimum-stability": "dev",
+    "prefer-stable":     true,
     "keywords":          [
         "cache",
         "psr-6",
@@ -37,7 +38,7 @@
         "illuminate/cache":     "^5.4"
     },
     "require-dev":       {
-        "phpunit/phpunit":         "^4.0 || ^5.1",
+        "phpunit/phpunit":         "^5.7.21",
         "mockery/mockery":         "^0.9",
         "cache/integration-tests": "^0.16"
     },

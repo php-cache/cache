@@ -10,6 +10,7 @@
     "homepage":    "http://www.php-cache.com/en/latest/",
     "license":     "MIT",
     "minimum-stability": "dev",
+    "prefer-stable":     true,
     "authors":     [
         {
             "name":     "Aaron Scherer",
@@ -27,7 +28,7 @@
         "psr/cache": "^1.0"
     },
     "require-dev": {
-        "phpunit/phpunit":         "^4.0 || ^5.1",
+        "phpunit/phpunit":         "^5.7.21",
         "mockery/mockery":         "^0.9",
         "cache/array-adapter":     "^0.5"
     },
