@@ -14,8 +14,8 @@ namespace Cache\Namespaced\Tests;
 use Cache\Adapter\Memcached\MemcachedCachePool;
 use Cache\Hierarchy\HierarchicalPoolInterface;
 use Cache\Namespaced\NamespacedCachePool;
-use Psr\Cache\CacheItemPoolInterface;
 use Memcached;
+use Psr\Cache\CacheItemPoolInterface;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
