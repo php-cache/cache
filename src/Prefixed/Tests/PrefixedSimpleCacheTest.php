@@ -47,7 +47,7 @@ class PrefixedSimpleCacheTest extends \PHPUnit_Framework_TestCase
         $result = true;
 
         $stub = $this->getCacheStub('get', [$prefix.$key], $result);
-        $pool = (new PrefixedSimpleCache($stub, $prefix));
+        $pool = new PrefixedSimpleCache($stub, $prefix);
 
         $this->assertEquals($result, $pool->get($key));
     }
@@ -60,7 +60,7 @@ class PrefixedSimpleCacheTest extends \PHPUnit_Framework_TestCase
         $result = true;
 
         $stub = $this->getCacheStub('set', [$prefix.$key, $value], $result);
-        $pool = (new PrefixedSimpleCache($stub, $prefix));
+        $pool = new PrefixedSimpleCache($stub, $prefix);
 
         $this->assertEquals($result, $pool->set($key, $value));
     }
@@ -72,7 +72,7 @@ class PrefixedSimpleCacheTest extends \PHPUnit_Framework_TestCase
         $result = true;
 
         $stub = $this->getCacheStub('delete', [[$prefix.$key]], $result);
-        $pool = (new PrefixedSimpleCache($stub, $prefix));
+        $pool = new PrefixedSimpleCache($stub, $prefix);
 
         $this->assertEquals($result, $pool->delete($key));
     }
@@ -83,7 +83,7 @@ class PrefixedSimpleCacheTest extends \PHPUnit_Framework_TestCase
         $result = true;
 
         $stub = $this->getCacheStub('clear', [], $result);
-        $pool = (new PrefixedSimpleCache($stub, $prefix));
+        $pool = new PrefixedSimpleCache($stub, $prefix);
 
         $this->assertEquals($result, $pool->clear());
     }
