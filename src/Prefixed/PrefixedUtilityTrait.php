@@ -1,7 +1,6 @@
 <?php
 
-/**
- * @file
+/*
  * This file is part of php-cache organization.
  *
  * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>

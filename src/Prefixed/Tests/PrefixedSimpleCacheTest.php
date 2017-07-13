@@ -1,27 +1,31 @@
 <?php
 
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This file is part of php-cache organization.
+ *
+ * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
  */
 
 namespace Cache\Prefixed\Tests;
 
-use Psr\SimpleCache\CacheInterface;
 use Cache\Prefixed\PrefixedSimpleCache;
+use Psr\SimpleCache\CacheInterface;
 
 /**
- * Description of PrefixedSimpleCacheTest
+ * Description of PrefixedSimpleCacheTest.
  *
  * @author ndobromirov
  */
 class PrefixedSimpleCacheTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @param string $method Method name to mock.
-     * @param array $arguments List of expected arguments.
-     * @param type $result
+     * @param string $method    Method name to mock.
+     * @param array  $arguments List of expected arguments.
+     * @param type   $result
+     *
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
     private function getCacheStub($method, $arguments, $result)
@@ -36,64 +40,63 @@ class PrefixedSimpleCacheTest extends \PHPUnit_Framework_TestCase
         return call_user_func_array([$stub, 'with'], $arguments);
     }
 
-
     public function testGet()
     {
         $prefix = 'ns';
-        $key = 'key';
-        $returnValue = true;
+        $key    = 'key';
+        $result = true;
 
-        $stub = $this->getCacheStub('get', [$prefix . $key], $returnValue);
+        $stub = $this->getCacheStub('get', [$prefix.$key], $result);
         $pool = (new PrefixedSimpleCache($stub, $prefix));
 
-        $this->assertEquals($returnValue, $pool->get($key));
+        $this->assertEquals($result, $pool->get($key));
     }
 
     public function testSet()
     {
         $prefix = 'ns';
-        $key = 'key';
-        $returnValue = true;
-        $value = 'value';
+        $key    = 'key';
+        $value  = 'value';
+        $result = true;
 
-        $stub = $this->getCacheStub('set', [$prefix . $key, $value], $returnValue);
+        $stub = $this->getCacheStub('set', [$prefix.$key, $value], $result);
         $pool = (new PrefixedSimpleCache($stub, $prefix));
 
-        $this->assertEquals($returnValue, $pool->set($key, $value));
+        $this->assertEquals($result, $pool->set($key, $value));
     }
 
     public function testDelete()
     {
         $prefix = 'ns';
-        $key = 'key';
-        $returnValue = true;
+        $key    = 'key';
+        $result = true;
 
-        $stub = $this->getCacheStub('delete', [[$prefix . $key]], $returnValue);
+        $stub = $this->getCacheStub('delete', [[$prefix.$key]], $result);
         $pool = (new PrefixedSimpleCache($stub, $prefix));
 
-        $this->assertEquals($returnValue, $pool->delete($key));
+        $this->assertEquals($result, $pool->delete($key));
     }
 
     public function testClear()
     {
         $prefix = 'ns';
-        $returnValue = true;
+        $result = true;
 
-        $stub = $this->getCacheStub('clear', [], $returnValue);
+        $stub = $this->getCacheStub('clear', [], $result);
         $pool = (new PrefixedSimpleCache($stub, $prefix));
 
-        $this->assertEquals($returnValue, $pool->clear());
+        $this->assertEquals($result, $pool->clear());
     }
 
     public function testGetMultiple()
     {
-        $prefix = 'ns';
-        list ($key1, $value1) = ['key1', 1];
-        list ($key2, $value2) = ['key2', 2];
+        $prefix              = 'ns';
+        list($key1, $value1) = ['key1', 1];
+        list($key2, $value2) = ['key2', 2];
 
-        $stub = $this->getCacheStub('getMultiple', [[$prefix . $key1, $prefix . $key2]], [
-            $prefix . $key1 => $value1,
-            $prefix . $key2 => $value2,
+        $stub = $this->getCacheStub('getMultiple', [[$prefix.$key1, $prefix.$key2]], [
+            $prefix.$key1 => $value1,
+            $prefix.$key2 => $value2,
         ]);
         $pool = new PrefixedSimpleCache($stub, $prefix);
 
@@ -102,12 +105,12 @@ class PrefixedSimpleCacheTest extends \PHPUnit_Framework_TestCase
 
     public function testSetMultiple()
     {
-        $prefix = 'ns';
-        list ($key1, $value1) = ['key1', 1];
-        list ($key2, $value2) = ['key2', 2];
-        $result = true;
+        $prefix              = 'ns';
+        list($key1, $value1) = ['key1', 1];
+        list($key2, $value2) = ['key2', 2];
+        $result              = true;
 
-        $stub = $this->getCacheStub('setMultiple', [[$prefix . $key1 => $value1, $prefix . $key2 => $value2]], $result);
+        $stub = $this->getCacheStub('setMultiple', [[$prefix.$key1 => $value1, $prefix.$key2 => $value2]], $result);
         $pool = new PrefixedSimpleCache($stub, $prefix);
 
         $this->assertEquals($result, $pool->setMultiple([$key1 => $value1, $key2 => $value2]));
@@ -115,11 +118,11 @@ class PrefixedSimpleCacheTest extends \PHPUnit_Framework_TestCase
 
     public function testDeleteMultiple()
     {
-        $prefix = 'ns';
-        list ($key1, $key2) = ['key1', 'key2'];
-        $result = true;
+        $prefix            = 'ns';
+        list($key1, $key2) = ['key1', 'key2'];
+        $result            = true;
 
-        $stub = $this->getCacheStub('deleteMultiple', [[$prefix . $key1, $prefix . $key2]], $result);
+        $stub = $this->getCacheStub('deleteMultiple', [[$prefix.$key1, $prefix.$key2]], $result);
         $pool = new PrefixedSimpleCache($stub, $prefix);
 
         $this->assertEquals($result, $pool->deleteMultiple([$key1, $key2]));
@@ -128,10 +131,10 @@ class PrefixedSimpleCacheTest extends \PHPUnit_Framework_TestCase
     public function testHas()
     {
         $prefix = 'ns';
-        $key = 'key';
+        $key    = 'key';
         $result = true;
 
-        $stub = $this->getCacheStub('has', [[$prefix . $key]], $result);
+        $stub = $this->getCacheStub('has', [[$prefix.$key]], $result);
         $pool = new PrefixedSimpleCache($stub, $prefix);
 
         $this->assertEquals($result, $pool->has($key));
