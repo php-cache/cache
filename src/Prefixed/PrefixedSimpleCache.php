@@ -1,6 +1,7 @@
 <?php
 
-/*
+/**
+ * @file
  * This file is part of php-cache organization.
  *
  * (c) 2015 Aaron Scherer <aequasi@gmail.com>, Tobias Nyholm <tobias.nyholm@gmail.com>
@@ -22,15 +23,12 @@ use Psr\SimpleCache\CacheInterface;
  */
 class PrefixedSimpleCache implements CacheInterface
 {
+    use PrefixedUtilityTrait;
+
     /**
      * @type CacheInterface
      */
     private $cache;
-
-    /**
-     * @type string
-     */
-    private $prefix;
 
     /**
      * @param CacheInterface $simpleCache
@@ -40,26 +38,6 @@ class PrefixedSimpleCache implements CacheInterface
     {
         $this->cache  = $simpleCache;
         $this->prefix = $prefix;
-    }
-
-    /**
-     * Add namespace prefix on the key.
-     *
-     * @param array $keys
-     */
-    private function prefixValue(&$key)
-    {
-        $key = $this->prefix.$key;
-    }
-
-    /**
-     * @param array $keys
-     */
-    private function prefixValues(array &$keys)
-    {
-        foreach ($keys as &$key) {
-            $this->prefixValue($key);
-        }
     }
 
     /**
