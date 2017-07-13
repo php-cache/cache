@@ -105,9 +105,18 @@ class PrefixedSimpleCache implements CacheInterface
      */
     public function getMultiple($keys, $default = null)
     {
+        $oldKeys = $keys;
         $this->prefixValues($keys);
+        $keysMap = array_combine($keys, $oldKeys);
 
-        return $this->cache->getMultiple($keys, $default);
+        $data = $this->cache->getMultiple($keys, $default);
+
+        // As ordering is configraution dependent, we are remapping the results.
+        $result = [];
+        foreach ($data as $key => $value) {
+            $result[$keysMap[$key]] =  $value;
+        }
+        return $result;
     }
 
     /**
