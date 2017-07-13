@@ -34,8 +34,8 @@ class PrefixedSimpleCacheTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['get', 'set', 'delete', 'clear', 'getMultiple', 'setMultiple', 'deleteMultiple', 'has'])
             ->getMock();
 
-        $stub->expects($this->once())->method($method)->willReturn($result);
-        call_user_func_array([$stub, 'with'], $arguments);
+        $invocation = $stub->expects($this->once())->method($method);
+        call_user_func_array([$invocation->willReturn($result), 'with'], $arguments);
 
         return $stub;
     }
