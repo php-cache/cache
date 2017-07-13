@@ -32,12 +32,12 @@ class PrefixedSimpleCacheTest extends \PHPUnit_Framework_TestCase
     {
         $stub = $this->getMockBuilder(CacheInterface::class)
             ->setMethods(['get', 'set', 'delete', 'clear', 'getMultiple', 'setMultiple', 'deleteMultiple', 'has'])
-            ->getMock()
-            ->expects($this->once())
-            ->method($method)
-            ->willReturn($result);
+            ->getMock();
 
-        return call_user_func_array([$stub, 'with'], $arguments);
+        $stub->expects($this->once())->method($method)->willReturn($result);
+        call_user_func_array([$stub, 'with'], $arguments);
+
+        return $stub;
     }
 
     public function testGet()
