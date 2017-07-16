@@ -29,22 +29,22 @@ use Psr\Cache\CacheItemInterface;
 class TaggablePSR6ItemAdapter implements TaggableCacheItemInterface
 {
     /**
-     * @var bool
+     * @type bool
      */
     private $initialized = false;
 
     /**
-     * @var CacheItemInterface
+     * @type CacheItemInterface
      */
     private $cacheItem;
 
     /**
-     * @var array<string>
+     * @type array<string>
      */
     private $prevTags = [];
 
     /**
-     * @var array<string>
+     * @type array<string>
      */
     private $tags = [];
 
@@ -115,7 +115,7 @@ class TaggablePSR6ItemAdapter implements TaggableCacheItemInterface
 
         $this->cacheItem->set([
             'value' => $value,
-            'tags' => $this->tags,
+            'tags'  => $this->tags,
         ]);
 
         return $this;
@@ -202,7 +202,7 @@ class TaggablePSR6ItemAdapter implements TaggableCacheItemInterface
     {
         $this->cacheItem->set([
             'value' => $this->get(),
-            'tags' => $this->tags,
+            'tags'  => $this->tags,
         ]);
     }
 

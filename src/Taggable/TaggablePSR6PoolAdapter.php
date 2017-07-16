@@ -40,12 +40,12 @@ use Psr\Cache\CacheItemPoolInterface;
 class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
 {
     /**
-     * @var CacheItemPoolInterface
+     * @type CacheItemPoolInterface
      */
     private $cachePool;
 
     /**
-     * @var CacheItemPoolInterface
+     * @type CacheItemPoolInterface
      */
     private $tagStorePool;
 
