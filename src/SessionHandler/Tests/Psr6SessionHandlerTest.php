@@ -18,37 +18,30 @@ use Psr\Cache\CacheItemPoolInterface;
 
 /**
  * @author Aaron Scherer <aequasi@gmail.com>
+ * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
 class Psr6SessionHandlerTest extends \PHPUnit_Framework_TestCase
 {
+    const TTL = 100;
+    const PREFIX = 'pre';
+
     /**
-     * @type Psr6SessionHandler
+     * @var Psr6SessionHandler
      */
     private $handler;
 
     /**
-     * @type m\MockInterface|CacheItemPoolInterface
+     * @var \PHPUnit_Framework_MockObject_MockObject|CacheItemPoolInterface
      */
-    private $mock;
-
-    /**
-     * @type m\MockInterface|CacheItemInterface
-     */
-    private $itemMock;
+    private $psr6;
 
     protected function setUp()
     {
         parent::setUp();
-
-        $this->mock    = m::mock(CacheItemPoolInterface::class);
-        $this->handler = new Psr6SessionHandler($this->mock);
-
-        $this->itemMock = m::mock(CacheItemInterface::class);
-    }
-
-    public function testConstructor()
-    {
-        $this->assertInstanceOf(Psr6SessionHandler::class, $this->handler);
+        $this->psr6 = $this->getMockBuilder(Cache::class)
+            ->setMethods(array('getItem', 'deleteItem', 'save'))
+            ->getMock();
+        $this->handler = new Psr6SessionHandler($this->psr6, array('prefix' => self::PREFIX, 'ttl' => self::TTL));
     }
 
     public function testOpen()
@@ -66,15 +59,98 @@ class Psr6SessionHandlerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($this->handler->gc(4711));
     }
 
-    public function testRead()
+    public function testReadMiss()
     {
+        $item = $this->getItemMock();
+        $item->expects($this->once())
+            ->method('isHit')
+            ->willReturn(false);
+        $this->psr6->expects($this->once())
+            ->method('getItem')
+            ->willReturn($item);
+        $this->assertEquals('', $this->handler->read('foo'));
     }
-
+    public function testReadHit()
+    {
+        $item = $this->getItemMock();
+        $item->expects($this->once())
+            ->method('isHit')
+            ->willReturn(true);
+        $item->expects($this->once())
+            ->method('get')
+            ->willReturn('bar');
+        $this->psr6->expects($this->once())
+            ->method('getItem')
+            ->willReturn($item);
+        $this->assertEquals('bar', $this->handler->read('foo'));
+    }
     public function testWrite()
     {
+        $item = $this->getItemMock();
+        $item->expects($this->once())
+            ->method('set')
+            ->with('session value')
+            ->willReturnSelf();
+        $item->expects($this->once())
+            ->method('expiresAfter')
+            ->with(self::TTL)
+            ->willReturnSelf();
+        $this->psr6->expects($this->once())
+            ->method('getItem')
+            ->with(self::PREFIX.'foo')
+            ->willReturn($item);
+        $this->psr6->expects($this->once())
+            ->method('save')
+            ->with($item)
+            ->willReturn(true);
+        $this->assertTrue($this->handler->write('foo', 'session value'));
     }
-
     public function testDestroy()
+    {
+        $this->psr6->expects($this->once())
+            ->method('deleteItem')
+            ->with(self::PREFIX.'foo')
+            ->willReturn(true);
+        $this->assertTrue($this->handler->destroy('foo'));
+    }
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    private function getItemMock()
+    {
+        return $this->getMockBuilder(CacheItemInterface::class)
+            ->setMethods(array('isHit', 'getKey', 'get', 'set', 'expiresAt', 'expiresAfter'))
+            ->getMock();
+    }
+}
+
+class Cache implements CacheItemPoolInterface
+{
+    public function getItem($key)
+    {
+    }
+    public function getItems(array $keys = array())
+    {
+    }
+    public function hasItem($key)
+    {
+    }
+    public function clear()
+    {
+    }
+    public function deleteItem($key)
+    {
+    }
+    public function deleteItems(array $keys)
+    {
+    }
+    public function save(CacheItemInterface $item)
+    {
+    }
+    public function saveDeferred(CacheItemInterface $item)
+    {
+    }
+    public function commit()
     {
     }
 }
