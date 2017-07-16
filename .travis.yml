@@ -1,5 +1,5 @@
 language: php
-sudo: required
+sudo: false
 dist: precise
 env:
   global:
