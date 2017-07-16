@@ -40,7 +40,7 @@ cache:
       - "$HOME/.composer/cache"
 
 before_install:
-    - if [[ $COVERAGE != true ]]; then phpenv config-rm xdebug.ini || true; fi
+    - if [[ $COVERAGE == false ]]; then phpenv config-rm xdebug.ini || true; fi
     - mkdir -p ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d
     - ./build/php/all.sh
     - sleep 30 # To make sure all services installed and running
@@ -86,10 +86,9 @@ install:
         elif [[ $deps = low ]]; then
             sleep 30
             echo "$COMPONENTS" | parallel --gnu -j10% "tfold {} 'cd {} && $COMPOSER_UP --prefer-lowest --prefer-stable && $PHPUNIT_X'"
-        elif [[ $COVERAGE != true ]]; then
+        elif [[ $COVERAGE == true ]]; then
             tfold tty-group $PHPUNIT_COVERAGE --group tty
         else
-            $COMPOSER_UP
             echo "$COMPONENTS" | parallel --gnu "tfold {} $PHPUNIT_X {}"
             tfold tty-group $PHPUNIT --group tty
         fi
