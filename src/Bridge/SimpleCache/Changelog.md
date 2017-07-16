@@ -3,6 +3,11 @@
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release. 
 
 ## UNRELEASED
+
+## 1.0.0
+
+No changes since 0.1.1
+
 ## 0.1.1
 
 ### Fixed
