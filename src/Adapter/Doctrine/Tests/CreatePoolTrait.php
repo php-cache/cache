@@ -12,7 +12,6 @@
 namespace Cache\Adapter\Doctrine\Tests;
 
 use Cache\Adapter\Doctrine\DoctrineCachePool;
-use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Cache\FilesystemCache;
 
 trait CreatePoolTrait
