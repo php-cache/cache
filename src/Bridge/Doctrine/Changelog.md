@@ -2,6 +2,13 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+
+## 3.0.1
+
+### Changed
+
+* Bumped versions on dependencies. 
+
 ## 3.0.0
 
 ### Changed
