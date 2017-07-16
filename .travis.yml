@@ -84,7 +84,7 @@ install:
         elif [[ $deps = high ]]; then
             echo "$COMPONENTS" | parallel --gnu -j10% "tfold {} 'cd {} && $COMPOSER_UP && $PHPUNIT_X$LEGACY'"
         elif [[ $deps = low ]]; then
-            sleep 30
+            sleep 3
             echo "$COMPONENTS" | parallel --gnu -j10% "tfold {} 'cd {} && $COMPOSER_UP --prefer-lowest --prefer-stable && $PHPUNIT_X'"
         elif [[ $COVERAGE == true ]]; then
             $PHPUNIT_COVERAGE
