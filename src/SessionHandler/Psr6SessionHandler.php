@@ -37,8 +37,8 @@ class Psr6SessionHandler implements \SessionHandlerInterface
      * @param CacheItemPoolInterface $cache
      * @param array                  $options {
      *
-     *      @var int $ttl       The time to live in seconds
-     *      @var string $prefix The prefix to use for the cache keys in order to avoid collision
+     *      @type int $ttl       The time to live in seconds
+     *      @type string $prefix The prefix to use for the cache keys in order to avoid collision
      * }
      */
     public function __construct(CacheItemPoolInterface $cache, array $options = [])

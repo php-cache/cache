@@ -13,7 +13,6 @@ namespace Cache\SessionHandler\Tests;
 
 use Cache\Adapter\PHPArray\ArrayCachePool;
 use Cache\SessionHandler\Psr6SessionHandler;
-use Mockery as m;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
@@ -23,16 +22,16 @@ use Psr\Cache\CacheItemPoolInterface;
  */
 class Psr6SessionHandlerTest extends \PHPUnit_Framework_TestCase
 {
-    const TTL = 100;
+    const TTL    = 100;
     const PREFIX = 'pre';
 
     /**
-     * @var Psr6SessionHandler
+     * @type Psr6SessionHandler
      */
     private $handler;
 
     /**
-     * @var \PHPUnit_Framework_MockObject_MockObject|CacheItemPoolInterface
+     * @type \PHPUnit_Framework_MockObject_MockObject|CacheItemPoolInterface
      */
     private $psr6;
 
@@ -40,9 +39,9 @@ class Psr6SessionHandlerTest extends \PHPUnit_Framework_TestCase
     {
         parent::setUp();
         $this->psr6 = $this->getMockBuilder(ArrayCachePool::class)
-            ->setMethods(array('getItem', 'deleteItem', 'save'))
+            ->setMethods(['getItem', 'deleteItem', 'save'])
             ->getMock();
-        $this->handler = new Psr6SessionHandler($this->psr6, array('prefix' => self::PREFIX, 'ttl' => self::TTL));
+        $this->handler = new Psr6SessionHandler($this->psr6, ['prefix' => self::PREFIX, 'ttl' => self::TTL]);
     }
 
     public function testOpen()
@@ -124,7 +123,7 @@ class Psr6SessionHandlerTest extends \PHPUnit_Framework_TestCase
     private function getItemMock()
     {
         return $this->getMockBuilder(CacheItemInterface::class)
-            ->setMethods(array('isHit', 'getKey', 'get', 'set', 'expiresAt', 'expiresAfter'))
+            ->setMethods(['isHit', 'getKey', 'get', 'set', 'expiresAt', 'expiresAfter'])
             ->getMock();
     }
 }
