@@ -6,11 +6,19 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## 1.0.0
 
+### Added
+
+* `Cache\Taggable\Exception\InvalidArgumentException`
+
 ### Changed
 
 * We do not throw `Cache\Adapter\Common\Exception\InvalidArgumentException` anymore. Instead we throw 
 `Cache\Taggable\Exception\InvalidArgumentException`. Both exceptions do implement `Psr\Cache\InvalidArgumentException`
 * We do not require `cache/adapter-common`
+
+### Removed
+
+* Deprecated interfaces `TaggableItemInterface` and `TaggablePoolInterface`
 
 ## 0.5.1
 
