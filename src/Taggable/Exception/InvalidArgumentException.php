@@ -11,6 +11,6 @@
 
 namespace Cache\Taggable\Exception;
 
-class InvalidArgumentException extends \InvalidArgumentException implements \Psr\SimpleCache\InvalidArgumentException
+class InvalidArgumentException extends \InvalidArgumentException implements \Psr\Cache\InvalidArgumentException
 {
 }
