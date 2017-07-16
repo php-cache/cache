@@ -4,6 +4,14 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+## 1.0.0
+
+### Changed
+
+* We do not throw `Cache\Adapter\Common\Exception\InvalidArgumentException` anymore. Instead we throw 
+`Cache\Taggable\Exception\InvalidArgumentException`. Both exceptions do implement `Psr\Cache\InvalidArgumentException`
+* We do not require `cache/adapter-common`
+
 ## 0.5.1
 
 ### Fixed
