@@ -89,6 +89,7 @@ install:
         elif [[ $COVERAGE != true ]]; then
             tfold tty-group $PHPUNIT_COVERAGE --group tty
         else
+            $COMPOSER_UP
             echo "$COMPONENTS" | parallel --gnu "tfold {} $PHPUNIT_X {}"
             tfold tty-group $PHPUNIT --group tty
         fi
