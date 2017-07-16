@@ -13,6 +13,7 @@ namespace Cache\Adapter\Doctrine\Tests;
 
 use Cache\Adapter\Doctrine\DoctrineCachePool;
 use Doctrine\Common\Cache\ArrayCache;
+use Doctrine\Common\Cache\FilesystemCache;
 
 trait CreatePoolTrait
 {
@@ -26,7 +27,7 @@ trait CreatePoolTrait
     private function getDoctrineCache()
     {
         if ($this->doctrineCache === null) {
-            $this->doctrineCache = new ArrayCache();
+            $this->doctrineCache = new FilesystemCache(sys_get_temp_dir().'/doctirnecache');
         }
 
         return $this->doctrineCache;

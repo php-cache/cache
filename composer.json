@@ -31,9 +31,9 @@
     "require-dev": {
         "defuse/php-encryption":   "^2.0",
         "phpunit/phpunit":         "^5.7.21",
-        "mockery/mockery":         "^0.9",
+        "mockery/mockery":         "^0.9.9",
         "cache/integration-tests": "^0.16",
-        "predis/predis":           "^1.0",
+        "predis/predis":           "^1.1",
         "symfony/cache":           "^3.1",
         "illuminate/cache":        "^5.4"
     },
