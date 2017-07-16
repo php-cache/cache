@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 echo "Install redis"
-#yes '' | pecl install redis-2.2.8
+yes '' | pecl install -f redis-2.2.8
 
-echo "Enable extension"
-echo "extension = redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
+#echo "Enable extension"
+#echo "extension = redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
