@@ -87,9 +87,7 @@ install:
             sleep 30
             echo "$COMPONENTS" | parallel --gnu -j10% "tfold {} 'cd {} && $COMPOSER_UP --prefer-lowest --prefer-stable && $PHPUNIT_X'"
         elif [[ $COVERAGE == true ]]; then
-            pwd
-            ls -la
-            tfold tty-group $PHPUNIT_COVERAGE --group tty
+            $PHPUNIT_COVERAGE
         else
             echo "$COMPONENTS" | parallel --gnu "tfold {} $PHPUNIT_X {}"
             tfold tty-group $PHPUNIT --group tty

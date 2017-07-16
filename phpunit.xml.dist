@@ -28,7 +28,6 @@
     <whitelist>
       <directory>./</directory>
       <exclude>
-        <directory>./src/IntegrationTests</directory>
         <directory>./src/*/Tests</directory>
         <directory>./src/*/*/Tests</directory>
         <directory>./vendor</directory>
