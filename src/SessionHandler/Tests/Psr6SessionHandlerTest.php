@@ -11,6 +11,7 @@
 
 namespace Cache\SessionHandler\Tests;
 
+use Cache\Adapter\PHPArray\ArrayCachePool;
 use Cache\SessionHandler\Psr6SessionHandler;
 use Mockery as m;
 use Psr\Cache\CacheItemInterface;
@@ -38,7 +39,7 @@ class Psr6SessionHandlerTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         parent::setUp();
-        $this->psr6 = $this->getMockBuilder(Cache::class)
+        $this->psr6 = $this->getMockBuilder(ArrayCachePool::class)
             ->setMethods(array('getItem', 'deleteItem', 'save'))
             ->getMock();
         $this->handler = new Psr6SessionHandler($this->psr6, array('prefix' => self::PREFIX, 'ttl' => self::TTL));
@@ -70,6 +71,7 @@ class Psr6SessionHandlerTest extends \PHPUnit_Framework_TestCase
             ->willReturn($item);
         $this->assertEquals('', $this->handler->read('foo'));
     }
+
     public function testReadHit()
     {
         $item = $this->getItemMock();
@@ -84,6 +86,7 @@ class Psr6SessionHandlerTest extends \PHPUnit_Framework_TestCase
             ->willReturn($item);
         $this->assertEquals('bar', $this->handler->read('foo'));
     }
+
     public function testWrite()
     {
         $item = $this->getItemMock();
@@ -105,6 +108,7 @@ class Psr6SessionHandlerTest extends \PHPUnit_Framework_TestCase
             ->willReturn(true);
         $this->assertTrue($this->handler->write('foo', 'session value'));
     }
+
     public function testDestroy()
     {
         $this->psr6->expects($this->once())
@@ -113,6 +117,7 @@ class Psr6SessionHandlerTest extends \PHPUnit_Framework_TestCase
             ->willReturn(true);
         $this->assertTrue($this->handler->destroy('foo'));
     }
+
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
@@ -121,36 +126,5 @@ class Psr6SessionHandlerTest extends \PHPUnit_Framework_TestCase
         return $this->getMockBuilder(CacheItemInterface::class)
             ->setMethods(array('isHit', 'getKey', 'get', 'set', 'expiresAt', 'expiresAfter'))
             ->getMock();
-    }
-}
-
-class Cache implements CacheItemPoolInterface
-{
-    public function getItem($key)
-    {
-    }
-    public function getItems(array $keys = array())
-    {
-    }
-    public function hasItem($key)
-    {
-    }
-    public function clear()
-    {
-    }
-    public function deleteItem($key)
-    {
-    }
-    public function deleteItems(array $keys)
-    {
-    }
-    public function save(CacheItemInterface $item)
-    {
-    }
-    public function saveDeferred(CacheItemInterface $item)
-    {
-    }
-    public function commit()
-    {
     }
 }
