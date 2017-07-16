@@ -40,9 +40,6 @@
         "cache/integration-tests": "^0.16",
         "symfony/cache":           "^3.1"
     },
-    "conflict": {
-        "cache/adapter-common": "<0.4"
-    },
     "autoload":    {
         "psr-4":                 {
             "Cache\\Taggable\\": ""
