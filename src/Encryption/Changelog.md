@@ -2,6 +2,10 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 1.0.0
+
+No changes since 0.2.0
+
 ## 0.2.0
 
 ### Added
