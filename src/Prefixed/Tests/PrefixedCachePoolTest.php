@@ -112,7 +112,7 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
 
     public function testSave()
     {
-        /** @var CacheItemInterface $item */
+        /** @type CacheItemInterface $item */
         $item        = $this->getMockBuilder(CacheItemInterface::class)->getMock();
         $prefix      = 'ns';
         $returnValue = true;
@@ -126,7 +126,7 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
 
     public function testSaveDeffered()
     {
-        /** @var CacheItemInterface $item */
+        /** @type CacheItemInterface $item */
         $item        = $this->getMockBuilder(CacheItemInterface::class)->getMock();
         $prefix      = 'ns';
         $returnValue = true;
