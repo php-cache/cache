@@ -32,6 +32,7 @@ class IntegrationSimpleCacheTest extends BaseTest
         'testDataTypeBoolean'           => 'Void adapter does not save,',
         'testDataTypeArray'             => 'Void adapter does not save,',
         'testDataTypeObject'            => 'Void adapter does not save,',
+        'testBinaryData'                => 'Void adapter does not save,',
         'testSetValidKeys'              => 'Void adapter does not save,',
         'testSetMultipleValidKeys'      => 'Void adapter does not save,',
         'testSetMultipleInvalidKeys'    => 'Void adapter does not save,',
