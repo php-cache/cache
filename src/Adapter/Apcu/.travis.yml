@@ -17,7 +17,7 @@ before_install:
         apc.use_request_time=0
         " > ./apc.ini
     - phpenv config-add ./apc.ini
-    - yes '' | pecl install apcu
+    - yes '' | pecl install -f apcu-5.1.8
 
 install:
     - composer update --prefer-dist --prefer-stable

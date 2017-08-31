@@ -4,6 +4,10 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+## 1.0.0
+
+No changes since 0.3.0
+
 ## 0.3.0
 
 ### Added
@@ -20,6 +24,7 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 * `CacheItem::getExpirationDate()`. Use `CacheItem::getExpirationTimestamp()`
 * `CacheItem::getTags()`. Use `CacheItem::getPreviousTags()`
 * `CacheItem::addTag()`. Use `CacheItem::setTags()`
+* Dropped PHP 5.5 support
 
 ## 0.2.2
 

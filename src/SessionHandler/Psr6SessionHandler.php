@@ -14,14 +14,12 @@ namespace Cache\SessionHandler;
 use Psr\Cache\CacheItemPoolInterface;
 
 /**
- * Class SessionHandler.
- *
  * @author Aaron Scherer <aequasi@gmail.com>
  */
 class Psr6SessionHandler implements \SessionHandlerInterface
 {
     /**
-     * @type CacheItemPoolInterface Cache driver.
+     * @type CacheItemPoolInterface
      */
     private $cache;
 
@@ -36,14 +34,12 @@ class Psr6SessionHandler implements \SessionHandlerInterface
     private $prefix;
 
     /**
-     * Constructor.
+     * @param CacheItemPoolInterface $cache
+     * @param array                  $options {
      *
-     * List of available options:
-     *  * prefix: The prefix to use for the cache keys in order to avoid collision
-     *  * expiretime: The time to live in seconds
-     *
-     * @param CacheItemPoolInterface $cache   A Cache instance
-     * @param array                  $options An associative array of cache options
+     *      @type int $ttl       The time to live in seconds
+     *      @type string $prefix The prefix to use for the cache keys in order to avoid collision
+     * }
      */
     public function __construct(CacheItemPoolInterface $cache, array $options = [])
     {

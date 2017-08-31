@@ -4,6 +4,12 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+## 1.0.0
+
+### Fixed
+
+* Fixed `$path` variable not initialized in `clearOneObjectFromCache`.
+
 ## 0.5.0
 
 ### Added

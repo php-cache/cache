@@ -27,6 +27,7 @@ trait CreatePoolTrait
         if ($this->client === null) {
             $this->client = new \Redis();
             $this->client->connect('127.0.0.1', 6379);
+            $this->client->select(1);
         }
 
         return $this->client;

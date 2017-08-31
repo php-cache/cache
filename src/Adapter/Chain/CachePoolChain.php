@@ -43,8 +43,9 @@ class CachePoolChain implements CacheItemPoolInterface, TaggableCacheItemPoolInt
     /**
      * @param array $pools
      * @param array $options {
-     * @type  bool  $skip_on_failure If true we will remove a pool form the chain if it fails.
-     *                      }
+     *
+     *      @type  bool  $skip_on_failure If true we will remove a pool form the chain if it fails.
+     * }
      */
     public function __construct(array $pools, array $options = [])
     {
@@ -266,16 +267,6 @@ class CachePoolChain implements CacheItemPoolInterface, TaggableCacheItemPoolInt
         }
 
         return $result;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @deprecated use invalidateTags()
-     */
-    public function clearTags(array $tags)
-    {
-        return $this->invalidateTags($tags);
     }
 
     /**

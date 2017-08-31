@@ -4,6 +4,10 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+## 1.0.0
+
+No changes since 0.6.0
+
 ## 0.6.0
 
 ### Added
