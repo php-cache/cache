@@ -114,7 +114,7 @@ class PrefixedSimpleCache implements CacheInterface
     {
         $this->prefixValue($key);
 
-        return $this->set($key, $value, $ttl);
+        return $this->cache->set($key, $value, $ttl);
     }
 
     /**
