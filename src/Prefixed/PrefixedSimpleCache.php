@@ -44,7 +44,7 @@ class PrefixedSimpleCache implements CacheInterface
      */
     public function clear()
     {
-        $this->cache->clear();
+        return $this->cache->clear();
     }
 
     /**

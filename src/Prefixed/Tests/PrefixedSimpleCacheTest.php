@@ -71,7 +71,7 @@ class PrefixedSimpleCacheTest extends \PHPUnit_Framework_TestCase
         $key    = 'key';
         $result = true;
 
-        $stub = $this->getCacheStub('delete', [[$prefix.$key]], $result);
+        $stub = $this->getCacheStub('delete', [$prefix.$key], $result);
         $pool = new PrefixedSimpleCache($stub, $prefix);
 
         $this->assertEquals($result, $pool->delete($key));
@@ -134,7 +134,7 @@ class PrefixedSimpleCacheTest extends \PHPUnit_Framework_TestCase
         $key    = 'key';
         $result = true;
 
-        $stub = $this->getCacheStub('has', [[$prefix.$key]], $result);
+        $stub = $this->getCacheStub('has', [$prefix.$key], $result);
         $pool = new PrefixedSimpleCache($stub, $prefix);
 
         $this->assertEquals($result, $pool->has($key));
