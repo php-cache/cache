@@ -4,6 +4,12 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+## 1.1.0
+
+### Added
+
+ - New decorator PrefixedSimpleCache to allow usage of PSR-16 compatible adapters.
+
 ## 1.0.0
 
 ### Removed 
