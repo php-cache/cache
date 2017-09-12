@@ -197,9 +197,11 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      */
     protected function removeListItem($name, $key)
     {
-        foreach ($this->cache[$name] as $i => $item) {
-            if ($item === $key) {
-                unset($this->cache[$name][$i]);
+        if (isset($this->cache[$name])) {
+            foreach ($this->cache[$name] as $i => $item) {
+                if ($item === $key) {
+                    unset($this->cache[$name][$i]);
+                }
             }
         }
     }
