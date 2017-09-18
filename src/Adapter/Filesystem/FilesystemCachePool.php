@@ -37,7 +37,7 @@ class FilesystemCachePool extends AbstractCachePool
 
     /**
      * @param FilesystemInterface $filesystem
-     * @param string     $folder
+     * @param string              $folder
      */
     public function __construct(FilesystemInterface $filesystem, $folder = 'cache')
     {
