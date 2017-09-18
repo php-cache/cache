@@ -10,7 +10,6 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 - Use `League\Flysystem\FilesystemInterface` instead of concreate `League\Flysystem\Filesystem` class
 
-
 ## 1.0.0
 
 No changes since 0.4.0
