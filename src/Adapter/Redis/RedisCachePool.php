@@ -85,6 +85,11 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         return $success;
     }
 
+    /**
+     * Clear all objects from all nodes in the cluster.
+     *
+     * @return bool false if error
+     */
     protected function clearAllObjectsFromCacheCluster()
     {
         $nodes = $this->cache->_masters();
