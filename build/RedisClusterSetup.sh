@@ -57,7 +57,7 @@ redis-server ./redis.conf &
 cd ..
 gem install redis;
 wget http://download.redis.io/redis-stable/src/redis-trib.rb
-.redis-trib.rb create --replicas 1 127.0.0.1:7000 127.0.0.1:7001 \
+./redis-trib.rb create --replicas 1 127.0.0.1:7000 127.0.0.1:7001 \
 127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005
 
 cd ../..
