@@ -333,9 +333,9 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
         }
 
         $this->log($level, $e->getMessage(), ['exception' => $e]);
-//        if (!$e instanceof CacheException) {
-//            $e = new CachePoolException(sprintf('Exception thrown when executing "%s". ', $function), 0, $e);
-//        }
+        if (!$e instanceof CacheException) {
+            $e = new CachePoolException(sprintf('Exception thrown when executing "%s". ', $function), 0, $e);
+        }
 
         throw $e;
     }
