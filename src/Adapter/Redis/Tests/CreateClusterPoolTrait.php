@@ -25,7 +25,7 @@ trait CreateClusterPoolTrait
     private function getClient()
     {
         if ($this->client === null) {
-            $this->client = new \RedisCluster(null ,['127.0.0.1:7000', '127.0.0.1:7001', '127.0.0.1:7002']);
+            $this->client = new \RedisCluster(null, ['127.0.0.1:7000', '127.0.0.1:7001', '127.0.0.1:7002']);
         }
 
         return $this->client;

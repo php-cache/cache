@@ -63,7 +63,6 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      */
     protected function clearAllObjectsFromCache()
     {
-
         if ($this->cache instanceof \RedisCluster) {
             return $this->clearAllObjectsFromCacheCluster();
         }
