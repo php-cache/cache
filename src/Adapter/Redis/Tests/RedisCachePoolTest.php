@@ -23,6 +23,6 @@ class RedisCachePoolTest extends \PHPUnit_Framework_TestCase
      */
     public function testConstructorWithInvalidObject()
     {
-        new RedisCachePool(new stdClass());
+        new RedisCachePool(new \stdClass());
     }
 }
