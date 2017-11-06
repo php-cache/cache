@@ -20,7 +20,7 @@ composer require cache/redis-adapter
 
 ### Use
 
-To create an instance of `RedisCachePool` you need to configure a `\Redis`, `\RedisArray`, or `\RedisCluster` client. 
+To create an instance of `RedisCachePool` you need to configure a `\Redis`, `\RedisArray` or `\RedisCluster` client. 
 
 \Redis
 ```php

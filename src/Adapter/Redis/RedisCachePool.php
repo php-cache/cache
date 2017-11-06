@@ -35,8 +35,8 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     public function __construct($cache)
     {
         if (!$cache instanceof \Redis
-            && $cache instanceof \RedisArray
-            && $cache instanceof \RedisCluster
+            && !$cache instanceof \RedisArray
+            && !$cache instanceof \RedisCluster
         ) {
             throw new CachePoolException(
                 'Cache instance must be of type \Redis, \RedisArray, or \RedisCluster'
