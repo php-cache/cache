@@ -13,7 +13,7 @@ namespace Cache\Adapter\Redis\Tests;
 
 use Cache\Adapter\Redis\RedisCachePool;
 
-trait CreatePoolTrait
+trait CreateRedisPoolTrait
 {
     private $client = null;
 

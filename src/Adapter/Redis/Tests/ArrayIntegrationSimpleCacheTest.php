@@ -15,5 +15,5 @@ use Cache\IntegrationTests\SimpleCacheTest as BaseTest;
 
 class ArrayIntegrationSimpleCacheTest extends BaseTest
 {
-    use CreateArrayPoolTrait;
+    use CreateRedisArrayCachePoolTrait;
 }

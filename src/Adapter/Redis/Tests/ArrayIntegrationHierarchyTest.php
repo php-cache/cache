@@ -15,5 +15,5 @@ use Cache\IntegrationTests\HierarchicalCachePoolTest;
 
 class ArrayIntegrationHierarchyTest extends HierarchicalCachePoolTest
 {
-    use CreateArrayPoolTrait;
+    use CreateRedisArrayCachePoolTrait;
 }

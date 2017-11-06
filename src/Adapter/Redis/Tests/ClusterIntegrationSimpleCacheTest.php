@@ -15,5 +15,5 @@ use Cache\IntegrationTests\SimpleCacheTest as BaseTest;
 
 class ClusterIntegrationSimpleCacheTest extends BaseTest
 {
-    use CreateClusterPoolTrait;
+    use CreateRedisClusterPoolTrait;
 }

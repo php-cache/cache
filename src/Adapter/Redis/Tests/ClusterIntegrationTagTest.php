@@ -15,5 +15,5 @@ use Cache\IntegrationTests\TaggableCachePoolTest;
 
 class ClusterIntegrationTagTest extends TaggableCachePoolTest
 {
-    use CreateClusterPoolTrait;
+    use CreateRedisClusterPoolTrait;
 }

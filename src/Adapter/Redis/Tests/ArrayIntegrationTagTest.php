@@ -15,5 +15,5 @@ use Cache\IntegrationTests\TaggableCachePoolTest;
 
 class ArrayIntegrationTagTest extends TaggableCachePoolTest
 {
-    use CreateArrayPoolTrait;
+    use CreateRedisArrayCachePoolTrait;
 }
