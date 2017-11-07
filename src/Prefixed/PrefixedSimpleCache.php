@@ -91,7 +91,7 @@ class PrefixedSimpleCache implements CacheInterface
         // As ordering is configraution dependent, remap the results.
         $result = [];
         foreach ($data as $key => $value) {
-            $result[$keysMap[$key]] =  $value;
+            $result[$keysMap[$key]] = $value;
         }
 
         return $result;
