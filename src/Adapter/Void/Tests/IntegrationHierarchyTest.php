@@ -17,10 +17,10 @@ use Cache\IntegrationTests\HierarchicalCachePoolTest;
 class IntegrationHierarchyTest extends HierarchicalCachePoolTest
 {
     protected $skippedTests = [
-        'testBasicUsage'                              => 'Void adapter does not save,',
-        'testChain'                                   => 'Void adapter does not save,',
-        'testRemoval'                                 => 'Void adapter does not save,',
-        'testRemovalWhenDeferred'                     => 'Void adapter does not save,',
+        'testBasicUsage'          => 'Void adapter does not save,',
+        'testChain'               => 'Void adapter does not save,',
+        'testRemoval'             => 'Void adapter does not save,',
+        'testRemovalWhenDeferred' => 'Void adapter does not save,',
     ];
 
     public function createCachePool()
