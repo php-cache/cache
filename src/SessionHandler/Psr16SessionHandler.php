@@ -11,16 +11,15 @@
 
 namespace Cache\SessionHandler;
 
-use Psr\Cache\CacheItemPoolInterface;
+use Psr\SimpleCache\CacheInterface;
 
 /**
- * @author Aaron Scherer <aequasi@gmail.com>
  * @author Daniel Bannert <d.bannert@anolilab.de>
  */
-class Psr6SessionHandler extends AbstractSessionHandler
+class Psr16SessionHandler  extends AbstractSessionHandler
 {
     /**
-     * @type CacheItemPoolInterface
+     * @type CacheInterface
      */
     private $cache;
 
@@ -35,7 +34,7 @@ class Psr6SessionHandler extends AbstractSessionHandler
     private $prefix;
 
     /**
-     * @param CacheItemPoolInterface $cache
+     * @param CacheInterface $cache
      * @param array $options {
      *      @type int $ttl The time to live in seconds
      *      @type string $prefix The prefix to use for the cache keys in order to avoid collision
@@ -43,7 +42,7 @@ class Psr6SessionHandler extends AbstractSessionHandler
      *
      * @throws \InvalidArgumentException
      */
-    public function __construct(CacheItemPoolInterface $cache, array $options = [])
+    public function __construct(CacheInterface $cache, array $options = [])
     {
         $this->cache = $cache;
 
@@ -79,61 +78,42 @@ class Psr6SessionHandler extends AbstractSessionHandler
      */
     public function updateTimestamp($sessionId, $data)
     {
-        $item = $this->getCacheItem($sessionId);
-        $item->expiresAt(\DateTime::createFromFormat('U', \time() + $this->ttl));
+        $value = $this->cache->get($this->prefix.$sessionId);
+        
+        if ($value === null) {
+            return false;
+        }
 
-        return $this->cache->save($item);
+        return $this->cache->set(
+            $this->prefix.$sessionId,
+            $value,
+            \DateTime::createFromFormat('U', \time() + $this->ttl)
+        );
     }
 
     /**
      * {@inheritdoc}
      *
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws \Psr\SimpleCache\InvalidArgumentException
      */
     protected function doRead($sessionId)
     {
-        $item = $this->getCacheItem($sessionId);
-
-        if ($item->isHit()) {
-            return $item->get();
-        }
-
-        return '';
+        return $this->cache->get($this->prefix.$sessionId, '');
     }
 
     /**
      * {@inheritdoc}
-     *
-     * @throws \Psr\Cache\InvalidArgumentException
      */
     protected function doWrite($sessionId, $data)
     {
-        $item = $this->getCacheItem($sessionId);
-        $item->set($data)
-            ->expiresAfter($this->ttl);
-
-        return $this->cache->save($item);
+        return $this->cache->set($this->prefix.$sessionId, $data, $this->ttl);
     }
 
     /**
      * {@inheritdoc}
-     *
-     * @throws \Psr\Cache\InvalidArgumentException
      */
     protected function doDestroy($sessionId)
     {
-        return $this->cache->deleteItem($this->prefix.$sessionId);
-    }
-
-    /**
-     * @param string $sessionId
-     *
-     * @throws \Psr\Cache\InvalidArgumentException
-     *
-     * @return \Psr\Cache\CacheItemInterface
-     */
-    private function getCacheItem($sessionId)
-    {
-        return $this->cache->getItem($this->prefix.$sessionId);
+        return $this->cache->delete($this->prefix.$sessionId);
     }
 }
