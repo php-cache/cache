@@ -11,11 +11,6 @@
 
 namespace Cache\SessionHandler\Tests;
 
-use Cache\Adapter\PHPArray\ArrayCachePool;
-use Cache\SessionHandler\Psr6SessionHandler;
-use Psr\Cache\CacheItemInterface;
-use Psr\Cache\CacheItemPoolInterface;
-
 /**
  * @author Aaron Scherer <aequasi@gmail.com>
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>

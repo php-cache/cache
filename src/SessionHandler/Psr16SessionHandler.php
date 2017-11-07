@@ -16,7 +16,7 @@ use Psr\SimpleCache\CacheInterface;
 /**
  * @author Daniel Bannert <d.bannert@anolilab.de>
  */
-class Psr16SessionHandler  extends AbstractSessionHandler
+class Psr16SessionHandler extends AbstractSessionHandler
 {
     /**
      * @type CacheInterface
@@ -35,10 +35,10 @@ class Psr16SessionHandler  extends AbstractSessionHandler
 
     /**
      * @param CacheInterface $cache
-     * @param array $options {
-     *      @type int $ttl The time to live in seconds
-     *      @type string $prefix The prefix to use for the cache keys in order to avoid collision
-     * }
+     * @param array          $options {
+     * @type int $ttl The time to live in seconds
+     * @type string $prefix The prefix to use for the cache keys in order to avoid collision
+     *                                }
      *
      * @throws \InvalidArgumentException
      */
@@ -79,7 +79,7 @@ class Psr16SessionHandler  extends AbstractSessionHandler
     public function updateTimestamp($sessionId, $data)
     {
         $value = $this->cache->get($this->prefix.$sessionId);
-        
+
         if ($value === null) {
             return false;
         }

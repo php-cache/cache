@@ -19,27 +19,27 @@ namespace Cache\SessionHandler;
 abstract class AbstractSessionHandler implements \SessionHandlerInterface, \SessionUpdateTimestampHandlerInterface
 {
     /**
-     * @var string|null
+     * @type string|null
      */
     private $sessionName;
 
     /**
-     * @var string|null
+     * @type string|null
      */
     private $prefetchId;
 
     /**
-     * @var string|null
+     * @type string|null
      */
     private $prefetchData;
 
     /**
-     * @var string|null
+     * @type string|null
      */
     private $newSessionId;
 
     /**
-     * @var string|null
+     * @type string|null
      */
     private $igbinaryEmptyData;
 
@@ -98,7 +98,7 @@ abstract class AbstractSessionHandler implements \SessionHandlerInterface, \Sess
     public function write($sessionId, $data)
     {
         if (\PHP_VERSION_ID < 70000 && $this->prefetchData) {
-            $readData = $this->prefetchData;
+            $readData           = $this->prefetchData;
             $this->prefetchData = null;
 
             if ($readData === $data) {

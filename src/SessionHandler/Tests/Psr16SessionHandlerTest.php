@@ -43,7 +43,7 @@ class Psr16SessionHandlerTest extends AbstractSessionHandlerTest
 
         $this->assertEquals('', $this->handler->read('foo'));
     }
-    
+
     public function testReadHit()
     {
         $this->psr16->expects($this->once())
@@ -53,6 +53,7 @@ class Psr16SessionHandlerTest extends AbstractSessionHandlerTest
 
         $this->assertEquals('bar', $this->handler->read('foo'));
     }
+
     public function testWrite()
     {
         $this->psr16->expects($this->once())
