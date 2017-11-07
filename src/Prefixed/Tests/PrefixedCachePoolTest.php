@@ -16,16 +16,14 @@ use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
 /**
- * We should not use constants on interfaces in the tests. Tests should break if the constant is changed.
- *
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
 class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @return \PHPUnit_Framework_MockObject_MockObject
+     * @return \PHPUnit_Framework_MockObject_MockObject|CacheItemPoolInterface
      */
-    private function getHierarchyCacheStub()
+    private function getCacheStub()
     {
         return $this->getMockBuilder(CacheItemPoolInterface::class)->setMethods(
             ['getItem', 'getItems', 'hasItem', 'clear', 'deleteItem', 'deleteItems', 'save', 'saveDeferred', 'commit']
@@ -38,7 +36,7 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
         $key         = 'key';
         $returnValue = true;
 
-        $stub = $this->getHierarchyCacheStub();
+        $stub = $this->getCacheStub();
         $stub->expects($this->once())->method('getItem')->with($prefix.$key)->willReturn($returnValue);
 
         $pool = new PrefixedCachePool($stub, $prefix);
@@ -52,7 +50,7 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
         $key1        = 'key1';
         $returnValue = true;
 
-        $stub = $this->getHierarchyCacheStub();
+        $stub = $this->getCacheStub();
         $stub->expects($this->once())->method('getItems')->with([$prefix.$key0, $prefix.$key1])->willReturn($returnValue);
 
         $pool = new PrefixedCachePool($stub, $prefix);
@@ -65,7 +63,7 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
         $key         = 'key';
         $returnValue = true;
 
-        $stub = $this->getHierarchyCacheStub();
+        $stub = $this->getCacheStub();
         $stub->expects($this->once())->method('hasItem')->with($prefix.$key)->willReturn($returnValue);
 
         $pool = new PrefixedCachePool($stub, $prefix);
@@ -78,11 +76,11 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
         $key         = 'key';
         $returnValue = true;
 
-        $stub = $this->getHierarchyCacheStub();
+        $stub = $this->getCacheStub();
         $stub->expects($this->once())->method('clear')->willReturn($returnValue);
 
         $pool = new PrefixedCachePool($stub, $prefix);
-        $this->assertEquals($returnValue, $pool->clear($key));
+        $this->assertEquals($returnValue, $pool->clear());
     }
 
     public function testDeleteItem()
@@ -91,7 +89,7 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
         $key         = 'key';
         $returnValue = true;
 
-        $stub = $this->getHierarchyCacheStub();
+        $stub = $this->getCacheStub();
         $stub->expects($this->once())->method('deleteItem')->with($prefix.$key)->willReturn($returnValue);
 
         $pool = new PrefixedCachePool($stub, $prefix);
@@ -105,7 +103,7 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
         $key1        = 'key1';
         $returnValue = true;
 
-        $stub = $this->getHierarchyCacheStub();
+        $stub = $this->getCacheStub();
         $stub->expects($this->once())->method('deleteItems')->with([$prefix.$key0, $prefix.$key1])->willReturn($returnValue);
 
         $pool = new PrefixedCachePool($stub, $prefix);
@@ -114,11 +112,12 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
 
     public function testSave()
     {
+        /** @type CacheItemInterface $item */
         $item        = $this->getMockBuilder(CacheItemInterface::class)->getMock();
         $prefix      = 'ns';
         $returnValue = true;
 
-        $stub = $this->getHierarchyCacheStub();
+        $stub = $this->getCacheStub();
         $stub->expects($this->once())->method('save')->with($item)->willReturn($returnValue);
 
         $pool = new PrefixedCachePool($stub, $prefix);
@@ -127,11 +126,12 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
 
     public function testSaveDeffered()
     {
+        /** @type CacheItemInterface $item */
         $item        = $this->getMockBuilder(CacheItemInterface::class)->getMock();
         $prefix      = 'ns';
         $returnValue = true;
 
-        $stub = $this->getHierarchyCacheStub();
+        $stub = $this->getCacheStub();
         $stub->expects($this->once())->method('saveDeferred')->with($item)->willReturn($returnValue);
 
         $pool = new PrefixedCachePool($stub, $prefix);
@@ -143,7 +143,7 @@ class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
         $prefix      = 'ns';
         $returnValue = true;
 
-        $stub = $this->getHierarchyCacheStub();
+        $stub = $this->getCacheStub();
         $stub->expects($this->once())->method('commit')->willReturn($returnValue);
 
         $pool = new PrefixedCachePool($stub, $prefix);

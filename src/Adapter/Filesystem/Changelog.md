@@ -3,6 +3,17 @@
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release. 
 
 ## UNRELEASED
+
+## 1.1.0
+
+### Changed
+
+- Use `League\Flysystem\FilesystemInterface` instead of concreate `League\Flysystem\Filesystem` class
+
+## 1.0.0
+
+No changes since 0.4.0
+
 ## 0.4.0
 
 ### Added

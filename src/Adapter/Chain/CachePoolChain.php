@@ -14,6 +14,7 @@ namespace Cache\Adapter\Chain;
 use Cache\Adapter\Chain\Exception\NoPoolAvailableException;
 use Cache\Adapter\Chain\Exception\PoolFailedException;
 use Cache\Adapter\Common\Exception\CachePoolException;
+use Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -22,7 +23,7 @@ use Psr\Log\LoggerInterface;
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
+class CachePoolChain implements CacheItemPoolInterface, TaggableCacheItemPoolInterface, LoggerAwareInterface
 {
     /**
      * @type LoggerInterface
@@ -30,7 +31,7 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
     private $logger;
 
     /**
-     * @type CacheItemPoolInterface[]
+     * @type TaggableCacheItemPoolInterface[]|CacheItemPoolInterface[]
      */
     private $pools;
 
@@ -42,8 +43,9 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
     /**
      * @param array $pools
      * @param array $options {
-     * @type  bool  $skip_on_failure If true we will remove a pool form the chain if it fails.
-     *                      }
+     *
+     *      @type  bool  $skip_on_failure If true we will remove a pool form the chain if it fails.
+     * }
      */
     public function __construct(array $pools, array $options = [])
     {
@@ -63,6 +65,7 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
     {
         $found     = false;
         $result    = null;
+        $item      = null;
         $needsSave = [];
 
         foreach ($this->getPools() as $poolKey => $pool) {
@@ -264,16 +267,6 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
         }
 
         return $result;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @deprecated use invalidateTags()
-     */
-    public function clearTags(array $tags)
-    {
-        return $this->invalidateTags($tags);
     }
 
     /**

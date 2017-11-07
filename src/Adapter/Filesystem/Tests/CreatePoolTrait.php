@@ -35,7 +35,7 @@ trait CreatePoolTrait
     private function getFilesystem()
     {
         if ($this->filesystem === null) {
-            $this->filesystem = new Filesystem(new Local(__DIR__.'/'));
+            $this->filesystem = new Filesystem(new Local(__DIR__.'/cache'.rand(1, 100000)));
         }
 
         return $this->filesystem;

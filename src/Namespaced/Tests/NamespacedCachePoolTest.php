@@ -124,7 +124,7 @@ class NamespacedCachePoolTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($returnValue, $pool->save($item));
     }
 
-    public function testSaveDeffered()
+    public function testSaveDeferred()
     {
         $item        = $this->getMockBuilder(CacheItemInterface::class)->getMock();
         $namespace   = 'ns';

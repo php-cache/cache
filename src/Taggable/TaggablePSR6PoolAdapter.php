@@ -64,8 +64,8 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
     }
 
     /**
-     * @param CacheItemPoolInterface      $cachePool    The pool to which to add tagging capabilities.
-     * @param CacheItemPoolInterface|null $tagStorePool The pool to store tags in. If null is passed, the main pool is used.
+     * @param CacheItemPoolInterface      $cachePool    The pool to which to add tagging capabilities
+     * @param CacheItemPoolInterface|null $tagStorePool The pool to store tags in. If null is passed, the main pool is used
      *
      * @return TaggableCacheItemPoolInterface
      */

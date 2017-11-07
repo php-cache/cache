@@ -11,7 +11,7 @@
 
 namespace Cache\Taggable;
 
-use Cache\Adapter\Common\Exception\InvalidArgumentException;
+use Cache\Taggable\Exception\InvalidArgumentException;
 use Cache\TagInterop\TaggableCacheItemInterface;
 use Psr\Cache\CacheItemInterface;
 
@@ -22,7 +22,7 @@ use Psr\Cache\CacheItemInterface;
  * adapter.
  *
  * This adapter stores tags along with the cached value, by storing wrapping
- * the item in an array structure containing both.
+ * the item in an array structure containing both
  *
  * @author Magnus Nordlander <magnus@fervo.se>
  */

@@ -110,6 +110,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     protected function clearOneObjectFromCache($key)
     {
         $this->commit();
+        $path      = null;
         $keyString = $this->getHierarchyKey($key, $path);
         if (isset($this->cache[$path])) {
             $this->cache[$path]++;
