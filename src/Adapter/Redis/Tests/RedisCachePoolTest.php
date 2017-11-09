@@ -17,7 +17,7 @@ class RedisCachePoolTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * Tests that an exception is thrown if invalid object is
-     * passed to the constructor
+     * passed to the constructor.
      *
      * @expectedException \Cache\Adapter\Common\Exception\CachePoolException
      */
