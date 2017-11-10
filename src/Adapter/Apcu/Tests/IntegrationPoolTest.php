@@ -12,10 +12,13 @@
 namespace Cache\Adapter\Apcu\Tests;
 
 use Cache\Adapter\Apcu\ApcuCachePool;
+use Cache\Adapter\Common\Tests\Traits\TestNotUnserializableTrait;
 use Cache\IntegrationTests\CachePoolTest as BaseTest;
 
 class IntegrationPoolTest extends BaseTest
 {
+    use TestNotUnserializableTrait;
+
     protected $skippedTests = [
         'testExpiration'      => 'The cache expire at the next request.',
         'testSaveExpired'     => 'The cache expire at the next request.',

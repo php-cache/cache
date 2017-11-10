@@ -42,11 +42,27 @@ class DoctrineCachePool extends AbstractCachePool
      */
     protected function fetchObjectFromCache($key)
     {
-        if (false === $data = $this->cache->fetch($key)) {
-            return [false, null, [], null];
-        }
+        $unserializeCallbackHandler = ini_set('unserialize_callback_func', parent::class.'::handleUnserializeCallback');
 
-        return unserialize($data);
+        try {
+            if (false === $data = $this->cache->fetch($key)) {
+                return [false, null, [], null];
+            }
+
+            return parent::unserialize($data);
+        } catch (\Error $e) {
+            $trace = $e->getTrace();
+
+            if (isset($trace[0]['function']) && !isset($trace[0]['class'])) {
+                if ($trace[0]['function'] === 'unserialize' || $trace[0]['function'] === 'apcu_fetch' || $trace[0]['function'] === 'apc_fetch') {
+                    throw new \ErrorException($e->getMessage(), $e->getCode(), E_ERROR, $e->getFile(), $e->getLine());
+                }
+            }
+
+            throw $e;
+        } finally {
+            ini_set('unserialize_callback_func', $unserializeCallbackHandler);
+        }
     }
 
     /**

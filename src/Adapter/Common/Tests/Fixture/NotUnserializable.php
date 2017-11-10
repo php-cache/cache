@@ -9,13 +9,17 @@
  * with this source code in the file LICENSE.
  */
 
-namespace Cache\Adapter\Doctrine\Tests;
+namespace Cache\Adapter\Common\Tests\Fixture;
 
-use Cache\Adapter\Common\Tests\Traits\TestNotUnserializableTrait;
-use Cache\IntegrationTests\CachePoolTest;
-
-class IntegrationPoolTest extends CachePoolTest
+class NotUnserializable implements \Serializable
 {
-    use CreatePoolTrait;
-    use TestNotUnserializableTrait;
+    public function serialize()
+    {
+        return serialize(123);
+    }
+
+    public function unserialize($ser)
+    {
+        throw new \Exception(__CLASS__);
+    }
 }

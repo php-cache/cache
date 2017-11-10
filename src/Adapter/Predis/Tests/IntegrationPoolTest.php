@@ -11,9 +11,11 @@
 
 namespace Cache\Adapter\Predis\Tests;
 
+use Cache\Adapter\Common\Tests\Traits\TestNotUnserializableTrait;
 use Cache\IntegrationTests\CachePoolTest;
 
 class IntegrationPoolTest extends CachePoolTest
 {
     use CreatePoolTrait;
+    use TestNotUnserializableTrait;
 }

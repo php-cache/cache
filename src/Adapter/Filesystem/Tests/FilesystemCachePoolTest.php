@@ -11,6 +11,8 @@
 
 namespace Cache\Adapter\Filesystem\Tests;
 
+use Cache\Adapter\Common\Tests\Traits\TestNotUnserializableTrait;
+
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -19,6 +21,7 @@ use PHPUnit\Framework\TestCase;
 class FilesystemCachePoolTest extends TestCase
 {
     use CreatePoolTrait;
+    use TestNotUnserializableTrait;
 
     /**
      * @expectedException \Psr\Cache\InvalidArgumentException

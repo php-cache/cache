@@ -44,12 +44,18 @@ class ApcuCachePool extends AbstractCachePool
             return [false, null, [], null];
         }
 
-        $success   = false;
-        $cacheData = apcu_fetch($key, $success);
+        $success = false;
+
+        try {
+            $cacheData = apcu_fetch($key, $success);
+        } catch (\Error $e) {
+            throw new \ErrorException($e->getMessage(), $e->getCode(), E_ERROR, $e->getFile(), $e->getLine());
+        }
+
         if (!$success) {
             return [false, null, [], null];
         }
-        list($data, $tags, $timestamp) = unserialize($cacheData);
+        list($data, $tags, $timestamp) = parent::unserialize($cacheData);
 
         return [$success, $data, $tags, $timestamp];
     }

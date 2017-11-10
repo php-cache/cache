@@ -11,9 +11,11 @@
 
 namespace Cache\Adapter\Redis\Tests;
 
+use Cache\Adapter\Common\Tests\Traits\TestNotUnserializableTrait;
 use Cache\IntegrationTests\CachePoolTest as BaseTest;
 
 class IntegrationPoolTest extends BaseTest
 {
     use CreateRedisPoolTrait;
+    use TestNotUnserializableTrait;
 }

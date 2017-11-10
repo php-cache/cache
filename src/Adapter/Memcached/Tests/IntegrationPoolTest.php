@@ -11,9 +11,11 @@
 
 namespace Cache\Adapter\Memcached\Tests;
 
+use Cache\Adapter\Common\Tests\Traits\TestNotUnserializableTrait;
 use Cache\IntegrationTests\CachePoolTest as BaseTest;
 
 class IntegrationPoolTest extends BaseTest
 {
     use CreatePoolTrait;
+    use TestNotUnserializableTrait;
 }
