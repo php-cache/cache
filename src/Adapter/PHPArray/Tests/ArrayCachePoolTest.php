@@ -52,9 +52,9 @@ class ArrayCachePoolTest extends \PHPUnit_Framework_TestCase
 
     public function testRemoveListItem()
     {
-        $pool = new ArrayCachePool();
+        $pool       = new ArrayCachePool();
         $reflection = new \ReflectionClass(get_class($pool));
-        $method = $reflection->getMethod('removeListItem');
+        $method     = $reflection->getMethod('removeListItem');
         $method->setAccessible(true);
 
         // Add a tagged item to test list removal
