@@ -49,4 +49,24 @@ class ArrayCachePoolTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($pool->hasItem('key3'));
         $this->assertTrue($pool->hasItem('key4'));
     }
+
+    public function testRemoveListItem()
+    {
+        $pool       = new ArrayCachePool();
+        $reflection = new \ReflectionClass(get_class($pool));
+        $method     = $reflection->getMethod('removeListItem');
+        $method->setAccessible(true);
+
+        // Add a tagged item to test list removal
+        $item = $pool->getItem('key1')->set('value1')->setTags(['tag1']);
+        $pool->save($item);
+
+        $this->assertTrue($pool->hasItem('key1'));
+        $this->assertTrue($pool->deleteItem('key1'));
+        $this->assertFalse($pool->hasItem('key1'));
+
+        // Trying to remove an item in an un-existing tag list should not throw
+        // Notice error / Exception in strict mode
+        $this->assertNull($method->invokeArgs($pool, ['tag1', 'key1']));
+    }
 }
