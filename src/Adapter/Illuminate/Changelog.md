@@ -7,12 +7,12 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ### Fixed
 
-- Let composer install laravel 5.4, 5.5 and 5.6
+* Let composer install laravel 5.4, 5.5 and 5.6
 
 ## 1.0.0
 
-No changes since 0.1.0
+* No changes since 0.1.0
 
 ## 0.1.0
 
-First version
+* First version
