@@ -4,6 +4,12 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+## 1.1.0
+
+### Fixed
+
+* Missing tag warning fixed
+
 ## 1.0.0
 
 ### Fixed
@@ -35,4 +41,4 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## 0.4.1
 
-No changelog before this version
+* No changelog before this version
