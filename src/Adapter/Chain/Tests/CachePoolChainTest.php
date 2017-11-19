@@ -14,11 +14,12 @@ namespace Cache\Adapter\Chain\Tests;
 use Cache\Adapter\Chain\CachePoolChain;
 use Cache\Adapter\Common\CacheItem;
 use Cache\Adapter\PHPArray\ArrayCachePool;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class ChainPoolTest.
  */
-class CachePoolChainTest extends \PHPUnit_Framework_TestCase
+class CachePoolChainTest extends TestCase
 {
     public function testGetItemStoreToPrevious()
     {

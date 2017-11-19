@@ -12,6 +12,7 @@
 namespace Cache\Prefixed\Tests;
 
 use Cache\Prefixed\PrefixedSimpleCache;
+use PHPUnit\Framework\TestCase;
 use Psr\SimpleCache\CacheInterface;
 
 /**
@@ -19,7 +20,7 @@ use Psr\SimpleCache\CacheInterface;
  *
  * @author ndobromirov
  */
-class PrefixedSimpleCacheTest extends \PHPUnit_Framework_TestCase
+class PrefixedSimpleCacheTest extends TestCase
 {
     /**
      * @param string $method    Method name to mock.

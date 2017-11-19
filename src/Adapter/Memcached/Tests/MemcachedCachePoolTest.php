@@ -11,7 +11,9 @@
 
 namespace Cache\Adapter\Memcached\Tests;
 
-class MemcachedCachePoolTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class MemcachedCachePoolTest extends TestCase
 {
     use CreatePoolTrait;
 

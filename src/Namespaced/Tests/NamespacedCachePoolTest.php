@@ -12,6 +12,7 @@
 namespace Cache\Namespaced\Tests;
 
 use Cache\Namespaced\NamespacedCachePool;
+use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 
 /**
@@ -19,7 +20,7 @@ use Psr\Cache\CacheItemInterface;
  *
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class NamespacedCachePoolTest extends \PHPUnit_Framework_TestCase
+class NamespacedCachePoolTest extends TestCase
 {
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject
