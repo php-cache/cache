@@ -12,13 +12,14 @@
 namespace Cache\Prefixed\Tests;
 
 use Cache\Prefixed\PrefixedCachePool;
+use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class PrefixedCachePoolTest extends \PHPUnit_Framework_TestCase
+class PrefixedCachePoolTest extends TestCase
 {
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject|CacheItemPoolInterface

@@ -13,13 +13,14 @@ namespace Cache\Bridge\Doctrine\Tests;
 
 use Cache\Bridge\Doctrine\DoctrineCacheBridge;
 use Mockery as m;
+use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
 /**
  * @author Aaron Scherer <aequasi@gmail.com>
  */
-class DoctrineCacheBridgeTest extends \PHPUnit_Framework_TestCase
+class DoctrineCacheBridgeTest extends TestCase
 {
     /**
      * @type DoctrineCacheBridge

@@ -15,12 +15,13 @@ use Cache\Adapter\Memcached\MemcachedCachePool;
 use Cache\Hierarchy\HierarchicalPoolInterface;
 use Cache\Namespaced\NamespacedCachePool;
 use Memcached;
+use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemPoolInterface;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class IntegrationTest extends \PHPUnit_Framework_TestCase
+class IntegrationTest extends TestCase
 {
     /**
      * @type CacheItemPoolInterface|HierarchicalPoolInterface

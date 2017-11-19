@@ -12,8 +12,9 @@
 namespace Cache\Adapter\PHPArray\Tests;
 
 use Cache\Adapter\PHPArray\ArrayCachePool;
+use PHPUnit\Framework\TestCase;
 
-class ArrayCachePoolTest extends \PHPUnit_Framework_TestCase
+class ArrayCachePoolTest extends TestCase
 {
     public function testLimit()
     {
