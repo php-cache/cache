@@ -13,6 +13,7 @@ namespace Cache\SessionHandler\Tests;
 
 use Cache\Adapter\PHPArray\ArrayCachePool;
 use Cache\SessionHandler\Psr6SessionHandler;
+use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
@@ -20,7 +21,7 @@ use Psr\Cache\CacheItemPoolInterface;
  * @author Aaron Scherer <aequasi@gmail.com>
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class Psr6SessionHandlerTest extends \PHPUnit_Framework_TestCase
+class Psr6SessionHandlerTest extends TestCase
 {
     const TTL    = 100;
     const PREFIX = 'pre';

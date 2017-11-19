@@ -16,9 +16,10 @@ use Cache\Adapter\Illuminate\IlluminateCachePool;
 use Illuminate\Contracts\Cache\Store;
 use Mockery as m;
 use Mockery\MockInterface;
+use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemPoolInterface;
 
-class IlluminateAdapterTest extends \PHPUnit_Framework_TestCase
+class IlluminateAdapterTest extends TestCase
 {
     /**
      * @type IlluminateCachePool
