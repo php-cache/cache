@@ -53,7 +53,7 @@ class Psr16SessionHandler extends AbstractSessionHandler
         }
 
         $this->ttl    = isset($options['ttl']) ? (int) $options['ttl'] : 86400;
-        $this->prefix = isset($options['prefix']) ? $options['prefix'] : 'psr6ses_';
+        $this->prefix = isset($options['prefix']) ? $options['prefix'] : 'psr16ses_';
     }
 
     /**
