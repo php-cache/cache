@@ -13,7 +13,6 @@ namespace Cache\SessionHandler\Tests;
 
 use Cache\Adapter\PHPArray\ArrayCachePool;
 use Cache\SessionHandler\Psr6SessionHandler;
-use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 

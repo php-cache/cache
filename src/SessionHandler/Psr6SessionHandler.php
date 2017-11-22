@@ -37,9 +37,9 @@ class Psr6SessionHandler extends AbstractSessionHandler
     /**
      * @param CacheItemPoolInterface $cache
      * @param array                  $options {
-     * @type int $ttl The time to live in seconds
-     * @type string $prefix The prefix to use for the cache keys in order to avoid collision
-     *                                        }
+     * @type  int                    $ttl The time to live in seconds
+     * @type  string                 $prefix The prefix to use for the cache keys in order to avoid collision
+     *                                       }
      *
      * @throws \InvalidArgumentException
      */
