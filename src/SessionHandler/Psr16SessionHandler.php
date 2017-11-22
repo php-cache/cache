@@ -59,23 +59,6 @@ class Psr16SessionHandler extends AbstractSessionHandler
     /**
      * {@inheritdoc}
      */
-    public function close()
-    {
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function gc($lifetime)
-    {
-        // not required here because cache will auto expire the records anyhow.
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function updateTimestamp($sessionId, $data)
     {
         $value = $this->cache->get($this->prefix.$sessionId);

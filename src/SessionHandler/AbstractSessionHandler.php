@@ -133,6 +133,23 @@ abstract class AbstractSessionHandler implements \SessionHandlerInterface, \Sess
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function close()
+    {
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function gc($lifetime)
+    {
+        // not required here because cache will auto expire the records anyhow.
+        return true;
+    }
+
+    /**
      * @param string $sessionId
      *
      * @return string
