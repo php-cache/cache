@@ -43,6 +43,7 @@ before_install:
     - if [[ $COVERAGE == false ]]; then phpenv config-rm xdebug.ini || true; fi
     - mkdir -p ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d
     - ./build/php/all.sh
+    - ./build/RedisClusterSetup.sh
     - sleep 5 # To make sure all services installed and running
     - |
       # General configuration
