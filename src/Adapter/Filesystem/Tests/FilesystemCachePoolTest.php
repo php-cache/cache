@@ -11,10 +11,12 @@
 
 namespace Cache\Adapter\Filesystem\Tests;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class FilesystemCachePoolTest extends \PHPUnit_Framework_TestCase
+class FilesystemCachePoolTest extends TestCase
 {
     use CreatePoolTrait;
 
