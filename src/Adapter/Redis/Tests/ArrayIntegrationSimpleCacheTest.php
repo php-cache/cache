@@ -13,7 +13,7 @@ namespace Cache\Adapter\Redis\Tests;
 
 use Cache\IntegrationTests\SimpleCacheTest as BaseTest;
 
-class IntegrationSimpleCacheTest extends BaseTest
+class ArrayIntegrationSimpleCacheTest extends BaseTest
 {
-    use CreateRedisPoolTrait;
+    use CreateRedisArrayCachePoolTrait;
 }

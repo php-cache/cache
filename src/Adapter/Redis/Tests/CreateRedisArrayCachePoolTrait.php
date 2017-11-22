@@ -13,7 +13,7 @@ namespace Cache\Adapter\Redis\Tests;
 
 use Cache\Adapter\Redis\RedisCachePool;
 
-trait CreatePoolTrait
+trait CreateRedisArrayCachePoolTrait
 {
     private $client = null;
 
@@ -25,9 +25,7 @@ trait CreatePoolTrait
     private function getClient()
     {
         if ($this->client === null) {
-            $this->client = new \Redis();
-            $this->client->connect('127.0.0.1', 6379);
-            $this->client->select(1);
+            $this->client = new \RedisArray(['127.0.0.1:6379']);
         }
 
         return $this->client;
