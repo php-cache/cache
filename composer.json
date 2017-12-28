@@ -65,7 +65,8 @@
         "cache/hierarchical-cache": "*",
         "cache/session-handler": "*",
         "cache/taggable-cache": "*",
-        "cache/illuminate-adapter": "*"
+        "cache/illuminate-adapter": "*",
+        "cache/util": "*"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
@@ -73,6 +74,7 @@
         "psr-4": {
             "Cache\\": "src/"
         },
+        "files": ["src/inc.php"],
         "exclude-from-classmap": [
             "**/Tests/"
         ]
