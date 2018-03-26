@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 echo "Install redis"
-yes '' | pecl install -f redis-3.1.4
+yes '' | pecl install -f redis-3.1.6
