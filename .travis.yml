@@ -6,8 +6,8 @@ env:
     global:
         - COVERAGE=false
         - PHPUNIT="./vendor/bin/phpunit --verbose"
-        - PHPUNIT_X="./vendor/bin/phpunit --exclude-group benchmark"
-        - PHPUNIT_COVERAGE="./vendor/bin/phpunit --coverage-clover=coverage.xml"
+        - PHPUNIT_X="./vendor/bin/phpunit --verbose --exclude-group benchmark"
+        - PHPUNIT_COVERAGE="./vendor/bin/phpunit --verbose --coverage-clover=coverage.xml"
         - COMPOSER_UP="composer update --no-interaction --prefer-dist --no-progress --profile --no-suggest"
 
 branches:
