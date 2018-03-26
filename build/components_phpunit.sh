@@ -12,6 +12,8 @@ try
         sleep 3
         echo "$COMPONENTS" | parallel --gnu -j10% "tfold {} 'cd {} && $COMPOSER_UP --prefer-lowest --prefer-stable && $PHPUNIT_X'"
     else
+        $COMPOSER_UP
+
         echo "$COMPONENTS" | parallel --gnu "tfold {} $PHPUNIT_X {}"
 
         tfold tty-group $PHPUNIT --group tty
