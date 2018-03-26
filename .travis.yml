@@ -8,7 +8,7 @@ env:
         - PHPUNIT="./vendor/bin/phpunit"
         - PHPUNIT_X="./vendor/bin/phpunit --exclude-group benchmark"
         - PHPUNIT_COVERAGE="./vendor/bin/phpunit --coverage-clover=coverage.xml"
-        - COMPOSER_UP="composer update --no-interaction --prefer-dist --no-progress --profile --no-suggest --ansi"
+        - COMPOSER_UP="composer update --no-interaction --prefer-dist --no-progress --profile --no-suggest"
 
 branches:
     except:
