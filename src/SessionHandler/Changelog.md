@@ -4,6 +4,14 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+## 1.1.0
+
+### Added
+
+* new psr-16 SessionHandler
+* implemented PHP 7.0's `SessionUpdateTimestampHandlerInterface` with a new
+     `AbstractSessionHandler` base class
+
 ## 1.0.0
 
 * No changes since 0.2.1
