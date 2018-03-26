@@ -53,23 +53,23 @@ script:
 jobs:
     include:
         - stage: Test
-            php: 5.6
+          php: 5.6
         - stage: Test
-            php: 5.6
-            env: DEPS="low"
+          php: 5.6
+          env: DEPS="low"
         - stage: Test
-            php: 7
+          php: 7
         - stage: Test
-            php: 7.1
+          php: 7.1
         - stage: Test
-            php: 7.2
+          php: 7.2
         - stage: Test
-            php: 7.2
-            env: DEPS="high"
+          php: 7.2
+          env: DEPS="high"
 
         - stage: Coverage
           php: 7.2
-            env: COVERAGE=true
+          env: COVERAGE=true
           script:
             - $PHPUNIT_COVERAGE
           after_success:
