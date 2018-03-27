@@ -4,7 +4,7 @@ source ./build/tpecl.sh
 
 FILE_EXTENSION='.so';
 
-if [[ ${TRAVIS_PHP_VERSION:0:3} = 7.2 ]]; then FILE_EXTENSION=''; fi
+if [[ ${TRAVIS_PHP_VERSION:0:3} == 7.2 ]]; then FILE_EXTENSION=''; fi
 
 if [[ $APCU_VERSION != false ]]; then tpecl apcu-${APCU_VERSION} apcu${FILE_EXTENSION}; fi
 if [[ $MEMCACHE_VERSION != false ]]; then tpecl memcache-${MEMCACHE_VERSION} memcache${FILE_EXTENSION}; fi

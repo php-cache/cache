@@ -4,6 +4,7 @@ language: php
 
 env:
     global:
+        - INI=~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
         - COVERAGE=false
         - PHPUNIT="./vendor/bin/phpunit --verbose"
         - PHPUNIT_X="./vendor/bin/phpunit --verbose --exclude-group benchmark"
@@ -50,7 +51,6 @@ before_install:
     - stty cols 120
     - |
       # php.ini configuration
-      INI=~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
       echo memory_limit = -1 >> $INI
 
 script:
