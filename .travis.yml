@@ -45,7 +45,7 @@ before_install:
     - mkdir -p ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d
     - chmod a+x ./build/components_phpunit.sh && chmod a+x ./build/build_php_extensions.sh
     - wget https://cdn.rawgit.com/prisis/e050c4da44c6ee7fa1519912eac19563/raw/7a72a7df7718af30e703c1ef0379cdf7ff24ce10/tfold.sh -P ./build
-    - wget https://cdn.rawgit.com/prisis/4e81f5e52ad7e11518e4d2eb81d7e89d/raw/49900a093399d981b80b756aad34ba32aab58571/tpecl.sh -P ./build
+    - wget https://cdn.rawgit.com/prisis/4e81f5e52ad7e11518e4d2eb81d7e89d/raw/197de1816b5de6d6d766c337300c0228faabd124/tpecl.sh -P ./build
     - ./build/build_php_extensions.sh
     - ./build/RedisClusterSetup.sh
     - sleep 5 # To make sure all services installed and running
