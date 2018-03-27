@@ -79,7 +79,7 @@ jobs:
 
         - stage: Coverage
           php: 7.2
-          env: COVERAGE=true
+          env: COVERAGE=true APCU_VERSION=5.1.8 MEMCACHED_VERSION=3.0.4 MONGODB_VERSION=1.4.2 REDIS_VERSION=3.1.6
           script:
             - $PHPUNIT_COVERAGE
           after_success:
