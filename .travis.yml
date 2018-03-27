@@ -9,6 +9,11 @@ env:
         - PHPUNIT_X="./vendor/bin/phpunit --verbose --exclude-group benchmark"
         - PHPUNIT_COVERAGE="./vendor/bin/phpunit --verbose --coverage-clover=coverage.xml"
         - COMPOSER_UP="composer update --no-interaction --prefer-dist --no-progress --profile --no-suggest"
+        - APCU_VERSION=false
+        - MEMCACHE_VERSION=false
+        - MEMCACHED_VERSION=false
+        - MONGODB_VERSION=false
+        - REDIS_VERSION=false
 
 branches:
     except:
@@ -30,17 +35,19 @@ addons:
 
 cache:
     directories:
-        - $HOME/.composer/cache/files
+        - ${HOME}/.composer/cache/files
+        - ${HOME}/php-ext
 
 before_install:
     - if [[ $COVERAGE == false ]]; then phpenv config-rm xdebug.ini || true; fi
     - mkdir -p ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d
-    - ./build/php/all.sh
+    - chmod a+x ./build/components_phpunit.sh && chmod a+x ./build/build_php_extensions.sh
+    - wget https://cdn.rawgit.com/prisis/e050c4da44c6ee7fa1519912eac19563/raw/7a72a7df7718af30e703c1ef0379cdf7ff24ce10/tfold.sh -P ./build
+    - wget https://cdn.rawgit.com/prisis/4e81f5e52ad7e11518e4d2eb81d7e89d/raw/6af4e9f653abfb9b8e387f8fd35b8eef3234d263/tpecl.sh -P ./build
+    - ./build/build_php_extensions.sh
     - ./build/RedisClusterSetup.sh
     - sleep 5 # To make sure all services installed and running
     - stty cols 120
-    - wget https://cdn.rawgit.com/prisis/e050c4da44c6ee7fa1519912eac19563/raw/7a72a7df7718af30e703c1ef0379cdf7ff24ce10/tfold.sh -P ./build
-    - chmod a+x ./build/components_phpunit.sh
     - |
       # php.ini configuration
       INI=~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
@@ -53,18 +60,22 @@ jobs:
     include:
         - stage: Test
           php: 5.6
+          env: APCU_VERSION=4.0.11 MEMCACHE_VERSION=2.2.7 MEMCACHED_VERSION=3.0.4 MONGODB_VERSION=1.1.2 REDIS_VERSION=2.2.8
         - stage: Test
           php: 5.6
-          env: DEPS="low"
+          env: DEPS="low" APCU_VERSION=4.0.11 MEMCACHE_VERSION=2.2.7 MEMCACHED_VERSION=3.0.4 MONGODB_VERSION=1.1.2 REDIS_VERSION=2.2.8
         - stage: Test
           php: 7.0
+          env: APCU_VERSION=5.1.8 MEMCACHED_VERSION=3.0.4 MONGODB_VERSION=1.1.2 REDIS_VERSION=3.0.0
         - stage: Test
           php: 7.1
+          env: APCU_VERSION=5.1.8 MEMCACHED_VERSION=3.0.4 MONGODB_VERSION=1.1.2 REDIS_VERSION=3.0.0
         - stage: Test
           php: 7.2
+          env: APCU_VERSION=5.1.8 MEMCACHED_VERSION=3.0.4 MONGODB_VERSION=1.4.2 REDIS_VERSION=3.1.6
         - stage: Test
           php: 7.2
-          env: DEPS="high"
+          env: DEPS="high" APCU_VERSION=5.1.8 MEMCACHED_VERSION=3.0.4 MONGODB_VERSION=1.4.2 REDIS_VERSION=3.1.6
 
         - stage: Coverage
           php: 7.2
