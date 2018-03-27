@@ -4,7 +4,6 @@ language: php
 
 env:
     global:
-        - INI=~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
         - COVERAGE=false
         - PHPUNIT="./vendor/bin/phpunit --verbose"
         - PHPUNIT_X="./vendor/bin/phpunit --verbose --exclude-group benchmark"
@@ -40,6 +39,7 @@ cache:
         - ${HOME}/php-ext
 
 before_install:
+    - INI=~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
     - pecl channel-update pecl.php.net
     - if [[ $COVERAGE == false ]]; then phpenv config-rm xdebug.ini || true; fi
     - mkdir -p ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d
