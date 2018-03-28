@@ -53,9 +53,9 @@ before_install:
             local ext_dir=$(php -r "echo ini_get('extension_dir');")
             local ext_cache=~/php-ext/$(basename $ext_dir)/$ext_name
 
-            echo ext_dir; #debug
-            echo ext_cache; #debug
-            pear config-show #debug
+            echo ${ext_dir}; #debug
+            echo ${ext_cache}; #debug
+            #/home/travis/.phpenv/versions/5.6/share/pear
 
             if [[ -e $ext_cache/$ext_so ]]; then
                 echo extension = $ext_cache/$ext_so >> "${INI}"
