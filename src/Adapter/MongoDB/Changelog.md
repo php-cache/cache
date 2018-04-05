@@ -4,6 +4,10 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+## 1.1.0
+
+* Upgraded version of adapter-common to 1.1.0
+
 ## 1.0.0
 
 * No changes since 0.3.0
