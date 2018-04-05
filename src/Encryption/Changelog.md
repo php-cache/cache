@@ -6,6 +6,8 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## 1.1.0
 
+### Added
+
 * Added adapter-common version v1.1.0
 
 ## 1.0.0
