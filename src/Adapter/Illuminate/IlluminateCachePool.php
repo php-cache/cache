@@ -81,6 +81,9 @@ class IlluminateCachePool extends AbstractCachePool implements HierarchicalPoolI
         $path      = null;
         $keyString = $this->getHierarchyKey($key, $path);
         if ($path) {
+            if($this->store->get($path) === null) {
+                $this->store->put($path, 0, 0);
+            }
             $this->store->increment($path);
         }
         $this->clearHierarchyKeyCache();
