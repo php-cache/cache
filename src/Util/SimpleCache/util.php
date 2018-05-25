@@ -13,15 +13,17 @@ namespace Cache\Util\SimpleCache;
 
 use Psr\SimpleCache\CacheInterface;
 
-function remember(CacheInterface $cache, $key, $ttl, callable $createResult)
-{
-    $res = $cache->get($key);
-    if ($res) {
+if (!function_exists('\Cache\Util\SimpleCache\remember')) {
+    function remember(CacheInterface $cache, $key, $ttl, callable $createResult)
+    {
+        $res = $cache->get($key);
+        if ($res) {
+            return $res;
+        }
+
+        $res = $createResult();
+        $cache->set($key, $res, $ttl);
+
         return $res;
     }
-
-    $res = $createResult();
-    $cache->set($key, $res, $ttl);
-
-    return $res;
 }
