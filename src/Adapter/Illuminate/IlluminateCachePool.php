@@ -87,6 +87,7 @@ class IlluminateCachePool extends AbstractCachePool implements HierarchicalPoolI
             $this->store->increment($path);
         }
         $this->clearHierarchyKeyCache();
+
         return $this->store->forget($keyString);
     }
 
