@@ -3,6 +3,10 @@
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 ## UNRELEASED
 
+### Added
+
+* Hierarchical implementation
+
 ## 1.1.0
 
 ### Fixed
