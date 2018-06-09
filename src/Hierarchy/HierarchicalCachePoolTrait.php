@@ -26,6 +26,13 @@ trait HierarchicalCachePoolTrait
     private $keyCache = [];
 
     /**
+     * Hierarchical mode.
+     *
+     * @var string
+     */
+    private $mode = HierarchicalPoolInterface::HIERARCHY_MODE_HASHED;
+
+    /**
      * Get a value from the storage.
      *
      * @param string $name
@@ -37,11 +44,13 @@ trait HierarchicalCachePoolTrait
     /**
      * Get a key to use with the hierarchy. If the key does not start with HierarchicalPoolInterface::SEPARATOR
      * this will return an unalterered key. This function supports a tagged key. Ie "foo:bar".
+     * If the mode is HierarchicalPoolInterface::HIERARCHY_MODE_HASHED we'll return hashed keys as usual, but if it's
+     * HierarchicalPoolInterface::HIERARCHY_MODE_ARRAY we'll return array as keys.
      *
      * @param string $key      The original key
      * @param string &$pathKey A cache key for the path. If this key is changed everything beyond that path is changed.
      *
-     * @return string
+     * @return string|array
      */
     protected function getHierarchyKey($key, &$pathKey = null)
     {
@@ -50,6 +59,11 @@ trait HierarchicalCachePoolTrait
         }
 
         $key = $this->explodeKey($key);
+
+        // If array mode, well use $key as our returned value
+        if($this->mode === HierarchicalPoolInterface::HIERARCHY_MODE_ARRAY) {
+            return $key;
+        }
 
         $keyString = '';
         // The comments below is for a $key = ["foo!tagHash", "bar!tagHash"]
