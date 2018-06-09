@@ -32,20 +32,17 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     private $cache;
 
     /**
-     * @type array
-     *             A map to hold keys
+     * @type array  A map to hold keys
      */
     private $keyMap = [];
 
     /**
-     * @type int
-     *           The maximum number of keys in the map
+     * @type int    The maximum number of keys in the map
      */
     private $limit;
 
     /**
-     * @type int
-     *           The next key that we should remove from the cache
+     * @type int    The next key that we should remove from the cache
      */
     private $currentPosition = 0;
 
