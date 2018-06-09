@@ -55,6 +55,9 @@ trait HierarchicalCachePoolTrait
     protected function getHierarchyKey($key, &$pathKey = null)
     {
         if (!$this->isHierarchyKey($key)) {
+            if($this->mode === HierarchicalPoolInterface::HIERARCHY_MODE_ARRAY) {
+                $key = [$key];
+            }
             return $key;
         }
 
