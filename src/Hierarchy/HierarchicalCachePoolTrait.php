@@ -102,7 +102,7 @@ trait HierarchicalCachePoolTrait
      * This will take a hierarchy key ("|foo|bar") with tags ("|foo|bar!tagHash") and return an array with
      * each level in the hierarchy appended with the tags. ["foo!tagHash", "bar!tagHash"].
      *
-     * @param string $key
+     * @param string $string
      *
      * @return array
      */
