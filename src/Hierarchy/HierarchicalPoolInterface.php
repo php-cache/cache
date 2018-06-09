@@ -21,4 +21,7 @@ use Psr\Cache\CacheItemPoolInterface;
 interface HierarchicalPoolInterface extends CacheItemPoolInterface
 {
     const HIERARCHY_SEPARATOR = '|';
+
+    const HIERARCHY_MODE_HASHED = 'hashed';
+    const HIERARCHY_MODE_ARRAY = 'array';
 }
