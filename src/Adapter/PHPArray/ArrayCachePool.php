@@ -78,12 +78,14 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      */
     protected function fetchObjectFromCache($key)
     {
-        $keyString = $this->getHierarchyKey($key);
-        if (!isset($this->cache[$keyString])) {
+        $keys = $this->getHierarchyKey($key);
+
+        if(!$this->arrayIsset($this->cache, $keys)) {
             return [false, null, [], null];
         }
 
-        list($data, $tags, $timestamp) = $this->cache[$keyString];
+        $element = $this->arrayToolkit($this->cache, $keys);
+        list($data, $tags, $timestamp) = $element;
 
         if (is_object($data)) {
             $data = clone $data;
@@ -108,8 +110,9 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     protected function clearOneObjectFromCache($key)
     {
         $this->commit();
-        $path      = null;
-        $keyString = $this->getHierarchyKey($key, $path);
+        $path = null;
+        $keys = $this->getHierarchyKey($key, $path);
+
         if (isset($this->cache[$path])) {
             $this->cache[$path]++;
         } else {
@@ -117,7 +120,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         }
         $this->clearHierarchyKeyCache();
 
-        unset($this->cache[$keyString]);
+        $this->arrayToolkit($this->cache, $keys, null, true);
 
         return true;
     }
@@ -127,12 +130,12 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      */
     protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
-        $key   = $this->getHierarchyKey($item->getKey());
+        $keys   = $this->getHierarchyKey($item->getKey());
         $value = $item->get();
         if (is_object($value)) {
             $value = clone $value;
         }
-        $this->cache[$key] = [$value, $item->getTags(), $item->getExpirationTimestamp()];
+        $this->arrayToolkit($this->cache, $keys, [$value, $item->getTags(), $item->getExpirationTimestamp()]);
 
         if ($this->limit !== null) {
             // Remove the oldest value
@@ -141,7 +144,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
             }
 
             // Add the new key to the current position
-            $this->keyMap[$this->currentPosition] = $key;
+            $this->keyMap[$this->currentPosition] = implode(HierarchicalPoolInterface::HIERARCHY_SEPARATOR, $keys);
 
             // Increase the current position
             $this->currentPosition = ($this->currentPosition + 1) % $this->limit;
@@ -202,5 +205,49 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
                 }
             }
         }
+    }
+
+    /**
+     * @param array $array
+     * @param array $keys
+     * @param null|mixed $value
+     * @param bool $unset
+     * @return mixed
+     */
+    private function &arrayToolkit(&$array, $keys, $value = null, $unset = false) {
+        $element = &$array;
+
+        while ($keys && ($key = array_shift($keys))) {
+            if (!$keys && is_null($value) && $unset) {
+                unset($element[$key]);
+                unset($element);
+                $element = NULL;
+            } else {
+                $element =& $element[$key];
+            }
+        }
+
+        if (!$unset && !is_null($value)) {
+            $element = $value;
+        }
+
+        return $element;
+    }
+
+    /**
+     * @param array $array
+     * @param array $keys
+     * @return bool
+     */
+    private function arrayIsset($array, $keys) {
+        $has = false;
+
+        foreach ($keys as $key) {
+            if ($has = array_key_exists($key, $array)) {
+                $array = $array[$key];
+            }
+        }
+
+        return $has;
     }
 }
