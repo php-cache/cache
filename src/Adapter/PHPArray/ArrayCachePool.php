@@ -248,6 +248,10 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
             }
         }
 
-        return $has && isset($array[0]);
+        if(is_array($array)) {
+            $has = $has && array_key_exists(0, $array);
+        }
+
+        return $has;
     }
 }
