@@ -54,7 +54,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     {
         $this->cache = &$cache;
         $this->limit = $limit;
-        $this->mode = HierarchicalPoolInterface::HIERARCHY_MODE_ARRAY;
+        $this->mode = self::HIERARCHY_MODE_ARRAY;
     }
 
     /**
