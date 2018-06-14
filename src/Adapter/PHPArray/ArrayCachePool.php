@@ -84,7 +84,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
             return [false, null, [], null];
         }
 
-        $element = $this->arrayToolkit($this->cache, $keys);
+        $element = $this->cacheToolkit($keys);
         list($data, $tags, $timestamp) = $element;
 
         if (is_object($data)) {
@@ -120,7 +120,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         }
         $this->clearHierarchyKeyCache();
 
-        $this->arrayToolkit($this->cache, $keys, null, true);
+        $this->cacheToolkit($keys, null, true);
 
         return true;
     }
@@ -135,7 +135,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         if (is_object($value)) {
             $value = clone $value;
         }
-        $this->arrayToolkit($this->cache, $keys, [$value, $item->getTags(), $item->getExpirationTimestamp()]);
+        $this->cacheToolkit($keys, [$value, $item->getTags(), $item->getExpirationTimestamp()]);
 
         if ($this->limit !== null) {
             // Remove the oldest value
@@ -161,6 +161,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         if (isset($this->cache[$key])) {
             return $this->cache[$key];
         }
+        return null;
     }
 
     /**
@@ -208,20 +209,19 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     }
 
     /**
-     * @param array $array
      * @param array $keys
      * @param null|mixed $value
      * @param bool $unset
      * @return mixed
      */
-    private function &arrayToolkit(&$array, $keys, $value = null, $unset = false) {
-        $element = &$array;
+    private function cacheToolkit($keys, $value = null, $unset = false) {
+        $element = &$this->cache;
 
         while ($keys && ($key = array_shift($keys))) {
             if (!$keys && is_null($value) && $unset) {
                 unset($element[$key]);
                 unset($element);
-                $element = NULL;
+                $element = null;
             } else {
                 $element =& $element[$key];
             }
