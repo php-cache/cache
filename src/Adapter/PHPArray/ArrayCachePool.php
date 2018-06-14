@@ -54,7 +54,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     {
         $this->cache = &$cache;
         $this->limit = $limit;
-        $this->mode = self::HIERARCHY_MODE_ARRAY;
+        $this->mode = HierarchicalPoolInterface::HIERARCHY_MODE_ARRAY;
     }
 
     /**
@@ -80,7 +80,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     {
         $keys = $this->getHierarchyKey($key);
 
-        if(!$this->arrayIsset($this->cache, $keys)) {
+        if(!$this->cacheIsset($keys)) {
             return [false, null, [], null];
         }
 
@@ -235,12 +235,14 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     }
 
     /**
-     * @param array $array
+     * Checking if given keys exists and is valid.
+     *
      * @param array $keys
      * @return bool
      */
-    private function arrayIsset($array, $keys) {
+    private function cacheIsset($keys) {
         $has = false;
+        $array = $this->cache;
 
         foreach ($keys as $key) {
             if ($has = array_key_exists($key, $array)) {
