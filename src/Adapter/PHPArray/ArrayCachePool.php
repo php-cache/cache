@@ -209,6 +209,8 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     }
 
     /**
+     * Used to manipulate cached data by extracting, inserting or deleting value.
+     *
      * @param array $keys
      * @param null|mixed $value
      * @param bool $unset
