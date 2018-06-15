@@ -32,17 +32,17 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     private $cache;
 
     /**
-     * @type array  A map to hold keys
+     * @type array A map to hold keys
      */
     private $keyMap = [];
 
     /**
-     * @type int    The maximum number of keys in the map
+     * @type int The maximum number of keys in the map
      */
     private $limit;
 
     /**
-     * @type int    The next key that we should remove from the cache
+     * @type int The next key that we should remove from the cache
      */
     private $currentPosition = 0;
 
@@ -79,11 +79,11 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     {
         $keys = $this->getHierarchyKey($key);
 
-        if(!$this->cacheIsset($keys)) {
+        if (!$this->cacheIsset($keys)) {
             return [false, null, [], null];
         }
 
-        $element = $this->cacheToolkit($keys);
+        $element                       = $this->cacheToolkit($keys);
         list($data, $tags, $timestamp) = $element;
 
         if (is_object($data)) {
@@ -123,7 +123,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
         $keys   = $this->getHierarchyKey($item->getKey());
-        $value = $item->get();
+        $value  = $item->get();
         if (is_object($value)) {
             $value = clone $value;
         }
@@ -153,7 +153,6 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         if (isset($this->cache[$key])) {
             return $this->cache[$key];
         }
-        return null;
     }
 
     /**
@@ -203,12 +202,14 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     /**
      * Used to manipulate cached data by extracting, inserting or deleting value.
      *
-     * @param array $keys
+     * @param array      $keys
      * @param null|mixed $value
-     * @param bool $unset
+     * @param bool       $unset
+     *
      * @return mixed
      */
-    private function cacheToolkit($keys, $value = null, $unset = false) {
+    private function cacheToolkit($keys, $value = null, $unset = false)
+    {
         $element = &$this->cache;
 
         while ($keys && ($key = array_shift($keys))) {
@@ -217,7 +218,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
                 unset($element);
                 $element = null;
             } else {
-                $element =& $element[$key];
+                $element =&$element[$key];
             }
         }
 
@@ -232,10 +233,12 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      * Checking if given keys exists and is valid.
      *
      * @param array $keys
+     *
      * @return bool
      */
-    private function cacheIsset($keys) {
-        $has = false;
+    private function cacheIsset($keys)
+    {
+        $has   = false;
         $array = $this->cache;
 
         foreach ($keys as $key) {
@@ -244,7 +247,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
             }
         }
 
-        if(is_array($array)) {
+        if (is_array($array)) {
             $has = $has && array_key_exists(0, $array);
         }
 

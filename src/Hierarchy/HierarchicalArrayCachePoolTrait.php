@@ -23,7 +23,7 @@ trait HierarchicalArrayCachePoolTrait
      * this will return an unalterered key. This function supports a tagged key. Ie "foo:bar".
      * With this overwrite we'll return array as keys.
      *
-     * @param string $key      The original key
+     * @param string $key The original key
      *
      * @return array
      */
