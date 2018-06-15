@@ -4,6 +4,10 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+### Changed
+
+* New Hierarchical mode by using nested arrays instead of a flat array (by using new trait: `HierarchicalArrayCachePoolTrait`)
+
 ## 1.1.0
 
 ### Fixed
