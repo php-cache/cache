@@ -14,7 +14,7 @@ namespace Cache\Adapter\PHPArray;
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\CacheItem;
 use Cache\Adapter\Common\PhpCacheItem;
-use Cache\Hierarchy\HierarchicalCachePoolTrait;
+use Cache\Hierarchy\HierarchicalArrayCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
 
 /**
@@ -24,7 +24,7 @@ use Cache\Hierarchy\HierarchicalPoolInterface;
  */
 class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterface
 {
-    use HierarchicalCachePoolTrait;
+    use HierarchicalArrayCachePoolTrait;
 
     /**
      * @type PhpCacheItem[]
@@ -54,7 +54,6 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     {
         $this->cache = &$cache;
         $this->limit = $limit;
-        $this->mode = HierarchicalPoolInterface::HIERARCHY_MODE_ARRAY;
     }
 
     /**
@@ -110,16 +109,9 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     protected function clearOneObjectFromCache($key)
     {
         $this->commit();
-        $path = null;
-        $keys = $this->getHierarchyKey($key, $path);
+        $keys = $this->getHierarchyKey($key);
 
-        if (isset($this->cache[$path])) {
-            $this->cache[$path]++;
-        } else {
-            $this->cache[$path] = 0;
-        }
         $this->clearHierarchyKeyCache();
-
         $this->cacheToolkit($keys, null, true);
 
         return true;
