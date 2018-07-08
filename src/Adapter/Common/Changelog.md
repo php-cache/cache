@@ -2,6 +2,20 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release. 
 
+## 1.1.0
+
+### Added 
+
+- Support for storing binary data
+
+### Fixed
+
+- Issue with one character variables
+
+### Changed
+
+- Tests are now extending `PHPUnit\Framework\TestCase` 
+
 ## 1.0.0
 
 * No changes since 0.4.0.
