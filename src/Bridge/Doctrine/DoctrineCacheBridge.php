@@ -129,7 +129,6 @@ class DoctrineCacheBridge extends CacheProvider
     protected function doGetStats()
     {
         // Not possible, as of yet
-        return null;
     }
 
     /**
