@@ -4,10 +4,6 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
-### Added
-
-* New trait: `HierarchicalArrayCachePoolTrait` to manage keys as array for some custom implementations.
-
 ## 1.0.0
 
 * No changes since 0.4.0

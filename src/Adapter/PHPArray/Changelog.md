@@ -6,7 +6,7 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ### Changed
 
-* New Hierarchical mode by using nested arrays instead of a flat array (by using new trait: `HierarchicalArrayCachePoolTrait`)
+* New Hierarchical mode by using nested arrays instead of a flat array
 
 ## 1.1.0
 
