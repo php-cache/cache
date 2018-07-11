@@ -14,7 +14,7 @@ namespace Cache\Adapter\PHPArray;
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\CacheItem;
 use Cache\Adapter\Common\PhpCacheItem;
-use Cache\Hierarchy\HierarchicalArrayCachePoolTrait;
+use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
 
 /**
@@ -24,7 +24,7 @@ use Cache\Hierarchy\HierarchicalPoolInterface;
  */
 class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterface
 {
-    use HierarchicalArrayCachePoolTrait;
+    use HierarchicalCachePoolTrait;
 
     /**
      * @type PhpCacheItem[]
@@ -252,5 +252,23 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         }
 
         return $has;
+    }
+
+    /**
+     * Get a key to use with the hierarchy. If the key does not start with HierarchicalPoolInterface::SEPARATOR
+     * this will return an unalterered key. This function supports a tagged key. Ie "foo:bar".
+     * With this overwrite we'll return array as keys.
+     *
+     * @param string $key The original key
+     *
+     * @return array
+     */
+    protected function getHierarchyKey($key)
+    {
+        if (!$this->isHierarchyKey($key)) {
+            return [$key];
+        }
+
+        return $this->explodeKey($key);
     }
 }
