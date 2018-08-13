@@ -84,6 +84,72 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     /**
      * {@inheritdoc}
      */
+    public function setMultiple($values, $ttl = null)
+    {
+        if (!is_array($values)) {
+            if (!$values instanceof \Traversable) {
+                throw new InvalidArgumentException('$values is neither an array nor Traversable');
+            }
+        }
+        $keys        = [];
+        $arrayValues = [];
+        foreach ($values as $key => $value) {
+            if (is_int($key)) {
+                $key = (string) $key;
+            }
+            $this->validateKey($key);
+            $keys[]            = $key;
+            $arrayValues[$key] = $value;
+        }
+        $items       = $this->getItems($keys);
+        $itemSuccess = true;
+        $set = [];
+        if ($ttl === null) {
+            $expirationTimestamp = null;
+        } elseif ($ttl instanceof \DateTimeInterface) {
+            $expirationTimestamp = $ttl->getTimestamp();
+        } elseif ($ttl instanceof \DateInterval) { 
+            $date = new \DateTime();
+            $date->add($ttl);
+            $expirationTimestamp = $date->getTimestamp();
+        } elseif (is_object($ttl)) {
+            $expirationTimestamp = null;
+        } else {
+            $expirationTimestamp = $ttl;
+        }
+        foreach ($items as $key => $item) {
+            $item->expiresAfter($ttl);
+            $set[$this->getHierarchyKey($key)] = serialize([true, $arrayValues[$key], $item->getTags(), $item->getExpirationTimestamp()]);
+        }
+        $itemSuccess = $this->cache->setMulti($set, $expirationTimestamp);
+        return $itemSuccess;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteMultiple($keys)
+    {
+        if (!is_array($keys)) {
+            if (!$keys instanceof \Traversable) {
+                throw new InvalidArgumentException('$keys is neither an array nor Traversable');
+            }
+            // Since we need to throw an exception if *any* key is invalid, it doesn't make sense to wrap iterators or something like that.
+            $keys = iterator_to_array($keys, false);
+        }
+        $items = [];
+        foreach ($keys as $key) {
+            $this->validateKey($key);
+            $items[] = $this->getHierarchyKey($key);
+        }
+        $this->cache->deleteMulti($items);
+        return true;
+        //return $this->deleteItems($keys);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function clearAllObjectsFromCache()
     {
         return $this->cache->flush();
