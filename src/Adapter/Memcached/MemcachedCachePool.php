@@ -11,6 +11,9 @@
 
 namespace Cache\Adapter\Memcached;
 
+use Cache\Adapter\Common\Exception\CacheException;
+use Cache\Adapter\Common\Exception\CachePoolException;
+use Cache\Adapter\Common\Exception\InvalidArgumentException;
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Adapter\Common\TagSupportWithArray;
@@ -50,6 +53,32 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
         }
 
         return $result;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMultiple($keys, $default = null)
+    {
+        if (!is_array($keys)) {
+            if (!$keys instanceof \Traversable) {
+                throw new InvalidArgumentException('$keys is neither an array nor Traversable');
+            }
+            // Since we need to throw an exception if *any* key is invalid, it doesn't make sense to wrap iterators or something like that.
+            $keys = iterator_to_array($keys, false);
+        }
+        $items = [];
+        foreach ($keys as $key) {
+            $this->validateKey($key);
+            $items[] = $this->getHierarchyKey($key);
+        }
+        $null = null;
+        $results = $this->cache->getMulti($items, $null, \Memcached::GET_PRESERVE_ORDER);
+        $return = [];
+        foreach ($keys as $idx => $key) {
+            $return[$key] = (false === $return[$key] = (isset($results[$items[$idx]]) ? unserialize($results[$items[$idx]]) : false)) ? $default : $return[$key][1];
+        }
+        return $return;;
     }
 
     /**
