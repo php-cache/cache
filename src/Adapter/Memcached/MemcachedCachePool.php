@@ -135,8 +135,9 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
      */
     public function deleteMultiple($keys)
     {
-        if (!method_exists('\Memcached', 'deleteMulti'))
+        if (!method_exists('\Memcached', 'deleteMulti')) {
             return parent::deleteMultiple($keys);
+        }
         if (!is_array($keys)) {
             if (!$keys instanceof \Traversable) {
                 throw new InvalidArgumentException('$keys is neither an array nor Traversable');
