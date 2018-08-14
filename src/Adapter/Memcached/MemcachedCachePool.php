@@ -39,6 +39,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     {
         $this->cache = $cache;
         $this->cache->setOption(\Memcached::OPT_BINARY_PROTOCOL, true);
+        $this->cache->setOption(\Memcached::OPT_SERIALIZER, \Memcached::SERIALIZER_PHP);
     }
 
     /**
@@ -46,7 +47,8 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
      */
     protected function fetchObjectFromCache($key)
     {
-        if (false === $result = unserialize($this->cache->get($this->getHierarchyKey($key)))) {
+        $value = $this->cache->get($this->getHierarchyKey($key));
+        if (false === $result = (is_array($value) ? $value : unserialize($value))) {
             return [false, null, [], null];
         }
 
@@ -88,7 +90,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     /**
      * {@inheritdoc}
      */
-    public function setMultiple($values, $ttl = null)
+    public function setMultiple($values, $ttl = 0)
     {
         if (!is_array($values)) {
             if (!$values instanceof \Traversable) {
@@ -108,24 +110,18 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
         $items       = $this->getItems($keys);
         $itemSuccess = true;
         $set         = [];
-        if ($ttl === null) {
-            $expirationTimestamp = null;
-        } elseif ($ttl instanceof \DateTimeInterface) {
-            $expirationTimestamp = $ttl->getTimestamp();
-        } elseif ($ttl instanceof \DateInterval) {
-            $date = new \DateTime();
-            $date->add($ttl);
-            $expirationTimestamp = $date->getTimestamp();
-        } elseif (is_object($ttl)) {
-            $expirationTimestamp = null;
-        } else {
-            $expirationTimestamp = $ttl;
-        }
         foreach ($items as $key => $item) {
             $item->expiresAfter($ttl);
-            $set[$this->getHierarchyKey($key)] = serialize([true, $arrayValues[$key], $item->getTags(), $item->getExpirationTimestamp()]);
+            $set[$this->getHierarchyKey($key)] = [true, $arrayValues[$key], $item->getTags(), $item->getExpirationTimestamp()];
         }
-        $itemSuccess = $this->cache->setMulti($set, $expirationTimestamp);
+        if ($ttl instanceof \DateInterval) {
+            $date = new \DateTime();
+            $date->add($ttl);
+            $ttl = $date->getTimestamp();
+        } elseif ($ttl instanceof \DateTimeInterface) {
+            $ttl = $ttl->getTimestamp();
+        }
+        $itemSuccess = $this->cache->setMulti($set, $ttl);
 
         return $itemSuccess;
     }
