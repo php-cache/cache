@@ -86,12 +86,13 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
          *
          * @return \Generator
          */
-        $return = function($default, $items, $results, $keys) {
+        $return = function ($default, $items, $results, $keys) {
             foreach ($keys as $idx => $key) {
                 $value = (false === $return[$key] = (isset($results[$items[$idx]]) ? (is_array($results[$items[$idx]]) ? $results[$items[$idx]] : unserialize($results[$items[$idx]])) : false)) ? $default : $return[$key][1];
                 yield $key => $value;
             }
         };
+        
         return $return($default, $items, $results, $keys);
     }
 
