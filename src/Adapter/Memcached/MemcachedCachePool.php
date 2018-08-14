@@ -11,10 +11,8 @@
 
 namespace Cache\Adapter\Memcached;
 
-use Cache\Adapter\Common\Exception\CacheException;
-use Cache\Adapter\Common\Exception\CachePoolException;
-use Cache\Adapter\Common\Exception\InvalidArgumentException;
 use Cache\Adapter\Common\AbstractCachePool;
+use Cache\Adapter\Common\Exception\InvalidArgumentException;
 use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Adapter\Common\TagSupportWithArray;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
@@ -73,7 +71,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
             $items[] = $this->getHierarchyKey($key);
         }
         if (defined('\Memcached::GET_EXTENDED') === false) {
-            $null = null;
+            $null    = null;
             $results = $this->cache->getMulti($items, $null, \Memcached::GET_PRESERVE_ORDER);
         } else {
             $results = $this->cache->getMulti($items, \Memcached::GET_EXTENDED);
@@ -82,7 +80,8 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
         foreach ($keys as $idx => $key) {
             $return[$key] = (false === $return[$key] = (isset($results[$items[$idx]]) ? unserialize($results[$items[$idx]]) : false)) ? $default : $return[$key][1];
         }
-        return $return;;
+
+        return $return;
     }
 
     /**
@@ -107,12 +106,12 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
         }
         $items       = $this->getItems($keys);
         $itemSuccess = true;
-        $set = [];
+        $set         = [];
         if ($ttl === null) {
             $expirationTimestamp = null;
         } elseif ($ttl instanceof \DateTimeInterface) {
             $expirationTimestamp = $ttl->getTimestamp();
-        } elseif ($ttl instanceof \DateInterval) { 
+        } elseif ($ttl instanceof \DateInterval) {
             $date = new \DateTime();
             $date->add($ttl);
             $expirationTimestamp = $date->getTimestamp();
@@ -126,6 +125,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
             $set[$this->getHierarchyKey($key)] = serialize([true, $arrayValues[$key], $item->getTags(), $item->getExpirationTimestamp()]);
         }
         $itemSuccess = $this->cache->setMulti($set, $expirationTimestamp);
+
         return $itemSuccess;
     }
 
@@ -147,6 +147,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
             $items[] = $this->getHierarchyKey($key);
         }
         $this->cache->deleteMulti($items);
+
         return true;
         //return $this->deleteItems($keys);
     }
