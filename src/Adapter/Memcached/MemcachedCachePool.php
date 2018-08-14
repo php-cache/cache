@@ -92,7 +92,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
                 yield $key => $value;
             }
         };
-        
+
         return $return($default, $items, $results, $keys);
     }
 
