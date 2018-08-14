@@ -24,196 +24,196 @@ use Cache\Hierarchy\HierarchicalPoolInterface;
  */
 class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolInterface
 {
-	use HierarchicalCachePoolTrait;
-	use TagSupportWithArray;
+    use HierarchicalCachePoolTrait;
+    use TagSupportWithArray;
 
-	/**
-	 * @type \Memcached
-	 */
-	protected $cache;
+    /**
+     * @type \Memcached
+     */
+    protected $cache;
 
-	/**
-	 * @param \Memcached $cache
-	 */
-	public function __construct(\Memcached $cache)
-	{
-		$this->cache = $cache;
-		$this->cache->setOption(\Memcached::OPT_BINARY_PROTOCOL, true);
-	}
+    /**
+     * @param \Memcached $cache
+     */
+    public function __construct(\Memcached $cache)
+    {
+        $this->cache = $cache;
+        $this->cache->setOption(\Memcached::OPT_BINARY_PROTOCOL, true);
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	protected function fetchObjectFromCache($key)
-	{
-		if (false === $result = unserialize($this->cache->get($this->getHierarchyKey($key)))) {
-			return [false, null, [], null];
-		}
+    /**
+     * {@inheritdoc}
+     */
+    protected function fetchObjectFromCache($key)
+    {
+        if (false === $result = unserialize($this->cache->get($this->getHierarchyKey($key)))) {
+            return [false, null, [], null];
+        }
 
-		return $result;
-	}
+        return $result;
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function getMultiple($keys, $default = null)
-	{
-		if (!is_array($keys)) {
-			if (!$keys instanceof \Traversable) {
-				throw new InvalidArgumentException('$keys is neither an array nor Traversable');
-			}
-			// Since we need to throw an exception if *any* key is invalid, it doesn't make sense to wrap iterators or something like that.
-			$keys = iterator_to_array($keys, false);
-		}
-		$items = [];
-		foreach ($keys as $key) {
-			$this->validateKey($key);
-			$items[] = $this->getHierarchyKey($key);
-		}
-		if (defined('\Memcached::GET_EXTENDED') === false) {
-			$null    = null;
-			$results = $this->cache->getMulti($items, $null, \Memcached::GET_PRESERVE_ORDER);
-		} else {
-			$results = $this->cache->getMulti($items, \Memcached::GET_EXTENDED);
-		}
-		$return = [];
-		foreach ($keys as $idx => $key) {
-			$return[$key] = (false === $return[$key] = (isset($results[$items[$idx]]) ? (is_array($results[$items[$idx]]) ? $results[$items[$idx]] : unserialize($results[$items[$idx]])) : false)) ? $default : $return[$key][1];
-		}
+    /**
+     * {@inheritdoc}
+     */
+    public function getMultiple($keys, $default = null)
+    {
+        if (!is_array($keys)) {
+            if (!$keys instanceof \Traversable) {
+                throw new InvalidArgumentException('$keys is neither an array nor Traversable');
+            }
+            // Since we need to throw an exception if *any* key is invalid, it doesn't make sense to wrap iterators or something like that.
+            $keys = iterator_to_array($keys, false);
+        }
+        $items = [];
+        foreach ($keys as $key) {
+            $this->validateKey($key);
+            $items[] = $this->getHierarchyKey($key);
+        }
+        if (defined('\Memcached::GET_EXTENDED') === false) {
+            $null    = null;
+            $results = $this->cache->getMulti($items, $null, \Memcached::GET_PRESERVE_ORDER);
+        } else {
+            $results = $this->cache->getMulti($items, \Memcached::GET_EXTENDED);
+        }
+        $return = [];
+        foreach ($keys as $idx => $key) {
+            $return[$key] = (false === $return[$key] = (isset($results[$items[$idx]]) ? (is_array($results[$items[$idx]]) ? $results[$items[$idx]] : unserialize($results[$items[$idx]])) : false)) ? $default : $return[$key][1];
+        }
 
-		return $return;
-	}
+        return $return;
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function setMultiple($values, $ttl = null)
-	{
-		if (!is_array($values)) {
-			if (!$values instanceof \Traversable) {
-				throw new InvalidArgumentException('$values is neither an array nor Traversable');
-			}
-		}
-		$keys        = [];
-		$arrayValues = [];
-		foreach ($values as $key => $value) {
-			if (is_int($key)) {
-				$key = (string) $key;
-			}
-			$this->validateKey($key);
-			$keys[]            = $key;
-			$arrayValues[$key] = $value;
-		}
-		$items       = $this->getItems($keys);
-		$itemSuccess = true;
-		$set         = [];
-		if ($ttl === null) {
-			$expirationTimestamp = null;
-		} elseif ($ttl instanceof \DateTimeInterface) {
-			$expirationTimestamp = $ttl->getTimestamp();
-		} elseif ($ttl instanceof \DateInterval) {
-			$date = new \DateTime();
-			$date->add($ttl);
-			$expirationTimestamp = $date->getTimestamp();
-		} elseif (is_object($ttl)) {
-			$expirationTimestamp = null;
-		} else {
-			$expirationTimestamp = $ttl;
-		}
-		foreach ($items as $key => $item) {
-			$item->expiresAfter($ttl);
-			$set[$this->getHierarchyKey($key)] = serialize([true, $arrayValues[$key], $item->getTags(), $item->getExpirationTimestamp()]);
-		}
-		$itemSuccess = $this->cache->setMulti($set, $expirationTimestamp);
+    /**
+     * {@inheritdoc}
+     */
+    public function setMultiple($values, $ttl = null)
+    {
+        if (!is_array($values)) {
+            if (!$values instanceof \Traversable) {
+                throw new InvalidArgumentException('$values is neither an array nor Traversable');
+            }
+        }
+        $keys        = [];
+        $arrayValues = [];
+        foreach ($values as $key => $value) {
+            if (is_int($key)) {
+                $key = (string) $key;
+            }
+            $this->validateKey($key);
+            $keys[]            = $key;
+            $arrayValues[$key] = $value;
+        }
+        $items       = $this->getItems($keys);
+        $itemSuccess = true;
+        $set         = [];
+        if ($ttl === null) {
+            $expirationTimestamp = null;
+        } elseif ($ttl instanceof \DateTimeInterface) {
+            $expirationTimestamp = $ttl->getTimestamp();
+        } elseif ($ttl instanceof \DateInterval) {
+            $date = new \DateTime();
+            $date->add($ttl);
+            $expirationTimestamp = $date->getTimestamp();
+        } elseif (is_object($ttl)) {
+            $expirationTimestamp = null;
+        } else {
+            $expirationTimestamp = $ttl;
+        }
+        foreach ($items as $key => $item) {
+            $item->expiresAfter($ttl);
+            $set[$this->getHierarchyKey($key)] = serialize([true, $arrayValues[$key], $item->getTags(), $item->getExpirationTimestamp()]);
+        }
+        $itemSuccess = $this->cache->setMulti($set, $expirationTimestamp);
 
-		return $itemSuccess;
-	}
+        return $itemSuccess;
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function deleteMultiple($keys)
-	{
-		if (!is_array($keys)) {
-			if (!$keys instanceof \Traversable) {
-				throw new InvalidArgumentException('$keys is neither an array nor Traversable');
-			}
-			// Since we need to throw an exception if *any* key is invalid, it doesn't make sense to wrap iterators or something like that.
-			$keys = iterator_to_array($keys, false);
-		}
-		$items = [];
-		foreach ($keys as $key) {
-			$this->validateKey($key);
-			$items[] = $this->getHierarchyKey($key);
-		}
-		$this->cache->deleteMulti($items);
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteMultiple($keys)
+    {
+        if (!is_array($keys)) {
+            if (!$keys instanceof \Traversable) {
+                throw new InvalidArgumentException('$keys is neither an array nor Traversable');
+            }
+            // Since we need to throw an exception if *any* key is invalid, it doesn't make sense to wrap iterators or something like that.
+            $keys = iterator_to_array($keys, false);
+        }
+        $items = [];
+        foreach ($keys as $key) {
+            $this->validateKey($key);
+            $items[] = $this->getHierarchyKey($key);
+        }
+        $this->cache->deleteMulti($items);
 
-		return true;
-		//return $this->deleteItems($keys);
-	}
+        return true;
+        //return $this->deleteItems($keys);
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	protected function clearAllObjectsFromCache()
-	{
-		return $this->cache->flush();
-	}
+    /**
+     * {@inheritdoc}
+     */
+    protected function clearAllObjectsFromCache()
+    {
+        return $this->cache->flush();
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	protected function clearOneObjectFromCache($key)
-	{
-		$this->commit();
-		$path = null;
-		$key  = $this->getHierarchyKey($key, $path);
-		if ($path) {
-			$this->cache->increment($path, 1, 0);
-		}
-		$this->clearHierarchyKeyCache();
+    /**
+     * {@inheritdoc}
+     */
+    protected function clearOneObjectFromCache($key)
+    {
+        $this->commit();
+        $path = null;
+        $key  = $this->getHierarchyKey($key, $path);
+        if ($path) {
+            $this->cache->increment($path, 1, 0);
+        }
+        $this->clearHierarchyKeyCache();
 
-		if ($this->cache->delete($key)) {
-			return true;
-		}
+        if ($this->cache->delete($key)) {
+            return true;
+        }
 
-		// Return true if key not found
-		return $this->cache->getResultCode() === \Memcached::RES_NOTFOUND;
-	}
+        // Return true if key not found
+        return $this->cache->getResultCode() === \Memcached::RES_NOTFOUND;
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	protected function storeItemInCache(PhpCacheItem $item, $ttl)
-	{
-		if ($ttl === null) {
-			$ttl = 0;
-		} elseif ($ttl < 0) {
-			return false;
-		} elseif ($ttl > 86400 * 30) {
-			// Any time higher than 30 days is interpreted as a unix timestamp date.
-			// https://github.com/memcached/memcached/wiki/Programming#expiration
-			$ttl = time() + $ttl;
-		}
+    /**
+     * {@inheritdoc}
+     */
+    protected function storeItemInCache(PhpCacheItem $item, $ttl)
+    {
+        if ($ttl === null) {
+            $ttl = 0;
+        } elseif ($ttl < 0) {
+            return false;
+        } elseif ($ttl > 86400 * 30) {
+            // Any time higher than 30 days is interpreted as a unix timestamp date.
+            // https://github.com/memcached/memcached/wiki/Programming#expiration
+            $ttl = time() + $ttl;
+        }
 
-		$key = $this->getHierarchyKey($item->getKey());
+        $key = $this->getHierarchyKey($item->getKey());
 
-		return $this->cache->set($key, serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]), $ttl);
-	}
+        return $this->cache->set($key, serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]), $ttl);
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function getDirectValue($name)
-	{
-		return $this->cache->get($name);
-	}
+    /**
+     * {@inheritdoc}
+     */
+    public function getDirectValue($name)
+    {
+        return $this->cache->get($name);
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function setDirectValue($name, $value)
-	{
-		$this->cache->set($name, $value);
-	}
+    /**
+     * {@inheritdoc}
+     */
+    public function setDirectValue($name, $value)
+    {
+        $this->cache->set($name, $value);
+    }
 }
