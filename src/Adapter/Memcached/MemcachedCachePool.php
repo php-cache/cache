@@ -90,7 +90,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     /**
      * {@inheritdoc}
      */
-    public function setMultiple($values, $ttl = 0)
+    public function setMultiple($values, $ttl = null)
     {
         if (!is_array($values)) {
             if (!$values instanceof \Traversable) {
