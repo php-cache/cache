@@ -76,12 +76,13 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
         } else {
             $results = $this->cache->getMulti($items, \Memcached::GET_PRESERVE_ORDER);
         }
-        $return = [];
+        $return = new \ArrayObject();
         foreach ($keys as $idx => $key) {
-            $return[$key] = (false === $return[$key] = (isset($results[$items[$idx]]) ? (is_array($results[$items[$idx]]) ? $results[$items[$idx]] : unserialize($results[$items[$idx]])) : false)) ? $default : $return[$key][1];
+            $value = (false === $return[$key] = (isset($results[$items[$idx]]) ? (is_array($results[$items[$idx]]) ? $results[$items[$idx]] : unserialize($results[$items[$idx]])) : false)) ? $default : $return[$key][1];
+            $return->offsetSet($key, $value);
         }
 
-        return $return;
+        return $return->getIterator();
     }
 
     /**
@@ -134,6 +135,8 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
      */
     public function deleteMultiple($keys)
     {
+        if (!method_exists('\Memcached', 'deleteMulti'))
+            return parent::deleteMultiple($keys);
         if (!is_array($keys)) {
             if (!$keys instanceof \Traversable) {
                 throw new InvalidArgumentException('$keys is neither an array nor Traversable');
