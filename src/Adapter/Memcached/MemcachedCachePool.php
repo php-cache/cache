@@ -74,7 +74,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
             $null    = null;
             $results = $this->cache->getMulti($items, $null, \Memcached::GET_PRESERVE_ORDER);
         } else {
-            $results = $this->cache->getMulti($items, \Memcached::GET_EXTENDED);
+            $results = $this->cache->getMulti($items, \Memcached::GET_PRESERVE_ORDER);
         }
         $return = [];
         foreach ($keys as $idx => $key) {
