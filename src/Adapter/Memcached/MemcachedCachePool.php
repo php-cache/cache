@@ -115,11 +115,15 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
             $set[$this->getHierarchyKey($key)] = [true, $arrayValues[$key], $item->getTags(), $item->getExpirationTimestamp()];
         }
         if ($ttl instanceof \DateInterval) {
-            $date = new \DateTime();
-            $date->add($ttl);
-            $ttl = $date->getTimestamp();
+            $ttl = $ttl->format('%s');
         } elseif ($ttl instanceof \DateTimeInterface) {
-            $ttl = $ttl->getTimestamp();
+            $ttl = $ttl->getTimestamp() - time();
+        }
+        if (is_numeric($ttl)) {
+            $ttl = intval($ttl);
+            if ($ttl <= (86400 * 30)) {
+                $ttl++;
+            }
         }
         $itemSuccess = $this->cache->setMulti($set, $ttl);
 
