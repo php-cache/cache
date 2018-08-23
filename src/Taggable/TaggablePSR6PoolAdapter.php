@@ -304,4 +304,20 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
             $this->removeListItem($this->getTagKey($tag), $item->getKey());
         }
     }
+
+    /**
+     * @return CacheItemPoolInterface
+     */
+    protected function getCachePool()
+    {
+        return $this->cachePool;
+    }
+
+    /**
+     * @return CacheItemPoolInterface
+     */
+    protected function getTagStorePool()
+    {
+        return $this->tagStorePool;
+    }
 }
