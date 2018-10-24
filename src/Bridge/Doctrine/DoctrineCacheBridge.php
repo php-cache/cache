@@ -11,7 +11,6 @@
 
 namespace Cache\Bridge\Doctrine;
 
-use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\Cache\CacheProvider;
 use Psr\Cache\CacheItemPoolInterface;
 
