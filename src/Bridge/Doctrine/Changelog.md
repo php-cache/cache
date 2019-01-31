@@ -2,14 +2,19 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
-## UNRELEASED
+
+## 3.0.1
 
 ### Changed
 
-This is a BC break:
+* Bumped versions on dependencies. 
+
+## 3.0.0
+
+### Changed
 
 * Changed Namespace from `Cache\Bridge` to `Cache\Bridge\Doctrine`
 
 ## 2.2.0
 
-No changelog before this version
+* No changelog before this version

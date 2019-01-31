@@ -14,6 +14,7 @@ namespace Cache\Adapter\Chain;
 use Cache\Adapter\Chain\Exception\NoPoolAvailableException;
 use Cache\Adapter\Chain\Exception\PoolFailedException;
 use Cache\Adapter\Common\Exception\CachePoolException;
+use Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -22,7 +23,7 @@ use Psr\Log\LoggerInterface;
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
+class CachePoolChain implements CacheItemPoolInterface, TaggableCacheItemPoolInterface, LoggerAwareInterface
 {
     /**
      * @type LoggerInterface
@@ -30,7 +31,7 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
     private $logger;
 
     /**
-     * @type CacheItemPoolInterface[]
+     * @type TaggableCacheItemPoolInterface[]|CacheItemPoolInterface[]
      */
     private $pools;
 
@@ -42,12 +43,13 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
     /**
      * @param array $pools
      * @param array $options {
-     * @type  bool  $skip_on_failure If true we will remove a pool form the chain if it fails.
-     *                      }
+     *
+     *      @type  bool  $skip_on_failure If true we will remove a pool form the chain if it fails.
+     * }
      */
     public function __construct(array $pools, array $options = [])
     {
-        $this->pools   = $pools;
+        $this->pools = $pools;
 
         if (!isset($options['skip_on_failure'])) {
             $options['skip_on_failure'] = false;
@@ -63,6 +65,7 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
     {
         $found     = false;
         $result    = null;
+        $item      = null;
         $needsSave = [];
 
         foreach ($this->getPools() as $poolKey => $pool) {
@@ -97,8 +100,10 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
      */
     public function getItems(array $keys = [])
     {
-        $hits  = [];
-        $items = [];
+        $hits          = [];
+        $loadedItems   = [];
+        $notFoundItems = [];
+        $keysCount     = count($keys);
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
                 $items = $pool->getItems($keys);
@@ -107,19 +112,41 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
                 foreach ($items as $item) {
                     if ($item->isHit()) {
                         $hits[$item->getKey()] = $item;
+                        unset($keys[array_search($item->getKey(), $keys)]);
+                    } else {
+                        $notFoundItems[$poolKey][$item->getKey()] = $item->getKey();
                     }
+                    $loadedItems[$item->getKey()] = $item;
                 }
-
-                if (count($hits) === count($keys)) {
-                    return $hits;
+                if (count($hits) === $keysCount) {
+                    break;
                 }
             } catch (CachePoolException $e) {
                 $this->handleException($poolKey, __FUNCTION__, $e);
             }
         }
 
-        // We need to accept that some items where not hits.
-        return array_merge($hits, $items);
+        if (!empty($hits) && !empty($notFoundItems)) {
+            foreach ($notFoundItems as $poolKey => $itemKeys) {
+                try {
+                    $pool  = $this->getPools()[$poolKey];
+                    $found = false;
+                    foreach ($itemKeys as $itemKey) {
+                        if (!empty($hits[$itemKey])) {
+                            $found = true;
+                            $pool->saveDeferred($hits[$itemKey]);
+                        }
+                    }
+                    if ($found) {
+                        $pool->commit();
+                    }
+                } catch (CachePoolException $e) {
+                    $this->handleException($poolKey, __FUNCTION__, $e);
+                }
+            }
+        }
+
+        return array_merge($loadedItems, $hits);
     }
 
     /**
@@ -244,16 +271,6 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
 
     /**
      * {@inheritdoc}
-     *
-     * @deprecated use invalidateTags()
-     */
-    public function clearTags(array $tags)
-    {
-        return $this->invalidateTags($tags);
-    }
-
-    /**
-     * {@inheritdoc}
      */
     public function invalidateTag($tag)
     {
@@ -326,7 +343,8 @@ class CachePoolChain implements CacheItemPoolInterface, LoggerAwareInterface
 
         $this->log(
             'warning',
-            sprintf('Removing pool "%s" from chain because it threw an exception when executing "%s"', $poolKey, $operation),
+            sprintf('Removing pool "%s" from chain because it threw an exception when executing "%s"', $poolKey,
+                $operation),
             ['exception' => $exception]
         );
 

@@ -28,6 +28,7 @@ class IntegrationPoolTest extends BaseTest
         'testDataTypeBoolean'                => 'Void adapter only outputs boolean,',
         'testDataTypeArray'                  => 'Void adapter only outputs boolean,',
         'testDataTypeObject'                 => 'Void adapter only outputs boolean,',
+        'testBinaryData'                     => 'Void adapter only outputs boolean,',
         'testDeferredSave'                   => 'Void adapter does not save,',
         'testDeferredSaveWithoutCommit'      => 'Void adapter does not save,',
         'testCommit'                         => 'Void adapter does not save,',

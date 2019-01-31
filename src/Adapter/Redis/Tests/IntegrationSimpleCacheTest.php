@@ -15,5 +15,5 @@ use Cache\IntegrationTests\SimpleCacheTest as BaseTest;
 
 class IntegrationSimpleCacheTest extends BaseTest
 {
-    use CreatePoolTrait;
+    use CreateRedisPoolTrait;
 }

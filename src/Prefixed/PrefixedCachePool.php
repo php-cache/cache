@@ -11,7 +11,6 @@
 
 namespace Cache\Prefixed;
 
-use Cache\Hierarchy\HierarchicalPoolInterface;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
@@ -22,15 +21,12 @@ use Psr\Cache\CacheItemPoolInterface;
  */
 class PrefixedCachePool implements CacheItemPoolInterface
 {
-    /**
-     * @type HierarchicalPoolInterface
-     */
-    private $cachePool;
+    use PrefixedUtilityTrait;
 
     /**
-     * @type string
+     * @type CacheItemPoolInterface
      */
-    private $prefix;
+    private $cachePool;
 
     /**
      * @param CacheItemPoolInterface $cachePool
@@ -40,26 +36,6 @@ class PrefixedCachePool implements CacheItemPoolInterface
     {
         $this->cachePool = $cachePool;
         $this->prefix    = $prefix;
-    }
-
-    /**
-     * Add namespace prefix on the key.
-     *
-     * @param array $keys
-     */
-    private function prefixValue(&$key)
-    {
-        $key = $this->prefix.$key;
-    }
-
-    /**
-     * @param array $keys
-     */
-    private function prefixValues(array &$keys)
-    {
-        foreach ($keys as &$key) {
-            $this->prefixValue($key);
-        }
     }
 
     /**

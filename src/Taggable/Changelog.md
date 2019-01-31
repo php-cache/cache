@@ -4,9 +4,37 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+## 1.0.0
+
+### Added
+
+* `Cache\Taggable\Exception\InvalidArgumentException`
+
+### Changed
+
+* We do not throw `Cache\Adapter\Common\Exception\InvalidArgumentException` anymore. Instead we throw 
+`Cache\Taggable\Exception\InvalidArgumentException`. Both exceptions do implement `Psr\Cache\InvalidArgumentException`
+* We do not require `cache/adapter-common`
+
+### Removed
+
+* Deprecated interfaces `TaggableItemInterface` and `TaggablePoolInterface`
+
+## 0.5.1
+
+### Fixed
+
+* Bug on `TaggablePSR6ItemAdapter::isItemCreatedHere` where item value was `null`.
+
+## 0.5.0
+
 ### Added
 
 * Support for `TaggableCacheItemPoolInterface`
+
+### Changed
+
+* The behavior of `TaggablePSR6ItemAdapter::getTags()` has changed. It will not return the tags stored in the cache storage. 
 
 ### Removed
 
@@ -14,6 +42,8 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 * Deprecated `TaggablePoolInterface` in favor of `Cache\TagInterop\TaggableCacheItemPoolInterface`
 * Deprecated `TaggableItemInterface` in favor of `Cache\TagInterop\TaggableCacheItemInterface`
 * Removed support for `TaggablePoolInterface` and `TaggableItemInterface`
+* `TaggablePSR6ItemAdapter::getTags()`. Use `TaggablePSR6ItemAdapter::getPreviousTags()`
+* `TaggablePSR6ItemAdapter::addTag()`. Use `TaggablePSR6ItemAdapter::setTags()`
 
 ## 0.4.3
 
@@ -45,4 +75,4 @@ cache storage. The list contains keys to items that uses that tag.
 
 ## 0.3.1
 
-No changelog before this version
+* No changelog before this version

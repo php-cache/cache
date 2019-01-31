@@ -12,13 +12,14 @@
 namespace Cache\Hierarchy\Tests;
 
 use Cache\Hierarchy\Tests\Helper\CachePool;
+use PHPUnit\Framework\TestCase;
 
 /**
  * We should not use constants on interfaces in the tests. Tests should break if the constant is changed.
  *
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class HierarchicalCachePoolTest extends \PHPUnit_Framework_TestCase
+class HierarchicalCachePoolTest extends TestCase
 {
     private function assertEqualsSha1($expected, $result, $message = '')
     {

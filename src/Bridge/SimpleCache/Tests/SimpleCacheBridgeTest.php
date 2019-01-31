@@ -13,10 +13,11 @@ namespace Cache\Bridge\SimpleCache\Tests;
 
 use Cache\Bridge\SimpleCache\SimpleCacheBridge;
 use Mockery as m;
+use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
-class SimpleCacheBridgeTest extends \PHPUnit_Framework_TestCase
+class SimpleCacheBridgeTest extends TestCase
 {
     /**
      * @type SimpleCacheBridge

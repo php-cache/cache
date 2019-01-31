@@ -11,7 +11,7 @@
 
 namespace Cache\Taggable;
 
-use Cache\Adapter\Common\Exception\InvalidArgumentException;
+use Cache\Taggable\Exception\InvalidArgumentException;
 use Cache\TagInterop\TaggableCacheItemInterface;
 use Psr\Cache\CacheItemInterface;
 
@@ -22,7 +22,7 @@ use Psr\Cache\CacheItemInterface;
  * adapter.
  *
  * This adapter stores tags along with the cached value, by storing wrapping
- * the item in an array structure containing both.
+ * the item in an array structure containing both
  *
  * @author Magnus Nordlander <magnus@fervo.se>
  */
@@ -230,6 +230,6 @@ class TaggablePSR6ItemAdapter implements TaggableCacheItemInterface
      */
     private function isItemCreatedHere($rawItem)
     {
-        return is_array($rawItem) && isset($rawItem['value']) && isset($rawItem['tags']) && count($rawItem) === 2;
+        return is_array($rawItem) && array_key_exists('value', $rawItem) && array_key_exists('tags', $rawItem) && count($rawItem) === 2;
     }
 }

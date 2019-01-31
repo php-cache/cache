@@ -12,9 +12,10 @@
 namespace Cache\Adapter\Common\Tests;
 
 use Cache\Adapter\Common\CacheItem;
+use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 
-class CacheItemTest extends \PHPUnit_Framework_TestCase
+class CacheItemTest extends TestCase
 {
     public function testConstructor()
     {
