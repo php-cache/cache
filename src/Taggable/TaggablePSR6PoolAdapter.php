@@ -203,7 +203,7 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
             $list = [];
         }
 
-        // Remove anny duplicates.
+        // Remove any duplicates.
         $list = array_unique($list);
 
         $list = array_filter($list, function ($value) use ($key) {

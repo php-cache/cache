@@ -393,8 +393,6 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
             $tagCacheKey = $this->getTagKey($missingTag);
             $this->appendListItem($tagCacheKey, $myCacheKey);
         }
-
-        return $this;
     }
 
     /**
