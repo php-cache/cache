@@ -4,6 +4,8 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+* Fixed PrefixedCachePool: getItems() would expose the prefix in the array keys it returned.
+
 ## 1.1.0
 
 ### Added
