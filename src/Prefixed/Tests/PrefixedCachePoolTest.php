@@ -49,13 +49,16 @@ class PrefixedCachePoolTest extends TestCase
         $prefix      = 'ns';
         $key0        = 'key0';
         $key1        = 'key1';
-        $returnValue = true;
+        // Value returned by the mocked cache pool wrapped by the PrefixedCachePool
+        $mockValue   = ['nskey0' => true, 'nskey1' => true];
+        // Value expected to be returned by the PrefixedCachePool.
+        $expectedValue = ['key0' => true, 'key1' => true];
 
         $stub = $this->getCacheStub();
-        $stub->expects($this->once())->method('getItems')->with([$prefix.$key0, $prefix.$key1])->willReturn($returnValue);
+        $stub->expects($this->once())->method('getItems')->with([$prefix.$key0, $prefix.$key1])->willReturn($mockValue);
 
         $pool = new PrefixedCachePool($stub, $prefix);
-        $this->assertEquals($returnValue, $pool->getItems([$key0, $key1]));
+        $this->assertEquals($expectedValue, $pool->getItems([$key0, $key1]));
     }
 
     public function testHasItem()

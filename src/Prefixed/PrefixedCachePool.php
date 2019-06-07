@@ -55,7 +55,24 @@ class PrefixedCachePool implements CacheItemPoolInterface
     {
         $this->prefixValues($keys);
 
-        return $this->cachePool->getItems($keys);
+        /** @var CacheItemInterface[] $items */
+        $items = $this->cachePool->getItems($keys);
+        return iterator_to_array($this->yieldWithoutPrefix($items));
+    }
+
+    /**
+     * @param CacheItemInterface[] $items
+     * @return \Generator|null
+     */
+    protected function yieldWithoutPrefix($items)
+    {
+        $prefixLength = strlen($this->prefix);
+        foreach ($items as $key => $val) {
+            if (strpos($key, $this->prefix) === 0) {
+                $key = substr($key, $prefixLength);
+            }
+            yield str_replace($this->prefix, '', $key ) => $val;
+        }
     }
 
     /**
