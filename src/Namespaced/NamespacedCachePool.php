@@ -45,7 +45,7 @@ class NamespacedCachePool implements HierarchicalPoolInterface
     /**
      * Add namespace prefix on the key.
      *
-     * @param array $keys
+     * @param string $key
      */
     private function prefixValue(&$key)
     {
