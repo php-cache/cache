@@ -33,6 +33,11 @@ class NamespacedCachePool implements HierarchicalPoolInterface
     private $namespace;
 
     /**
+     * @type string
+     */
+    private $prefix;
+
+    /**
      * @param HierarchicalPoolInterface $cachePool
      * @param string                    $namespace
      */
@@ -40,6 +45,7 @@ class NamespacedCachePool implements HierarchicalPoolInterface
     {
         $this->cachePool = $cachePool;
         $this->namespace = $namespace;
+        $this->prefix    = HierarchicalPoolInterface::HIERARCHY_SEPARATOR.$this->namespace.HierarchicalPoolInterface::HIERARCHY_SEPARATOR;
     }
 
     /**
@@ -50,7 +56,7 @@ class NamespacedCachePool implements HierarchicalPoolInterface
     private function prefixValue(&$key)
     {
         // |namespace|key
-        $key = HierarchicalPoolInterface::HIERARCHY_SEPARATOR.$this->namespace.HierarchicalPoolInterface::HIERARCHY_SEPARATOR.$key;
+        $key = $this->prefix.$key;
     }
 
     /**
@@ -80,7 +86,23 @@ class NamespacedCachePool implements HierarchicalPoolInterface
     {
         $this->prefixValues($keys);
 
-        return $this->cachePool->getItems($keys);
+        return iterator_to_array($this->yieldWithoutPrefix($this->cachePool->getItems($keys)));
+    }
+
+    /**
+     * @param CacheItemInterface[] $items
+     *
+     * @return \Generator|null
+     */
+    protected function yieldWithoutPrefix($items)
+    {
+        $prefixLength = strlen($this->prefix);
+        foreach ($items as $key => $val) {
+            if (strpos($key, $this->prefix) === 0) {
+                $key = substr($key, $prefixLength);
+            }
+            yield str_replace($this->prefix, '', $key) => $val;
+        }
     }
 
     /**

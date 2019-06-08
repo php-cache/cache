@@ -50,13 +50,19 @@ class NamespacedCachePoolTest extends TestCase
         $namespace   = 'ns';
         $key0        = 'key0';
         $key1        = 'key1';
-        $returnValue = true;
+        // Value returned by the mocked cache pool wrapped by the NamespacedCachePool
+        $mockedValue = ['|ns|key0' => true, '|ns|key1' => true];
+        // Value expected to be returned by the NamespacedCachePool
+        $expectedValue = ['key0' => true, 'key1' => true];
 
         $stub = $this->getHierarchyCacheStub();
-        $stub->expects($this->once())->method('getItems')->with(['|'.$namespace.'|'.$key0, '|'.$namespace.'|'.$key1])->willReturn($returnValue);
+        $stub->expects($this->once())
+            ->method('getItems')
+            ->with(['|'.$namespace.'|'.$key0, '|'.$namespace.'|'.$key1])
+            ->willReturn($mockedValue);
 
         $pool = new NamespacedCachePool($stub, $namespace);
-        $this->assertEquals($returnValue, $pool->getItems([$key0, $key1]));
+        $this->assertEquals($expectedValue, $pool->getItems([$key0, $key1]));
     }
 
     public function testHasItem()

@@ -4,6 +4,8 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+* Fixed namespace prefix being exposed to consumers of the pool when getting multiple items.
+
 ## 1.0.0
 
 ### Added
