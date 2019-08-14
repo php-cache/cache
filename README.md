@@ -13,7 +13,7 @@ Back in 2016, this was the first library supporting PSR-6. We created Symfony bu
 and made many great libraries in the PHP-cache organization. This was a few years ago 
 and the library is not activly maintained. Starting a new project one should consider 
 using the more performant and activly supported 
-[Syfony Cache](https://symfony.com/doc/current/components/cache.html).
+[Symfony Cache](https://symfony.com/doc/current/components/cache.html).
 
 ### Notice
 
