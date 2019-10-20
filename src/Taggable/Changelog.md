@@ -3,7 +3,9 @@
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
 ## UNRELEASED
-
+###Changed
+* Use late static binding when creating a new instance
+* Allow access to the pools
 ## 1.0.0
 
 ### Added

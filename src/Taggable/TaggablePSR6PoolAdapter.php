@@ -42,12 +42,12 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
     /**
      * @type CacheItemPoolInterface
      */
-    private $cachePool;
+    protected $cachePool;
 
     /**
      * @type CacheItemPoolInterface
      */
-    private $tagStorePool;
+    protected $tagStorePool;
 
     /**
      * @param CacheItemPoolInterface $cachePool
@@ -75,7 +75,7 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
             return $cachePool;
         }
 
-        return new self($cachePool, $tagStorePool);
+        return new static($cachePool, $tagStorePool);
     }
 
     /**
