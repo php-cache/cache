@@ -62,6 +62,7 @@ class CacheItem implements PhpCacheItem
     /**
      * @param string        $key
      * @param \Closure|bool $callable or boolean hasValue
+     * @param mixed         $value
      */
     public function __construct($key, $callable = null, $value = null)
     {
@@ -241,8 +242,14 @@ class CacheItem implements PhpCacheItem
     {
         if ($this->callable !== null) {
             // $func will be $adapter->fetchObjectFromCache();
-            $func                      = $this->callable;
-            $result                    = $func();
+            $func = $this->callable;
+
+            try {
+                $result = $func();
+            } catch (\DomainException $exception) {
+                return;
+            }
+
             $this->hasValue            = $result[0];
             $this->value               = $result[1];
             $this->prevTags            = isset($result[2]) ? $result[2] : [];

@@ -11,12 +11,15 @@
 
 namespace Cache\Adapter\Memcache\Tests;
 
+use Cache\Adapter\Common\Tests\Traits\TestNotUnserializableTrait;
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Cache\IntegrationTests\CachePoolTest;
 use Memcache;
 
 class IntegrationPoolTest extends CachePoolTest
 {
+    use TestNotUnserializableTrait;
+
     private $client;
 
     public function createCachePool()

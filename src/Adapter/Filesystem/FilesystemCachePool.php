@@ -64,7 +64,7 @@ class FilesystemCachePool extends AbstractCachePool
         $file  = $this->getFilePath($key);
 
         try {
-            $data = @unserialize($this->filesystem->read($file));
+            $data = parent::unserialize($this->filesystem->read($file));
             if ($data === false) {
                 return $empty;
             }
@@ -159,7 +159,7 @@ class FilesystemCachePool extends AbstractCachePool
             $this->filesystem->write($file, serialize([]));
         }
 
-        return unserialize($this->filesystem->read($file));
+        return parent::unserialize($this->filesystem->read($file));
     }
 
     /**

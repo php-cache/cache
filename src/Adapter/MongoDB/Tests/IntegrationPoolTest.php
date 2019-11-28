@@ -11,12 +11,14 @@
 
 namespace Cache\Adapter\MongoDB\Tests;
 
+use Cache\Adapter\Common\Tests\Traits\TestNotUnserializableTrait;
 use Cache\Adapter\MongoDB\MongoDBCachePool;
 use Cache\IntegrationTests\CachePoolTest;
 
 class IntegrationPoolTest extends CachePoolTest
 {
     use CreateServerTrait;
+    use TestNotUnserializableTrait;
 
     public function createCachePool()
     {

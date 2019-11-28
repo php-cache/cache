@@ -45,7 +45,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
      */
     protected function fetchObjectFromCache($key)
     {
-        if (false === $result = unserialize($this->cache->get($this->getHierarchyKey($key)))) {
+        if (false === $result = parent::unserialize($this->cache->get($this->getHierarchyKey($key)))) {
             return [false, null, [], null];
         }
 

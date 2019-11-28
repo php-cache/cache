@@ -149,11 +149,11 @@ class MongoDBCachePool extends AbstractCachePool
 
     private function freezeValue($value)
     {
-        return static::jsonArmor(serialize($value));
+        return static::jsonArmor(parent::serialize($value));
     }
 
     private function thawValue($value)
     {
-        return unserialize(static::jsonDeArmor($value));
+        return parent::unserialize(static::jsonDeArmor($value));
     }
 }

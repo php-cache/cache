@@ -38,7 +38,7 @@ class MemcacheCachePool extends AbstractCachePool
      */
     protected function fetchObjectFromCache($key)
     {
-        if (false === $result = unserialize($this->cache->get($key))) {
+        if (false === $result = parent::unserialize($this->cache->get($key))) {
             return [false, null, [], null];
         }
 

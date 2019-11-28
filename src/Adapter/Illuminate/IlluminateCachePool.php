@@ -58,11 +58,27 @@ class IlluminateCachePool extends AbstractCachePool implements HierarchicalPoolI
      */
     protected function fetchObjectFromCache($key)
     {
-        if (null === $data = $this->store->get($this->getHierarchyKey($key))) {
-            return [false, null, [], null];
-        }
+        $unserializeCallbackHandler = ini_set('unserialize_callback_func', parent::class.'::handleUnserializeCallback');
 
-        return unserialize($data);
+        try {
+            if (null === $data = $this->store->get($this->getHierarchyKey($key))) {
+                return [false, null, [], null];
+            }
+
+            return parent::unserialize($data);
+        } catch (\Error $e) {
+            $trace = $e->getTrace();
+
+            if (isset($trace[0]['function']) && !isset($trace[0]['class'])) {
+                if ($trace[0]['function'] === 'apcu_fetch' || $trace[0]['function'] === 'apc_fetch') {
+                    throw new \ErrorException($e->getMessage(), $e->getCode(), E_ERROR, $e->getFile(), $e->getLine());
+                }
+            }
+
+            throw $e;
+        } finally {
+            ini_set('unserialize_callback_func', $unserializeCallbackHandler);
+        }
     }
 
     /**
@@ -80,12 +96,15 @@ class IlluminateCachePool extends AbstractCachePool implements HierarchicalPoolI
     {
         $path      = null;
         $keyString = $this->getHierarchyKey($key, $path);
+
         if ($path) {
             if ($this->store->get($path) === null) {
                 $this->store->put($path, 0, 0);
             }
+
             $this->store->increment($path);
         }
+
         $this->clearHierarchyKeyCache();
 
         return $this->store->forget($keyString);
