@@ -79,7 +79,7 @@
         "cache/memcached-adapter": "<1",
         "cache/mongodb-adapter": "<1",
         "cache/array-adapter": "<1",
-        "cache/predis-adapter": "*",
+        "cache/predis-adapter": "<1",
         "cache/redis-adapter": "<1",
         "cache/void-adapter": "<1",
         "cache/psr-6-doctrine-bridge": "<1",
