@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<files psalm-version="3.18.2@19aa905f7c3c7350569999a93c40ae91ae4e1626">
+  <file src="src/Adapter/Memcache/MemcacheCachePool.php">
+    <UndefinedClass occurrences="7">
+      <code>$this-&gt;cache</code>
+      <code>$this-&gt;cache</code>
+      <code>$this-&gt;cache</code>
+      <code>$this-&gt;cache</code>
+      <code>$this-&gt;cache</code>
+      <code>$this-&gt;cache</code>
+      <code>Memcache</code>
+    </UndefinedClass>
+  </file>
+  <file src="src/Adapter/MongoDB/MongoDBCachePool.php">
+    <UndefinedClass occurrences="8">
+      <code>$this-&gt;collection</code>
+      <code>$this-&gt;collection</code>
+      <code>$this-&gt;collection</code>
+      <code>$this-&gt;collection</code>
+      <code>$this-&gt;collection</code>
+      <code>$this-&gt;collection</code>
+      <code>Collection</code>
+      <code>Manager</code>
+    </UndefinedClass>
+    <UndefinedDocblockClass occurrences="1">
+      <code>Collection</code>
+    </UndefinedDocblockClass>
+  </file>
+  <file src="src/SessionHandler/Psr16SessionHandler.php">
+    <InvalidThrow occurrences="1">
+      <code>\Psr\SimpleCache\InvalidArgumentException</code>
+    </InvalidThrow>
+  </file>
+  <file src="src/SessionHandler/Psr6SessionHandler.php">
+    <InvalidThrow occurrences="4">
+      <code>\Psr\Cache\InvalidArgumentException</code>
+      <code>\Psr\Cache\InvalidArgumentException</code>
+      <code>\Psr\Cache\InvalidArgumentException</code>
+      <code>\Psr\Cache\InvalidArgumentException</code>
+    </InvalidThrow>
+  </file>
+  <file src="src/TagInterop/TaggableCacheItemInterface.php">
+    <InvalidThrow occurrences="1">
+      <code>InvalidArgumentException</code>
+    </InvalidThrow>
+  </file>
+  <file src="src/TagInterop/TaggableCacheItemPoolInterface.php">
+    <InvalidThrow occurrences="2">
+      <code>InvalidArgumentException</code>
+      <code>InvalidArgumentException</code>
+    </InvalidThrow>
+  </file>
+</files>

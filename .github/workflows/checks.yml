@@ -1,0 +1,39 @@
+name: Checks
+
+on: pull_request
+
+jobs:
+  composer-normalize:
+    name: Composer Normalize
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up PHP
+        uses: shivammathur/setup-php@2.7.0
+        with:
+          php-version: 7.4
+          coverage: none
+          tools: composer-normalize
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Normalize
+        run: |
+          ok=0
+          echo ::group::Root
+          composer-normalize --dry-run
+          echo ::endgroup::
+          for PACKAGE in $(find src -maxdepth 4 -type f -name composer.json | sort)
+          do
+            echo ::group::$PACKAGE
+            localExit=0
+            composer-normalize $PACKAGE --dry-run || localExit=1
+            ok=$(( $localExit || $ok ))
+            echo ::endgroup::
+            if [ $localExit -ne 0 ]; then
+              echo "::error::$PACKAGE failed"
+            fi
+          done
+
+          exit $ok

@@ -1,0 +1,232 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Call to an undefined method Psr\\\\Cache\\\\CacheItemPoolInterface\\:\\:invalidateTags\\(\\)\\.$#"
+			count: 1
+			path: src/Adapter/Chain/CachePoolChain.php
+
+		-
+			message: "#^Method Cache\\\\Adapter\\\\Common\\\\AbstractCachePool\\:\\:hasItem\\(\\) should return bool but return statement is missing\\.$#"
+			count: 1
+			path: src/Adapter/Common/AbstractCachePool.php
+
+		-
+			message: "#^Method Cache\\\\Adapter\\\\Common\\\\AbstractCachePool\\:\\:clear\\(\\) should return bool but return statement is missing\\.$#"
+			count: 1
+			path: src/Adapter/Common/AbstractCachePool.php
+
+		-
+			message: "#^Method Cache\\\\Adapter\\\\Common\\\\AbstractCachePool\\:\\:deleteItem\\(\\) should return bool but return statement is missing\\.$#"
+			count: 1
+			path: src/Adapter/Common/AbstractCachePool.php
+
+		-
+			message: "#^Parameter \\#1 \\$item of method Cache\\\\Adapter\\\\Common\\\\AbstractCachePool\\:\\:removeTagEntries\\(\\) expects Cache\\\\Adapter\\\\Common\\\\PhpCacheItem, Psr\\\\Cache\\\\CacheItemInterface given\\.$#"
+			count: 1
+			path: src/Adapter/Common/AbstractCachePool.php
+
+		-
+			message: "#^Parameter \\#1 \\$item of method Cache\\\\Adapter\\\\Common\\\\AbstractCachePool\\:\\:saveTags\\(\\) expects Cache\\\\Adapter\\\\Common\\\\PhpCacheItem, Psr\\\\Cache\\\\CacheItemInterface given\\.$#"
+			count: 1
+			path: src/Adapter/Common/AbstractCachePool.php
+
+		-
+			message: "#^Call to an undefined method Psr\\\\Cache\\\\CacheItemInterface\\:\\:getExpirationTimestamp\\(\\)\\.$#"
+			count: 1
+			path: src/Adapter/Common/AbstractCachePool.php
+
+		-
+			message: "#^Method Cache\\\\Adapter\\\\Common\\\\AbstractCachePool\\:\\:save\\(\\) should return bool but return statement is missing\\.$#"
+			count: 1
+			path: src/Adapter/Common/AbstractCachePool.php
+
+		-
+			message: "#^Parameter \\#1 \\$item of method Cache\\\\Adapter\\\\Common\\\\AbstractCachePool\\:\\:storeItemInCache\\(\\) expects Cache\\\\Adapter\\\\Common\\\\PhpCacheItem, Psr\\\\Cache\\\\CacheItemInterface given\\.$#"
+			count: 1
+			path: src/Adapter/Common/AbstractCachePool.php
+
+		-
+			message: "#^PHPDoc tag @param has invalid value \\(\\$default\\)\\: Unexpected token \"\\$default\", expected type at offset 18$#"
+			count: 1
+			path: src/Adapter/Common/AbstractCachePool.php
+
+		-
+			message: "#^PHPDoc tag @param has invalid value \\(\\$items\\)\\: Unexpected token \"\\$items\", expected type at offset 41$#"
+			count: 1
+			path: src/Adapter/Common/AbstractCachePool.php
+
+		-
+			message: "#^Call to function is_int\\(\\) with null will always evaluate to false\\.$#"
+			count: 1
+			path: src/Adapter/Common/CacheItem.php
+
+		-
+			message: "#^Result of \\|\\| is always true\\.$#"
+			count: 1
+			path: src/Adapter/Common/CacheItem.php
+
+		-
+			message: "#^Else branch is unreachable because ternary operator condition is always true\\.$#"
+			count: 1
+			path: src/Adapter/Common/CacheItem.php
+
+		-
+			message: "#^Method Cache\\\\Adapter\\\\Filesystem\\\\FilesystemCachePool\\:\\:removeList\\(\\) should return bool but return statement is missing\\.$#"
+			count: 1
+			path: src/Adapter/Filesystem/FilesystemCachePool.php
+
+		-
+			message: "#^PHPDoc tag @param has invalid value \\(\\$key\\)\\: Unexpected token \"\\$key\", expected type at offset 18$#"
+			count: 1
+			path: src/Adapter/Filesystem/FilesystemCachePool.php
+
+		-
+			message: "#^Parameter \\$collection of method Cache\\\\Adapter\\\\MongoDB\\\\MongoDBCachePool\\:\\:__construct\\(\\) has invalid typehint type MongoDB\\\\Collection\\.$#"
+			count: 2
+			path: src/Adapter/MongoDB/MongoDBCachePool.php
+
+		-
+			message: "#^Return typehint of method Cache\\\\Adapter\\\\MongoDB\\\\MongoDBCachePool\\:\\:createCollection\\(\\) has invalid type MongoDB\\\\Collection\\.$#"
+			count: 1
+			path: src/Adapter/MongoDB/MongoDBCachePool.php
+
+		-
+			message: "#^Instantiated class MongoDB\\\\Collection not found\\.$#"
+			count: 1
+			path: src/Adapter/MongoDB/MongoDBCachePool.php
+
+		-
+			message: "#^Call to method createIndex\\(\\) on an unknown class MongoDB\\\\Collection\\.$#"
+			count: 1
+			path: src/Adapter/MongoDB/MongoDBCachePool.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$tags\\.$#"
+			count: 1
+			path: src/Adapter/MongoDB/MongoDBCachePool.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$expirationTimestamp\\.$#"
+			count: 1
+			path: src/Adapter/MongoDB/MongoDBCachePool.php
+
+		-
+			message: "#^Negated boolean expression is always false\\.$#"
+			count: 1
+			path: src/Adapter/PHPArray/ArrayCachePool.php
+
+		-
+			message: "#^Result of && is always false\\.$#"
+			count: 2
+			path: src/Adapter/PHPArray/ArrayCachePool.php
+
+		-
+			message: "#^Result of && is always false\\.$#"
+			count: 1
+			path: src/Adapter/Redis/RedisCachePool.php
+
+		-
+			message: "#^PHPDoc tag @param has invalid value \\(string &\\$pathKey A cache key for the path\\. If this key is changed everything beyond that path is changed\\.\\)\\: Unexpected token \"&\", expected variable at offset 287$#"
+			count: 1
+			path: src/Adapter/Redis/RedisCachePool.php
+
+		-
+			message: "#^Method Cache\\\\Bridge\\\\Doctrine\\\\DoctrineCacheBridge\\:\\:doGetStats\\(\\) should return array\\|null but return statement is missing\\.$#"
+			count: 1
+			path: src/Bridge/Doctrine/DoctrineCacheBridge.php
+
+		-
+			message: "#^PHPDoc tag @param has invalid value \\(\\$default\\)\\: Unexpected token \"\\$default\", expected type at offset 18$#"
+			count: 1
+			path: src/Bridge/SimpleCache/SimpleCacheBridge.php
+
+		-
+			message: "#^PHPDoc tag @param has invalid value \\(\\$items\\)\\: Unexpected token \"\\$items\", expected type at offset 41$#"
+			count: 1
+			path: src/Bridge/SimpleCache/SimpleCacheBridge.php
+
+		-
+			message: "#^Parameter \\#1 \\$cacheItem of class Cache\\\\Encryption\\\\EncryptedItemDecorator constructor expects Cache\\\\TagInterop\\\\TaggableCacheItemInterface, Psr\\\\Cache\\\\CacheItemInterface given\\.$#"
+			count: 1
+			path: src/Encryption/EncryptedCachePool.php
+
+		-
+			message: "#^PHPDoc tag @param has invalid value \\(string &\\$pathKey A cache key for the path\\. If this key is changed everything beyond that path is changed\\.\\)\\: Unexpected token \"&\", expected variable at offset 287$#"
+			count: 1
+			path: src/Adapter/Illuminate/IlluminateCachePool.php
+
+		-
+			message: "#^PHPDoc tag @param has invalid value \\(string &\\$pathKey A cache key for the path\\. If this key is changed everything beyond that path is changed\\.\\)\\: Unexpected token \"&\", expected variable at offset 287$#"
+			count: 1
+			path: src/Adapter/Memcached/MemcachedCachePool.php
+
+		-
+			message: "#^PHPDoc tag @param has invalid value \\(string &\\$pathKey A cache key for the path\\. If this key is changed everything beyond that path is changed\\.\\)\\: Unexpected token \"&\", expected variable at offset 287$#"
+			count: 1
+			path: src/Adapter/Predis/PredisCachePool.php
+
+		-
+			message: "#^PHPDoc tag @param references unknown parameter\\: \\$keys$#"
+			count: 1
+			path: src/Namespaced/NamespacedCachePool.php
+
+		-
+			message: "#^PHPDoc tag @param references unknown parameter\\: \\$keys$#"
+			count: 1
+			path: src/Prefixed/PrefixedCachePool.php
+
+		-
+			message: "#^PHPDoc tag @param references unknown parameter\\: \\$keys$#"
+			count: 1
+			path: src/Prefixed/PrefixedSimpleCache.php
+
+		-
+			message: "#^Parameter \\#2 \\$time of static method DateTime\\:\\:createFromFormat\\(\\) expects string, \\(float\\|int\\) given\\.$#"
+			count: 1
+			path: src/SessionHandler/Psr16SessionHandler.php
+
+		-
+			message: "#^PHPDoc tag @throws with type Psr\\\\SimpleCache\\\\InvalidArgumentException is not subtype of Throwable$#"
+			count: 1
+			path: src/SessionHandler/Psr16SessionHandler.php
+
+		-
+			message: "#^Parameter \\#2 \\$time of static method DateTime\\:\\:createFromFormat\\(\\) expects string, \\(float\\|int\\) given\\.$#"
+			count: 1
+			path: src/SessionHandler/Psr6SessionHandler.php
+
+		-
+			message: "#^PHPDoc tag @throws with type Psr\\\\Cache\\\\InvalidArgumentException is not subtype of Throwable$#"
+			count: 4
+			path: src/SessionHandler/Psr6SessionHandler.php
+
+		-
+			message: "#^PHPDoc tag @throws with type Psr\\\\Cache\\\\InvalidArgumentException is not subtype of Throwable$#"
+			count: 1
+			path: src/TagInterop/TaggableCacheItemInterface.php
+
+		-
+			message: "#^PHPDoc tag @throws with type Psr\\\\Cache\\\\InvalidArgumentException is not subtype of Throwable$#"
+			count: 2
+			path: src/TagInterop/TaggableCacheItemPoolInterface.php
+
+		-
+			message: "#^Parameter \\#1 \\$item of method Cache\\\\Taggable\\\\TaggablePSR6PoolAdapter\\:\\:removeTagEntries\\(\\) expects Cache\\\\TagInterop\\\\TaggableCacheItemInterface, Psr\\\\Cache\\\\CacheItemInterface given\\.$#"
+			count: 1
+			path: src/Taggable/TaggablePSR6PoolAdapter.php
+
+		-
+			message: "#^Parameter \\#1 \\$item of method Cache\\\\Taggable\\\\TaggablePSR6PoolAdapter\\:\\:saveTags\\(\\) expects Cache\\\\Taggable\\\\TaggablePSR6ItemAdapter, Psr\\\\Cache\\\\CacheItemInterface given\\.$#"
+			count: 2
+			path: src/Taggable/TaggablePSR6PoolAdapter.php
+
+		-
+			message: "#^Call to an undefined method Psr\\\\Cache\\\\CacheItemInterface\\:\\:unwrap\\(\\)\\.$#"
+			count: 2
+			path: src/Taggable/TaggablePSR6PoolAdapter.php
+
+		-
+			message: "#^Method Cache\\\\Taggable\\\\TaggablePSR6PoolAdapter\\:\\:commit\\(\\) should return bool but return statement is missing\\.$#"
+			count: 1
+			path: src/Taggable/TaggablePSR6PoolAdapter.php
+
