@@ -48,7 +48,8 @@ class Psr16SessionHandler extends AbstractSessionHandler
 
         if ($diff = array_diff(array_keys($options), ['prefix', 'ttl'])) {
             throw new \InvalidArgumentException(sprintf(
-                'The following options are not supported "%s"', implode(', ', $diff)
+                'The following options are not supported "%s"',
+                implode(', ', $diff)
             ));
         }
 
