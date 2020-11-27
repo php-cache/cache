@@ -11,6 +11,7 @@
         <directory name="src" />
         <ignoreFiles>
             <directory name="src/Adapter/*/Tests" />
+            <directory name="src/Adapter/MongoDB" />
             <directory name="src/Bridge/*/Tests" />
             <directory name="src/Encryption/Tests" />
             <directory name="src/Hierarchy/Tests" />
