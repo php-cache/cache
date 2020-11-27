@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<psalm
+    errorLevel="8"
+    resolveFromConfigFile="true"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+    errorBaseline="psalm.baseline.xml"
+>
+    <projectFiles>
+        <directory name="src" />
+        <ignoreFiles>
+            <directory name="src/Adapter/*/Tests" />
+            <directory name="src/Bridge/*/Tests" />
+            <directory name="src/Encryption/Tests" />
+            <directory name="src/Hierarchy/Tests" />
+            <directory name="src/Namespaced/Tests" />
+            <directory name="src/Prefixed/Tests" />
+            <directory name="src/SessionHandler/Tests" />
+            <directory name="src/Taggable/Tests" />
+            <directory name="src/Util/Tests" />
+            <directory name="vendor" />
+        </ignoreFiles>
+    </projectFiles>
+</psalm>
