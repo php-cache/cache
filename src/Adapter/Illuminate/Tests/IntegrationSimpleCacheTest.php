@@ -16,4 +16,10 @@ use Cache\IntegrationTests\SimpleCacheTest;
 class IntegrationSimpleCacheTest extends SimpleCacheTest
 {
     use CreatePoolTrait;
+
+    protected $skippedTests = [
+        'testDelete'                  => 'Version 5.8 does not return true when deleting non-existent item.',
+        'testDeleteMultiple'          => 'Version 5.8 does not return true when deleting non-existent item.',
+        'testDeleteMultipleGenerator' => 'Version 5.8 does not return true when deleting non-existent item.',
+    ];
 }
