@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  pull_request: ~
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4', '8.0']
+
+    services:
+      redis:
+        image: redis:6.0.0
+        ports:
+          - 6379:6379
+      redis-cluster:
+        image: grokzen/redis-cluster:5.0.4
+        ports:
+          - 7000:7000
+          - 7001:7001
+          - 7002:7002
+        env:
+          STANDALONE: 1
+      memcached:
+        image: memcached:1.6.5
+        ports:
+          - 11211:11211
+      mongodb:
+        image: mongo
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: Set up PHP
+        uses: shivammathur/setup-php@2.7.0
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: pecl
+          extensions: redis, memcached, mongodb, apcu, apc
+          ini-values: apc.enable_cli=1
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Download dependencies
+        env:
+          PHP_VERSION: ${{ matrix.php }}
+        run: |
+          CURRENT_DIR=$(pwd)
+          ok=0
+          for PACKAGE in $(find src -maxdepth 4 -type f -name phpunit.xml.dist -printf '%h\n' | sort)
+          do
+            echo ::group::$PACKAGE
+            echo "$CURRENT_DIR/$PACKAGE"
+            cd "$CURRENT_DIR/$PACKAGE"
+
+            localExit=0
+            if [ $PHP_VERSION = '8.0' ]; then
+              COMPOSER_OPTIONS=' --ignore-platform-req=php'
+            fi
+            composer update --no-interaction --prefer-dist --optimize-autoloader $COMPOSER_OPTIONS || localExit=1
+            ok=$(( $localExit || $ok ))
+            echo ::endgroup::
+            if [ $localExit -ne 0 ]; then
+              echo "::error::$PACKAGE error"
+            fi
+          done
+
+          if [ $PHP_VERSION = '5.6' ]; then
+            exit 0
+          fi
+
+          exit $ok
+
+      - name: Run tests
+        run: |
+          CURRENT_DIR=$(pwd)
+          ok=0
+          for PACKAGE in $(find src -maxdepth 4 -type f -name phpunit.xml.dist -printf '%h\n' | sort)
+          do
+            echo ::group::$PACKAGE
+            echo "$CURRENT_DIR/$PACKAGE"
+            cd "$CURRENT_DIR/$PACKAGE"
+
+            localExit=0
+            ./vendor/bin/phpunit 2>&1 || localExit=1
+            ok=$(( $localExit || $ok ))
+            echo ::endgroup::
+            if [ $localExit -ne 0 ]; then
+              echo "::error::$PACKAGE failed"
+            fi
+          done
+
+          exit $ok

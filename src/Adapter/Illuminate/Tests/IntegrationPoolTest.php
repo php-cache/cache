@@ -16,4 +16,9 @@ use Cache\IntegrationTests\CachePoolTest;
 class IntegrationPoolTest extends CachePoolTest
 {
     use CreatePoolTrait;
+
+    protected $skippedTests = [
+        'testDeleteItem'              => 'Version 5.8 does not return true when deleting non-existent item.',
+        'testDeleteItems'             => 'Version 5.8 does not return true when deleting non-existent item.',
+    ];
 }

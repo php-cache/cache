@@ -343,8 +343,11 @@ class CachePoolChain implements CacheItemPoolInterface, TaggableCacheItemPoolInt
 
         $this->log(
             'warning',
-            sprintf('Removing pool "%s" from chain because it threw an exception when executing "%s"', $poolKey,
-                $operation),
+            sprintf(
+                'Removing pool "%s" from chain because it threw an exception when executing "%s"',
+                $poolKey,
+                $operation
+            ),
             ['exception' => $exception]
         );
 

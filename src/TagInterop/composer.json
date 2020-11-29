@@ -8,7 +8,7 @@
         "tag",
         "psr"
     ],
-    "homepage": "http://www.php-cache.com/en/latest/",
+    "homepage": "https://www.php-cache.com/en/latest/",
     "license": "MIT",
     "authors": [
         {
@@ -23,7 +23,7 @@
         }
     ],
     "require": {
-        "php": "^5.5 || ^7.0",
+        "php": "^5.5 || ^7.0 || ^8.0",
         "psr/cache": "^1.0"
     },
     "autoload": {

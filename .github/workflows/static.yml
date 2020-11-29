@@ -1,0 +1,56 @@
+name: Static analysis
+
+on:
+  pull_request: ~
+  push:
+    branches:
+      - master
+
+jobs:
+  phpstan:
+    name: PHPStan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up PHP
+        uses: shivammathur/setup-php@2.7.0
+        with:
+          php-version: '7.4'
+          coverage: none
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Download dependencies
+        run: |
+          composer update --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: PHPStan
+        uses: docker://oskarstark/phpstan-ga:0.12.48
+        with:
+          entrypoint: /composer/vendor/bin/phpstan
+          args: analyze --no-progress
+
+  psalm:
+    name: Psalm
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          extensions: redis, memcached, apcu
+          tools: composer:v2
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Download dependencies
+        run: |
+          composer require --dev --no-update psalm/phar:3.16
+          composer update --no-interaction --prefer-dist
+
+      - name: Psalm
+        run: |
+          ./vendor/bin/psalm.phar --version
+          ./vendor/bin/psalm.phar --output-format=github --no-progress --show-info=false --stats
