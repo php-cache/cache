@@ -44,11 +44,9 @@ class IlluminateCachePool extends AbstractCachePool implements HierarchicalPoolI
      */
     protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
-        $ttl = null === $ttl ? 0 : $ttl / 60;
-
         $data = serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]);
 
-        $this->store->put($this->getHierarchyKey($item->getKey()), $data, $ttl);
+        $this->store->put($this->getHierarchyKey($item->getKey()), $data, (int)$ttl);
 
         return true;
     }
