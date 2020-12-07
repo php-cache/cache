@@ -4,6 +4,12 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+## 1.1.0
+
+### Added
+
+* Support for PHP 8
+
 ## 1.0.0
 
 ### Added
@@ -12,7 +18,7 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ### Changed
 
-* We do not throw `Cache\Adapter\Common\Exception\InvalidArgumentException` anymore. Instead we throw 
+* We do not throw `Cache\Adapter\Common\Exception\InvalidArgumentException` anymore. Instead we throw
 `Cache\Taggable\Exception\InvalidArgumentException`. Both exceptions do implement `Psr\Cache\InvalidArgumentException`
 * We do not require `cache/adapter-common`
 
@@ -34,7 +40,7 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ### Changed
 
-* The behavior of `TaggablePSR6ItemAdapter::getTags()` has changed. It will not return the tags stored in the cache storage. 
+* The behavior of `TaggablePSR6ItemAdapter::getTags()` has changed. It will not return the tags stored in the cache storage.
 
 ### Removed
 
