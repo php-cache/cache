@@ -1,8 +1,14 @@
 # Change Log
 
-The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release. 
+The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
 ## UNRELEASED
+
+## 1.1.0
+
+### Added
+
+* Support for PHP 8
 
 ## 1.0.0
 
@@ -25,13 +31,13 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ### Added
 
-* Support for the new `TaggableCacheItemPoolInterface`. 
+* Support for the new `TaggableCacheItemPoolInterface`.
 
 ## 0.4.0
 
 ### Changed
 
-* `CachePoolChain::getPools` is protected instead of public 
+* `CachePoolChain::getPools` is protected instead of public
 
 ## 0.3.1
 

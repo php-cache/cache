@@ -1,6 +1,6 @@
 # Change Log
 
-The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release. 
+The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
 ## UNRELEASED
 
@@ -8,11 +8,12 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ### Added
 
+* Support for PHP 8
 * New decorator PrefixedSimpleCache to allow usage of PSR-16 compatible adapters.
 
 ## 1.0.0
 
-### Removed 
+### Removed
 
 * Dependency on `cache/hierarchical-cache`
 
