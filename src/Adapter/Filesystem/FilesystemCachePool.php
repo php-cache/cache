@@ -41,10 +41,32 @@ class FilesystemCachePool extends AbstractCachePool
      */
     public function __construct(FilesystemInterface $filesystem, $folder = 'cache')
     {
-        $this->folder = $folder;
+        $this->setFolder($folder);
+        $this->setFilesystem($filesystem);
+        $this->getFilesystem()->createDir($this->getFolder());
+    }
 
+    /**
+     * Get folder
+     * @return string
+     */
+    public function getFolder()
+    {
+        return $this->folder;
+    }
+
+    /**
+     * Get Filesystem (Flysystem)
+     * @return \League\Flysystem\FilesystemInterface
+     */
+    public function getFilesystem()
+    {
+        return $this->filesystem;
+    }
+
+    public function setFilesystem(FilesystemInterface $filesystem)
+    {
         $this->filesystem = $filesystem;
-        $this->filesystem->createDir($this->folder);
     }
 
     /**
@@ -52,7 +74,7 @@ class FilesystemCachePool extends AbstractCachePool
      */
     public function setFolder($folder)
     {
-        $this->folder = $folder;
+        $this->folder = trim($folder, '/');
     }
 
     /**
