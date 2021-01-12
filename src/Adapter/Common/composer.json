@@ -1,16 +1,14 @@
 {
     "name": "cache/adapter-common",
-    "description": "Common classes for PSR-6 adapters",
     "type": "library",
-    "license": "MIT",
-    "minimum-stability": "dev",
-    "prefer-stable": true,
+    "description": "Common classes for PSR-6 adapters",
     "keywords": [
         "cache",
         "psr-6",
         "tag"
     ],
     "homepage": "http://www.php-cache.com/en/latest/",
+    "license": "MIT",
     "authors": [
         {
             "name": "Aaron Scherer",
@@ -25,14 +23,19 @@
     ],
     "require": {
         "php": "^5.6 || ^7.0 || ^8.0",
+        "cache/tag-interop": "^1.0",
         "psr/cache": "^1.0",
-        "psr/simple-cache": "^1.0",
         "psr/log": "^1.0",
-        "cache/tag-interop": "^1.0"
+        "psr/simple-cache": "^1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^5.7.21",
-        "cache/integration-tests": "^0.16"
+        "cache/integration-tests": "^0.16",
+        "phpunit/phpunit": "^5.7.21"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.1-dev"
+        }
     },
     "autoload": {
         "psr-4": {
@@ -47,9 +50,6 @@
             "/Tests/"
         ]
     },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "1.1-dev"
-        }
-    }
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
