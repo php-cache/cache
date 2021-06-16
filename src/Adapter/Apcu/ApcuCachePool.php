@@ -84,7 +84,7 @@ class ApcuCachePool extends AbstractCachePool
         if ($ttl < 0) {
             return false;
         }
-        
+
         if ($ttl === null) {
             $ttl = 0;
         }
