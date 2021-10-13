@@ -38,13 +38,13 @@ class FilesystemCachePoolTest extends TestCase
         $item->set('data');
         $item->expiresAt(new \DateTime('now'));
         $pool->save($item);
-        $this->assertTrue($this->getFilesystem()->has('cache/test_ttl_null'));
+        $this->assertTrue($this->getFilesystem()->fileExists('cache/test_ttl_null'));
 
         sleep(1);
 
         $item = $pool->getItem('test_ttl_null');
         $this->assertFalse($item->isHit());
-        $this->assertFalse($this->getFilesystem()->has('cache/test_ttl_null'));
+        $this->assertFalse($this->getFilesystem()->fileExists('cache/test_ttl_null'));
     }
 
     public function testChangeFolder()
@@ -53,7 +53,7 @@ class FilesystemCachePoolTest extends TestCase
         $pool->setFolder('foobar');
 
         $pool->save($pool->getItem('test_path'));
-        $this->assertTrue($this->getFilesystem()->has('foobar/test_path'));
+        $this->assertTrue($this->getFilesystem()->fileExists('foobar/test_path'));
     }
 
     public function testCorruptedCacheFileHandledNicely()
