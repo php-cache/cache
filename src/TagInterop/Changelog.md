@@ -2,6 +2,11 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 1.0.2
+
+* Support PHP 8.1
+* Update dependencies
+
 ## 1.0.1
 
 * Support PHP 8
