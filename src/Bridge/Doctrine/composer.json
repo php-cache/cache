@@ -1,14 +1,13 @@
 {
     "name": "cache/psr-6-doctrine-bridge",
-    "type": "library",
     "description": "PSR-6 Doctrine bridge",
+    "license": "MIT",
+    "type": "library",
     "keywords": [
         "cache",
         "psr-6",
         "doctrine"
     ],
-    "homepage": "http://www.php-cache.com/en/latest/",
-    "license": "MIT",
     "authors": [
         {
             "name": "Aaron Scherer",
@@ -16,6 +15,7 @@
             "homepage": "https://github.com/aequasi"
         }
     ],
+    "homepage": "http://www.php-cache.com/en/latest/",
     "require": {
         "php": "^5.6 || ^7.0 || ^8.0",
         "doctrine/cache": "^1.6",
@@ -26,11 +26,8 @@
         "mockery/mockery": "^1.0",
         "phpunit/phpunit": "^5.7.21"
     },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "1.1-dev"
-        }
-    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "Cache\\Bridge\\Doctrine\\": ""
@@ -39,6 +36,9 @@
             "/Tests/"
         ]
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.1-dev"
+        }
+    }
 }
