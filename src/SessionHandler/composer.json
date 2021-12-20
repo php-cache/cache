@@ -1,14 +1,13 @@
 {
     "name": "cache/session-handler",
-    "type": "library",
     "description": "An implementation of PHP's SessionHandlerInterface that allows PSR-6",
+    "license": "MIT",
+    "type": "library",
     "keywords": [
         "cache",
         "psr-6",
         "session handler"
     ],
-    "homepage": "http://www.php-cache.com/en/latest/",
-    "license": "MIT",
     "authors": [
         {
             "name": "Aaron Scherer",
@@ -26,6 +25,7 @@
             "homepage": "https://github.com/prisis"
         }
     ],
+    "homepage": "http://www.php-cache.com/en/latest/",
     "require": {
         "php": "^5.6 || ^7.0 || ^8.0",
         "psr/cache": "^1.0",
@@ -35,11 +35,8 @@
         "cache/array-adapter": "^1.0",
         "phpunit/phpunit": "^5.7.21"
     },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "1.1-dev"
-        }
-    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "Cache\\SessionHandler\\": ""
@@ -48,6 +45,9 @@
             "/Tests/"
         ]
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.1-dev"
+        }
+    }
 }

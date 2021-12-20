@@ -1,7 +1,8 @@
 {
     "name": "cache/util",
-    "type": "library",
     "description": "PSR-6 and PSR-16 Caching Utilities",
+    "license": "MIT",
+    "type": "library",
     "keywords": [
         "cache",
         "psr6",
@@ -9,8 +10,6 @@
         "utilities",
         "util"
     ],
-    "homepage": "http://www.php-cache.com/en/latest/",
-    "license": "MIT",
     "authors": [
         {
             "name": "Tobias Nyholm",
@@ -23,6 +22,7 @@
             "homepage": "https://github.com/ragboyjr"
         }
     ],
+    "homepage": "http://www.php-cache.com/en/latest/",
     "require": {
         "php": "^5.6 || ^7.0 || ^8.0",
         "psr/cache": "^1.0"
@@ -31,11 +31,8 @@
         "cache/array-adapter": "^1.0",
         "phpunit/phpunit": "^5.7.21"
     },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "1.1-dev"
-        }
-    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "Cache\\Util\\": ""
@@ -47,6 +44,9 @@
             "/Tests/"
         ]
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.1-dev"
+        }
+    }
 }

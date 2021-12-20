@@ -1,15 +1,14 @@
 {
     "name": "cache/tag-interop",
-    "type": "library",
     "description": "Framework interoperable interfaces for tags",
+    "license": "MIT",
+    "type": "library",
     "keywords": [
         "cache",
         "psr6",
         "tag",
         "psr"
     ],
-    "homepage": "https://www.php-cache.com/en/latest/",
-    "license": "MIT",
     "authors": [
         {
             "name": "Tobias Nyholm",
@@ -22,18 +21,19 @@
             "homepage": "https://github.com/nicolas-grekas"
         }
     ],
+    "homepage": "https://www.php-cache.com/en/latest/",
     "require": {
         "php": "^5.5 || ^7.0 || ^8.0",
         "psr/cache": "^1.0"
     },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "1.1-dev"
-        }
-    },
     "autoload": {
         "psr-4": {
             "Cache\\TagInterop\\": ""
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.1-dev"
         }
     }
 }

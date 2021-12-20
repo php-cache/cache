@@ -1,15 +1,14 @@
 {
     "name": "cache/doctrine-adapter",
-    "type": "library",
     "description": "A PSR-6 cache implementation using Doctrine. This implementation supports tags",
+    "license": "MIT",
+    "type": "library",
     "keywords": [
         "cache",
         "psr-6",
         "doctrine",
         "tag"
     ],
-    "homepage": "http://www.php-cache.com/en/latest/",
-    "license": "MIT",
     "authors": [
         {
             "name": "Aaron Scherer",
@@ -22,6 +21,7 @@
             "homepage": "https://github.com/nyholm"
         }
     ],
+    "homepage": "http://www.php-cache.com/en/latest/",
     "require": {
         "php": "^5.6 || ^7.0 || ^8.0",
         "cache/adapter-common": "^1.0",
@@ -29,14 +29,14 @@
         "psr/cache": "^1.0",
         "psr/simple-cache": "^1.0"
     },
-    "provide": {
-        "psr/cache-implementation": "^1.0",
-        "psr/simple-cache-implementation": "^1.0"
-    },
     "require-dev": {
         "cache/integration-tests": "^0.16",
         "mockery/mockery": "^1.0",
         "phpunit/phpunit": "^5.7.21"
+    },
+    "provide": {
+        "psr/cache-implementation": "^1.0",
+        "psr/simple-cache-implementation": "^1.0"
     },
     "suggest": {
         "ext-apc": "Allows for caching with Apc",
@@ -44,11 +44,8 @@
         "ext-memcached": "Allows for caching with Memcached",
         "ext-redis": "Allows for caching with Redis"
     },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "1.1-dev"
-        }
-    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "Cache\\Adapter\\Doctrine\\": ""
@@ -57,6 +54,9 @@
             "/Tests/"
         ]
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.1-dev"
+        }
+    }
 }
