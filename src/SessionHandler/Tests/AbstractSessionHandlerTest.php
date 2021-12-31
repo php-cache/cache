@@ -11,12 +11,14 @@
 
 namespace Cache\SessionHandler\Tests;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * @author Aaron Scherer <aequasi@gmail.com>
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  * @author Daniel Bannert <d.bannert@anolilab.de>
  */
-abstract class AbstractSessionHandlerTest extends \PHPUnit_Framework_TestCase
+abstract class AbstractSessionHandlerTest extends TestCase
 {
     const TTL    = 100;
     const PREFIX = 'pre';

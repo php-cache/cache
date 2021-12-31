@@ -297,7 +297,7 @@ class CachePoolChain implements CacheItemPoolInterface, TaggableCacheItemPoolInt
     /**
      * @param LoggerInterface $logger
      */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }
