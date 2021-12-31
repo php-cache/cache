@@ -33,7 +33,7 @@
         "cache/adapter-common": "^1.0",
         "cache/hierarchical-cache": "^1.0",
         "illuminate/cache": "^5.4 || ^5.5 || ^5.6",
-        "psr/cache": "^1.0",
+        "psr/cache": "^1.0 || ^2.0",
         "psr/simple-cache": "^1.0"
     },
     "require-dev": {
