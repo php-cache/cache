@@ -12,6 +12,7 @@
 namespace Cache\Adapter\Filesystem\Tests;
 
 use PHPUnit\Framework\TestCase;
+use Psr\Cache\InvalidArgumentException;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
@@ -20,11 +21,10 @@ class FilesystemCachePoolTest extends TestCase
 {
     use CreatePoolTrait;
 
-    /**
-     * @expectedException \Psr\Cache\InvalidArgumentException
-     */
     public function testInvalidKey()
     {
+        $this->expectException(InvalidArgumentException::class);
+
         $pool = $this->createCachePool();
 
         $pool->getItem('test%string')->get();
