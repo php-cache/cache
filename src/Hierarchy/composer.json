@@ -23,12 +23,12 @@
     ],
     "homepage": "http://www.php-cache.com/en/latest/",
     "require": {
-        "php": "^5.6 || ^7.0 || ^8.0",
+        "php": "^7.1 || ^8.0",
         "cache/adapter-common": "^1.0",
         "psr/cache": "^1.0 || ^2.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^5.7.21"
+        "phpunit/phpunit": "^7.5.20 || ^9.5.10"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

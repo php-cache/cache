@@ -28,13 +28,13 @@
     ],
     "homepage": "http://www.php-cache.com/en/latest/",
     "require": {
-        "php": "^5.6 || ^7.0 || ^8.0",
+        "php": "^7.1 || ^8.0",
         "cache/tag-interop": "^1.0",
         "psr/cache": "^1.0 || ^2.0"
     },
     "require-dev": {
-        "cache/integration-tests": "^0.16",
-        "phpunit/phpunit": "^5.7.21",
+        "cache/integration-tests": "^0.17",
+        "phpunit/phpunit": "^7.5.20 || ^9.5.10",
         "symfony/cache": "^3.1"
     },
     "minimum-stability": "dev",

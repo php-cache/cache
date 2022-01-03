@@ -17,14 +17,14 @@
     ],
     "homepage": "http://www.php-cache.com/en/latest/",
     "require": {
-        "php": "^5.6 || ^7.0 || ^8.0",
+        "php": "^7.1 || ^8.0",
         "doctrine/cache": "^1.6",
         "psr/cache-implementation": "^1.0"
     },
     "require-dev": {
         "cache/doctrine-adapter": "^1.0",
         "mockery/mockery": "^1.0",
-        "phpunit/phpunit": "^5.7.21"
+        "phpunit/phpunit": "^7.5.20 || ^9.5.10"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
