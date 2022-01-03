@@ -28,7 +28,7 @@ class IntegrationTest extends TestCase
      */
     private $cache;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $cache = new Memcached();
         $cache->addServer('localhost', 11211);
@@ -36,7 +36,7 @@ class IntegrationTest extends TestCase
         $this->cache = new MemcachedCachePool($cache);
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         if ($this->cache !== null) {
             $this->cache->clear();

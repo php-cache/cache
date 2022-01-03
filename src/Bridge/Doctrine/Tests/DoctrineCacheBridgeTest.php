@@ -37,7 +37,7 @@ class DoctrineCacheBridgeTest extends TestCase
      */
     private $itemMock;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
