@@ -16,4 +16,8 @@ use Cache\IntegrationTests\SimpleCacheTest;
 class IntegrationSimpleCacheTest extends SimpleCacheTest
 {
     use CreatePoolTrait;
+
+    protected $skippedTests = [
+        'testBasicUsageWithLongKey' => 'Long keys are not supported.',
+    ];
 }

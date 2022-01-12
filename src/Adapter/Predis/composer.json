@@ -24,7 +24,7 @@
     ],
     "homepage": "http://www.php-cache.com/en/latest/",
     "require": {
-        "php": "^7.1 || ^8.0",
+        "php": ">=7.4",
         "cache/adapter-common": "^1.0",
         "cache/hierarchical-cache": "^1.0",
         "predis/predis": "^1.1",

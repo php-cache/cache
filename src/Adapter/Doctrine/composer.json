@@ -23,7 +23,7 @@
     ],
     "homepage": "http://www.php-cache.com/en/latest/",
     "require": {
-        "php": "^7.1 || ^8.0",
+        "php": ">=7.4",
         "cache/adapter-common": "^1.0",
         "doctrine/cache": "^1.6",
         "psr/cache": "^1.0 || ^2.0",

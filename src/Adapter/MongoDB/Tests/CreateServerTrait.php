@@ -37,7 +37,7 @@ trait CreateServerTrait
         return $this->collection;
     }
 
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         if (!class_exists('\MongoDB\Collection')) {
             static::markTestSkipped('MonogoDB extension not installed.');

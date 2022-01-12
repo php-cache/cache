@@ -44,6 +44,7 @@ class IntegrationPoolTest extends BaseTest
         'testSaveDeferredWhenChangingValues' => 'Void adapter does not save,',
         'testSavingObject'                   => 'Void adapter does not save,',
         'testSaveDeferredOverwrite'          => 'Void adapter does not save,',
+        'testBasicUsageWithLongKey'          => 'Void adapter does not save.',
     ];
 
     public function createCachePool()

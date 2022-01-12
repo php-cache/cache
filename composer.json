@@ -21,7 +21,7 @@
     ],
     "homepage": "http://www.php-cache.com/en/latest/",
     "require": {
-        "php": "^7.1 || ^8.0",
+        "php": ">=7.4",
         "doctrine/cache": "^1.3",
         "league/flysystem": "^1.0",
         "psr/cache": "^1.0 || ^2.0",
