@@ -2,7 +2,6 @@
 
 [![Gitter](https://badges.gitter.im/php-cache/cache.svg)](https://gitter.im/php-cache/cache?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![codecov.io](https://codecov.io/github/php-cache/cache/coverage.svg?branch=master)](https://codecov.io/github/php-cache/cache?branch=master)
-[![Build Status](https://travis-ci.org/php-cache/cache.svg?branch=master)](https://travis-ci.org/php-cache/cache)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 [![StyleCI](https://styleci.io/repos/50789153/shield)](https://styleci.io/repos/50789153)
 
