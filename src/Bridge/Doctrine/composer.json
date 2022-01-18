@@ -18,7 +18,7 @@
     "homepage": "http://www.php-cache.com/en/latest/",
     "require": {
         "php": ">=7.4",
-        "doctrine/cache": "^1.6",
+        "doctrine/cache": "^1.6 || ^2.0",
         "psr/cache-implementation": "^1.0"
     },
     "require-dev": {
