@@ -40,7 +40,7 @@ class FilesystemCachePool extends AbstractCachePool
 
     /**
      * @param FilesystemOperator $filesystem
-     * @param string              $folder
+     * @param string             $folder
      */
     public function __construct(FilesystemOperator $filesystem, $folder = 'cache')
     {
@@ -96,13 +96,13 @@ class FilesystemCachePool extends AbstractCachePool
     {
         try {
             $this->filesystem->deleteDirectory($this->folder);
-        } catch(UnableToDeleteDirectory $e) {
+        } catch (UnableToDeleteDirectory $e) {
             return false;
         }
 
         try {
             $this->filesystem->createDirectory($this->folder);
-        } catch(UnableToCreateDirectory $e) {
+        } catch (UnableToCreateDirectory $e) {
             return false;
         }
 
@@ -131,8 +131,10 @@ class FilesystemCachePool extends AbstractCachePool
         );
 
         $file = $this->getFilePath($item->getKey());
+
         try {
             $this->filesystem->write($file, $data);
+
             return true;
         } catch (UnableToWriteFile $e) {
             return false;
@@ -188,11 +190,11 @@ class FilesystemCachePool extends AbstractCachePool
 
         try {
             $this->filesystem->write($this->getFilePath($name), serialize($list));
+
             return true;
         } catch (UnableToWriteFile $e) {
             return false;
         }
-
     }
 
     /**
@@ -206,8 +208,10 @@ class FilesystemCachePool extends AbstractCachePool
                 unset($list[$i]);
             }
         }
+
         try {
             $this->filesystem->write($this->getFilePath($name), serialize($list));
+
             return true;
         } catch (UnableToWriteFile $e) {
             return false;
@@ -223,6 +227,7 @@ class FilesystemCachePool extends AbstractCachePool
     {
         try {
             $this->filesystem->delete($this->getFilePath($key));
+
             return true;
         } catch (UnableToDeleteFile $e) {
             return false;
