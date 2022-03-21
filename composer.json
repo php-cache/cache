@@ -59,27 +59,6 @@
         "cache/util": "^1",
         "cache/void-adapter": "^1"
     },
-    "conflict": {
-        "cache/adapter-common": "<1",
-        "cache/apc-adapter": "<1",
-        "cache/apcu-adapter": "<1",
-        "cache/array-adapter": "<1",
-        "cache/chain-adapter": "<1",
-        "cache/doctrine-adapter": "<1",
-        "cache/filesystem-adapter": "<1",
-        "cache/hierarchical-cache": "<1",
-        "cache/illuminate-adapter": "<1",
-        "cache/memcache-adapter": "<1",
-        "cache/memcached-adapter": "<1",
-        "cache/mongodb-adapter": "<1",
-        "cache/predis-adapter": "<1",
-        "cache/psr-6-doctrine-bridge": "<1",
-        "cache/redis-adapter": "<1",
-        "cache/session-handler": "<1",
-        "cache/taggable-cache": "<1",
-        "cache/util": "<1",
-        "cache/void-adapter": "<1"
-    },
     "suggest": {
         "ext-apc": "APC extension is required to use the APC Adapter",
         "ext-apcu": "APCu extension is required to use the APCu Adapter",
