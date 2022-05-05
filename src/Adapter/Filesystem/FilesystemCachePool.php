@@ -159,7 +159,13 @@ class FilesystemCachePool extends AbstractCachePool
             $this->filesystem->write($file, serialize([]));
         }
 
-        return unserialize($this->filesystem->read($file));
+        $data = $this->filesystem->read($file);
+        if ($data === false) {
+            $this->filesystem->update($file, serialize([]));
+            $data = [];
+        }
+
+        return unserialize($data);
     }
 
     /**
