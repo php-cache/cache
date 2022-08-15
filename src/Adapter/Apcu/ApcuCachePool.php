@@ -85,6 +85,10 @@ class ApcuCachePool extends AbstractCachePool
             return false;
         }
 
+        if ($ttl === null) {
+            $ttl = 0;
+        }
+
         return apcu_store($item->getKey(), serialize([$item->get(), $item->getTags(), $item->getExpirationTimestamp()]), $ttl);
     }
 
