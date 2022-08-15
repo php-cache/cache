@@ -7,7 +7,7 @@
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
 This is a bridge that converts a PSR-6 cache implementation to PSR-16 (SimpleCache). It is a part of the PHP Cache organisation. To read about 
-features like tagging and hierarchy support please read the shared documentation at [www.php-cache.com](http://www.php-cache.com). 
+features like tagging and hierarchy support please read the shared documentation at [www.php-cache.com](https://www.php-cache.com). 
 
 ### Install
 
@@ -17,7 +17,7 @@ composer require cache/simple-cache-bridge
 
 ### Use
 
-You need an existing PSR-6 pool as a cnstructor argument to the bridge. 
+You need an existing PSR-6 pool as a constructor argument to the bridge. 
 
 ```php
 $psr6pool = new ArrayCachePool();
