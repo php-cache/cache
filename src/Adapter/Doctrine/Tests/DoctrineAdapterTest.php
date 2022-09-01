@@ -40,7 +40,7 @@ class DoctrineAdapterTest extends TestCase
      */
     private $mockDoctrine;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->mockItem     = m::mock(CacheItem::class);
         $this->mockDoctrine = m::mock(Cache::class);

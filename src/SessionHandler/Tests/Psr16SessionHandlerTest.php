@@ -25,7 +25,7 @@ class Psr16SessionHandlerTest extends AbstractSessionHandlerTest
      */
     private $psr16;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

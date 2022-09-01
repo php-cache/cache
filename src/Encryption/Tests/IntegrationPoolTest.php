@@ -22,6 +22,10 @@ use League\Flysystem\Filesystem;
 
 class IntegrationPoolTest extends CachePoolTest
 {
+    protected $skippedTests = [
+        'testBasicUsageWithLongKey' => 'Long keys are not supported.',
+    ];
+
     /**
      * @type Filesystem
      */

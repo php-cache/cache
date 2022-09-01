@@ -16,4 +16,8 @@ use Cache\IntegrationTests\CachePoolTest;
 class IntegrationPoolTest extends CachePoolTest
 {
     use CreatePoolTrait;
+
+    protected $skippedTests = [
+        'testBasicUsageWithLongKey' => 'Long keys are not supported.',
+    ];
 }

@@ -13,8 +13,9 @@ namespace Cache\Util\Tests;
 
 use Cache\Adapter\PHPArray\ArrayCachePool;
 use Cache\Util;
+use PHPUnit\Framework\TestCase;
 
-class SimpleCacheUtilTest extends \PHPUnit_Framework_TestCase
+class SimpleCacheUtilTest extends TestCase
 {
     public function testRememberCacheHit()
     {

@@ -36,7 +36,7 @@ class IlluminateAdapterTest extends TestCase
      */
     private $mockStore;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->mockItem  = m::mock(CacheItem::class);
         $this->mockStore = m::mock(Store::class);

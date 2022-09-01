@@ -153,11 +153,11 @@ class HierarchicalCachePoolTest extends TestCase
         $result = $method->invoke($pool, '|key|bar!hash');
         $this->assertCount(3, $result);
         foreach ($result as $r) {
-            $this->assertRegExp('|.*!hash|s', $r, 'Tag hash must be on every level in hierarchy key');
+            $this->assertMatchesRegularExpression('|.*!hash|s', $r, 'Tag hash must be on every level in hierarchy key');
         }
 
         $result = $method->invoke($pool, '|!hash');
         $this->assertCount(1, $result);
-        $this->assertRegExp('|.*!hash|s', $result[0], 'Tag hash must on root level in hierarchy key');
+        $this->assertMatchesRegularExpression('|.*!hash|s', $result[0], 'Tag hash must on root level in hierarchy key');
     }
 }

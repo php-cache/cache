@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4', '8.0']
+        php: ['7.4', '8.0', '8.1']
 
     services:
       redis:
@@ -73,10 +73,6 @@ jobs:
               echo "::error::$PACKAGE error"
             fi
           done
-
-          if [ $PHP_VERSION = '5.6' ]; then
-            exit 0
-          fi
 
           exit $ok
 

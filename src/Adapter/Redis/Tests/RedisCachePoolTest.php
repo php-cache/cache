@@ -11,18 +11,20 @@
 
 namespace Cache\Adapter\Redis\Tests;
 
+use Cache\Adapter\Common\Exception\CachePoolException;
 use Cache\Adapter\Redis\RedisCachePool;
+use PHPUnit\Framework\TestCase;
 
-class RedisCachePoolTest extends \PHPUnit_Framework_TestCase
+class RedisCachePoolTest extends TestCase
 {
     /**
      * Tests that an exception is thrown if invalid object is
      * passed to the constructor.
-     *
-     * @expectedException \Cache\Adapter\Common\Exception\CachePoolException
      */
     public function testConstructorWithInvalidObject()
     {
+        $this->expectException(CachePoolException::class);
+
         new RedisCachePool(new \stdClass());
     }
 }
