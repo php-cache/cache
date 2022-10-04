@@ -145,7 +145,7 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      */
     protected function appendListItem($name, $value)
     {
-        $this->cache->lPush($name, $value);
+        $this->cache->sAdd($name, $value);
     }
 
     /**
@@ -153,7 +153,7 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      */
     protected function getList($name)
     {
-        return $this->cache->lRange($name, 0, -1);
+        return $this->cache->sMembers($name);
     }
 
     /**
@@ -169,6 +169,6 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      */
     protected function removeListItem($name, $key)
     {
-        return $this->cache->lrem($name, $key, 0);
+        return $this->cache->sRem($name, $key, 0);
     }
 }
