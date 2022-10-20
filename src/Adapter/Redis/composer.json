@@ -27,7 +27,7 @@
         "php": ">=7.4",
         "cache/adapter-common": "^1.0",
         "cache/hierarchical-cache": "^1.0",
-        "psr/cache": "^1.0 || ^2.0",
+        "psr/cache": "^1.0 || ^2.0 || ^3.0",
         "psr/simple-cache": "^1.0"
     },
     "require-dev": {

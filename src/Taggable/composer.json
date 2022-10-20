@@ -30,7 +30,7 @@
     "require": {
         "php": ">=7.4",
         "cache/tag-interop": "^1.0",
-        "psr/cache": "^1.0 || ^2.0"
+        "psr/cache": "^1.0 || ^2.0 || ^3.0"
     },
     "require-dev": {
         "cache/integration-tests": "^0.17",
