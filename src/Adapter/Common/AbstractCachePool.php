@@ -154,6 +154,8 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 
     /**
      * {@inheritdoc}
+     *
+     * @return bool
      */
     public function hasItem($key)
     {
@@ -166,6 +168,8 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 
     /**
      * {@inheritdoc}
+     *
+     * @return bool
      */
     public function clear()
     {
@@ -181,6 +185,8 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 
     /**
      * {@inheritdoc}
+     *
+     * @return bool
      */
     public function deleteItem($key)
     {
@@ -193,6 +199,8 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 
     /**
      * {@inheritdoc}
+     *
+     * @return bool
      */
     public function deleteItems(array $keys)
     {
@@ -217,6 +225,8 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 
     /**
      * {@inheritdoc}
+     *
+     * @return bool
      */
     public function save(CacheItemInterface $item)
     {
@@ -245,6 +255,8 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 
     /**
      * {@inheritdoc}
+     *
+     * @return bool
      */
     public function saveDeferred(CacheItemInterface $item)
     {
@@ -255,6 +267,8 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 
     /**
      * {@inheritdoc}
+     *
+     * @return bool
      */
     public function commit()
     {
@@ -423,6 +437,8 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 
     /**
      * {@inheritdoc}
+     *
+     * @return mixed
      */
     public function get($key, $default = null)
     {
@@ -436,6 +452,8 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 
     /**
      * {@inheritdoc}
+     *
+     * @return bool
      */
     public function set($key, $value, $ttl = null)
     {
@@ -448,6 +466,8 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 
     /**
      * {@inheritdoc}
+     *
+     * @return bool
      */
     public function delete($key)
     {
@@ -456,6 +476,8 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 
     /**
      * {@inheritdoc}
+     *
+     * @return iterable
      */
     public function getMultiple($keys, $default = null)
     {
@@ -494,6 +516,8 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 
     /**
      * {@inheritdoc}
+     *
+     * @return bool
      */
     public function setMultiple($values, $ttl = null)
     {
@@ -533,6 +557,8 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 
     /**
      * {@inheritdoc}
+     *
+     * @return bool
      */
     public function deleteMultiple($keys)
     {
@@ -551,6 +577,8 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 
     /**
      * {@inheritdoc}
+     *
+     * @return bool
      */
     public function has($key)
     {
