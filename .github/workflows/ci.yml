@@ -17,17 +17,17 @@ jobs:
 
     services:
       redis:
-        image: redis:6.0.0
+        image: redis:7.0
         ports:
           - 6379:6379
       redis-cluster:
-        image: grokzen/redis-cluster:5.0.4
+        image: grokzen/redis-cluster:6.2.10
         ports:
           - 7000:7000
           - 7001:7001
           - 7002:7002
         env:
-          STANDALONE: 1
+          IP: 0.0.0.0
       memcached:
         image: memcached:1.6.5
         ports:
@@ -39,7 +39,7 @@ jobs:
 
     steps:
       - name: Set up PHP
-        uses: shivammathur/setup-php@2.7.0
+        uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           coverage: none
