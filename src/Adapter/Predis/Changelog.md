@@ -4,6 +4,9 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## UNRELEASED
 
+* Update predis/predis: ^2.0
+* Fixed unserialized(null) deprecation
+
 ## 1.2.0
 
 * Support for PHP 8.1
