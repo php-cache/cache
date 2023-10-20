@@ -42,11 +42,13 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
      */
     protected function fetchObjectFromCache($key)
     {
-        if (false === $result = unserialize($this->cache->get($this->getHierarchyKey($key)))) {
+        $result = $this->cache->get($this->getHierarchyKey($key));
+
+        if (false === $result || null === $result) {
             return [false, null, [], null];
         }
 
-        return $result;
+        return unserialize($result);
     }
 
     /**
