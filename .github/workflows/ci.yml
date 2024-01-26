@@ -17,11 +17,11 @@ jobs:
 
     services:
       redis:
-        image: redis:6.0.0
+        image: redis:6.0.18
         ports:
           - 6379:6379
       redis-cluster:
-        image: grokzen/redis-cluster:5.0.4
+        image: grokzen/redis-cluster:6.0.18
         ports:
           - 7000:7000
           - 7001:7001
