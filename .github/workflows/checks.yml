@@ -9,14 +9,14 @@ jobs:
 
     steps:
       - name: Set up PHP
-        uses: shivammathur/setup-php@2.7.0
+        uses: shivammathur/setup-php@2.29.0
         with:
-          php-version: 7.4
+          php-version: 8.2
           coverage: none
           tools: composer-normalize
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Normalize
         run: |

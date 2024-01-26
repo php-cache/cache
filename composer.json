@@ -31,7 +31,7 @@
     "require-dev": {
         "cache/integration-tests": "^0.17",
         "defuse/php-encryption": "^2.0",
-        "illuminate/cache": "^5.4 || ^5.5 || ^5.6",
+        "illuminate/cache": "^5.4",
         "mockery/mockery": "^1.0",
         "phpunit/phpunit": "^7.5.20 || ^9.5.10",
         "predis/predis": "^1.1",
@@ -101,6 +101,11 @@
         "exclude-from-classmap": [
             "**/Tests/"
         ]
+    },
+    "config": {
+        "allow-plugins": {
+            "kylekatarnls/update-helper": true
+        }
     },
     "extra": {
         "branch-alias": {

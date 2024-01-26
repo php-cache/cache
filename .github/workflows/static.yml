@@ -13,20 +13,20 @@ jobs:
 
     steps:
       - name: Set up PHP
-        uses: shivammathur/setup-php@2.7.0
+        uses: shivammathur/setup-php@2.29.0
         with:
           php-version: '7.4'
           coverage: none
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Download dependencies
         run: |
           composer update --no-interaction --prefer-dist --optimize-autoloader
 
       - name: PHPStan
-        uses: docker://oskarstark/phpstan-ga:0.12.48
+        uses: docker://oskarstark/phpstan-ga
         with:
           entrypoint: /composer/vendor/bin/phpstan
           args: analyze --no-progress
@@ -36,14 +36,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@2.29.0
         with:
           php-version: '7.4'
           extensions: redis, memcached, apcu
           tools: composer:v2
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Download dependencies
         run: |
