@@ -5,7 +5,23 @@
     "type": "library",
     "keywords": [
         "cache",
-        "psr6"
+        "psr6",
+        "psr-6",
+        "php-cache",
+        "cache-adapter",
+        "caching",
+        "apcu",
+        "redis",
+        "memcached",
+        "mongodb",
+        "mysql",
+        "doctrine-cache",
+        "predis",
+        "file-cache",
+        "memcache",
+        "session-cache",
+        "serverside-cache",
+        "php"
     ],
     "authors": [
         {
