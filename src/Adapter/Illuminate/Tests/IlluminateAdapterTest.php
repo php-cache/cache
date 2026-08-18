@@ -34,14 +34,14 @@ class IlluminateAdapterTest extends TestCase
         $this->pool = new IlluminateCachePool($this->mockStore);
     }
 
-    public function testConstructor(): void
+    public function testConstructor()
     {
         $this->assertInstanceOf(IlluminateCachePool::class, $this->pool);
         $this->assertInstanceOf(CacheItemPoolInterface::class, $this->pool);
     }
 
     #[DataProvider('invalidPayloads')]
-    public function testCorruptPayloadIsACacheMiss(mixed $payload): void
+    public function testCorruptPayloadIsACacheMiss(mixed $payload)
     {
         $this->mockStore->shouldReceive('get')->once()->with('corrupt')->andReturn($payload);
 
@@ -60,7 +60,7 @@ class IlluminateAdapterTest extends TestCase
         yield 'invalid expiration' => [serialize([true, 'value', [], 'tomorrow'])];
     }
 
-    public function testTtlIsPassedToIlluminateInSeconds(): void
+    public function testTtlIsPassedToIlluminateInSeconds()
     {
         $this->mockStore->shouldReceive('get')->once()->with('ttl')->andReturn(null);
         $this->mockStore
@@ -72,7 +72,7 @@ class IlluminateAdapterTest extends TestCase
         self::assertTrue($this->pool->set('ttl', 'value', 120));
     }
 
-    public function testItemWithoutTtlUsesForeverStorage(): void
+    public function testItemWithoutTtlUsesForeverStorage()
     {
         $this->mockStore->shouldReceive('get')->once()->with('forever')->andReturn(null);
         $this->mockStore
@@ -84,7 +84,7 @@ class IlluminateAdapterTest extends TestCase
         self::assertTrue($this->pool->set('forever', 'value'));
     }
 
-    public function testFailedTtlWriteIsReported(): void
+    public function testFailedTtlWriteIsReported()
     {
         $this->mockStore->shouldReceive('get')->once()->with('ttl')->andReturn(null);
         $this->mockStore->shouldReceive('put')->once()->andReturn(false);
@@ -92,7 +92,7 @@ class IlluminateAdapterTest extends TestCase
         self::assertFalse($this->pool->set('ttl', 'value', 120));
     }
 
-    public function testFailedForeverWriteIsReported(): void
+    public function testFailedForeverWriteIsReported()
     {
         $this->mockStore->shouldReceive('get')->once()->with('forever')->andReturn(null);
         $this->mockStore->shouldReceive('forever')->once()->andReturn(false);
@@ -100,7 +100,7 @@ class IlluminateAdapterTest extends TestCase
         self::assertFalse($this->pool->set('forever', 'value'));
     }
 
-    public function testHierarchyCounterUsesForeverStorage(): void
+    public function testHierarchyCounterUsesForeverStorage()
     {
         $pool = new class($this->mockStore) extends IlluminateCachePool {
             public function clearObject(string $key): bool
@@ -116,7 +116,7 @@ class IlluminateAdapterTest extends TestCase
         self::assertTrue($pool->clearObject('|parent'));
     }
 
-    public function testDeletingAParentWithoutAStoredItemInvalidatesItsDescendants(): void
+    public function testDeletingAParentWithoutAStoredItemInvalidatesItsDescendants()
     {
         $store = new \Illuminate\Cache\ArrayStore();
         $pool = new IlluminateCachePool($store);
@@ -126,7 +126,7 @@ class IlluminateAdapterTest extends TestCase
         self::assertFalse($pool->hasItem('|parent|child'));
     }
 
-    public function testHierarchyDeleteReportsFailedCounterInitialization(): void
+    public function testHierarchyDeleteReportsFailedCounterInitialization()
     {
         $pool = new class($this->mockStore) extends IlluminateCachePool {
             public function clearObject(string $key): bool
@@ -142,7 +142,7 @@ class IlluminateAdapterTest extends TestCase
         self::assertFalse($pool->clearObject('|parent'));
     }
 
-    public function testHierarchyDeleteReportsFailedCounterIncrement(): void
+    public function testHierarchyDeleteReportsFailedCounterIncrement()
     {
         $pool = new class($this->mockStore) extends IlluminateCachePool {
             public function clearObject(string $key): bool
@@ -158,7 +158,7 @@ class IlluminateAdapterTest extends TestCase
         self::assertFalse($pool->clearObject('|parent'));
     }
 
-    public function testDeleteReportsARealBackendFailure(): void
+    public function testDeleteReportsARealBackendFailure()
     {
         $payload = serialize([true, 'value', [], null]);
         $this->mockStore->shouldReceive('get')->times(3)->with('key')->andReturn($payload);
@@ -167,7 +167,7 @@ class IlluminateAdapterTest extends TestCase
         self::assertFalse($this->pool->deleteItem('key'));
     }
 
-    public function testCorruptTagListIsIgnored(): void
+    public function testCorruptTagListIsIgnored()
     {
         $this->mockStore->shouldReceive('get')->twice()->with('tag!corrupt')->andReturn([42]);
         $this->mockStore->shouldReceive('forget')->once()->with('tag!corrupt')->andReturn(true);

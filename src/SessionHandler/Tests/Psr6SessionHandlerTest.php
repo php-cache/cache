@@ -50,7 +50,7 @@ class Psr6SessionHandlerTest extends SessionHandlerTestCase
         $this->assertEquals('', $this->handler->read('foo'));
     }
 
-    public function testReadReturnsFalseWithoutReadingWhenLockCannotBeAcquired(): void
+    public function testReadReturnsFalseWithoutReadingWhenLockCannotBeAcquired()
     {
         $lock = new RecordingSessionLock(false);
         $this->psr6->expects($this->never())
@@ -84,7 +84,7 @@ class Psr6SessionHandlerTest extends SessionHandlerTestCase
         $this->assertEquals('bar', $this->handler->read('foo'));
     }
 
-    public function testReadTreatsNonStringValuesAsMisses(): void
+    public function testReadTreatsNonStringValuesAsMisses()
     {
         $item = $this->getItemMock();
         $item->expects($this->once())
@@ -100,7 +100,7 @@ class Psr6SessionHandlerTest extends SessionHandlerTestCase
         $this->assertSame('', $this->handler->read('foo'));
     }
 
-    public function testValidateAndReadShareTheLockUntilClose(): void
+    public function testValidateAndReadShareTheLockUntilClose()
     {
         $item = $this->getItemMock();
         $item->expects($this->once())
@@ -120,7 +120,7 @@ class Psr6SessionHandlerTest extends SessionHandlerTestCase
         $this->assertSame("acquire foo\nrelease foo\n", $this->lock->events);
     }
 
-    public function testReadReleasesTheLockWhenStorageThrows(): void
+    public function testReadReleasesTheLockWhenStorageThrows()
     {
         $exception = new \RuntimeException('read failed');
         $this->psr6->expects($this->once())
@@ -170,7 +170,7 @@ class Psr6SessionHandlerTest extends SessionHandlerTestCase
     }
 
     #[DataProvider('getOptionFixtures')]
-    public function testSupportedOptions(array $options, bool $supported): void
+    public function testSupportedOptions(array $options, bool $supported)
     {
         try {
             new Psr6SessionHandler($this->psr6, new RecordingSessionLock(), $options);
@@ -219,7 +219,7 @@ class Psr6SessionHandlerTest extends SessionHandlerTestCase
         $this->assertTrue($this->handler->updateTimestamp('foo', 'session value'));
     }
 
-    public function testUpdateTimestampDoesNotCreateAMissingSession(): void
+    public function testUpdateTimestampDoesNotCreateAMissingSession()
     {
         $item = $this->getItemMock();
         $item->expects($this->once())

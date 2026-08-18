@@ -63,7 +63,7 @@ class PrefixedSimpleCacheTest extends TestCase
         $this->assertEquals($result, $pool->get($key));
     }
 
-    public function testReservedCharactersInPrefixAreEncoded(): void
+    public function testReservedCharactersInPrefixAreEncoded()
     {
         $stub = $this->getCacheStub('get', ['_x7B__x7D__x28__x29__x2F__x5C__x40__x3A__x25__x7C__x21_key'], 'value');
         $pool = new PrefixedSimpleCache($stub, '{}()/\\@:%|!');
@@ -71,7 +71,7 @@ class PrefixedSimpleCacheTest extends TestCase
         $this->assertSame('value', $pool->get('key'));
     }
 
-    public function testEncodedPrefixUsesOnlyPortablePsrCharacters(): void
+    public function testEncodedPrefixUsesOnlyPortablePsrCharacters()
     {
         $backend = $this->createMock(CacheInterface::class);
         $backend->expects($this->once())
@@ -133,7 +133,7 @@ class PrefixedSimpleCacheTest extends TestCase
         $this->assertEquals([$key1 => $value1, $key2 => $value2], iterator_to_array($pool->getMultiple([$key1, $key2])));
     }
 
-    public function testGetMultiplePreservesNumericStringKeysWithAnEmptyPrefix(): void
+    public function testGetMultiplePreservesNumericStringKeysWithAnEmptyPrefix()
     {
         $stub = $this->getCacheStub('getMultiple', [['123']], [123 => 'value']);
         $pool = new PrefixedSimpleCache($stub, '');
@@ -148,7 +148,7 @@ class PrefixedSimpleCacheTest extends TestCase
     }
 
     #[DataProvider('invalidIterableKeyProvider')]
-    public function testGetMultipleRejectsNonStringKeys(mixed $key): void
+    public function testGetMultipleRejectsNonStringKeys(mixed $key)
     {
         $pool = new PrefixedSimpleCache($this->createMock(CacheInterface::class), 'ns');
 
@@ -177,7 +177,7 @@ class PrefixedSimpleCacheTest extends TestCase
         $this->assertEquals($result, $pool->setMultiple([$key1 => $value1, $key2 => $value2]));
     }
 
-    public function testSetMultiplePreservesNumericStringGeneratorKeysWithAnEmptyPrefix(): void
+    public function testSetMultiplePreservesNumericStringGeneratorKeysWithAnEmptyPrefix()
     {
         $cache = $this->createMock(CacheInterface::class);
         $cache->expects($this->once())
@@ -199,7 +199,7 @@ class PrefixedSimpleCacheTest extends TestCase
     }
 
     #[DataProvider('invalidIterableKeyProvider')]
-    public function testSetMultipleRejectsNonStringGeneratorKeys(mixed $key): void
+    public function testSetMultipleRejectsNonStringGeneratorKeys(mixed $key)
     {
         $pool = new PrefixedSimpleCache($this->createMock(CacheInterface::class), 'ns');
         $values = static function () use ($key): \Generator {
@@ -224,7 +224,7 @@ class PrefixedSimpleCacheTest extends TestCase
     }
 
     #[DataProvider('invalidIterableKeyProvider')]
-    public function testDeleteMultipleRejectsNonStringKeys(mixed $key): void
+    public function testDeleteMultipleRejectsNonStringKeys(mixed $key)
     {
         $pool = new PrefixedSimpleCache($this->createMock(CacheInterface::class), 'ns');
 

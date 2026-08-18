@@ -17,7 +17,7 @@ use PHPUnit\Framework\TestCase;
 
 class SimpleCacheUtilTest extends TestCase
 {
-    public function testRememberReturnsCachedFalseyValues(): void
+    public function testRememberReturnsCachedFalseyValues()
     {
         foreach ([false, 0, '', [], null] as $index => $value) {
             $cache = new ArrayCachePool();

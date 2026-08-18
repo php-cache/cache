@@ -34,7 +34,7 @@ class IntegrationTest extends TestCase
         $this->cache->clear();
     }
 
-    public function testGetItem(): void
+    public function testGetItem()
     {
         $namespace = 'ns';
         $nsPool = new NamespacedCachePool($this->cache, $namespace);
@@ -43,7 +43,7 @@ class IntegrationTest extends TestCase
         $this->assertSame('key', $item->getKey());
     }
 
-    public function testGetItems(): void
+    public function testGetItems()
     {
         $namespace = 'ns';
         $nsPool = new NamespacedCachePool($this->cache, $namespace);
@@ -57,7 +57,7 @@ class IntegrationTest extends TestCase
         $this->assertSame('key1', $items['key1']->getKey());
     }
 
-    public function testSave(): void
+    public function testSave()
     {
         $namespace = 'ns';
         $nsPool = new NamespacedCachePool($this->cache, $namespace);
@@ -70,7 +70,7 @@ class IntegrationTest extends TestCase
         $this->assertFalse($this->cache->hasItem('key'));
     }
 
-    public function testSaveDeferred(): void
+    public function testSaveDeferred()
     {
         $namespace = 'ns';
         $nsPool = new NamespacedCachePool($this->cache, $namespace);
@@ -87,7 +87,7 @@ class IntegrationTest extends TestCase
         $this->assertFalse($this->cache->hasItem('key'));
     }
 
-    public function testNestedNamespaceClearDoesNotDeleteOuterItems(): void
+    public function testNestedNamespaceClearDoesNotDeleteOuterItems()
     {
         $outerPool = new NamespacedCachePool($this->cache, 'outer');
         $innerPool = new NamespacedCachePool($outerPool, 'inner');
@@ -105,7 +105,7 @@ class IntegrationTest extends TestCase
         $this->assertTrue($outerPool->hasItem('sibling'));
     }
 
-    public function testNestedNamespaceReadsEntriesWrittenBeforeVersionFour(): void
+    public function testNestedNamespaceReadsEntriesWrittenBeforeVersionFour()
     {
         $this->assertTrue($this->cache->save($this->cache->getItem('|outer||inner|key')->set('legacy value')));
 
@@ -115,7 +115,7 @@ class IntegrationTest extends TestCase
         $this->assertSame('legacy value', $innerPool->getItem('key')->get());
     }
 
-    public function testNestedNamespaceDoesNotCollideWithOuterKey(): void
+    public function testNestedNamespaceDoesNotCollideWithOuterKey()
     {
         $outerPool = new NamespacedCachePool($this->cache, 'outer');
         $outerItem = $outerPool->getItem('inner|key');
@@ -131,7 +131,7 @@ class IntegrationTest extends TestCase
         $this->assertSame('inner', $innerPool->getItem('key')->get());
     }
 
-    public function testNestedNamespaceDoesNotCollideWithOuterHierarchyKey(): void
+    public function testNestedNamespaceDoesNotCollideWithOuterHierarchyKey()
     {
         $outerPool = new NamespacedCachePool($this->cache, 'outer');
         $innerPool = new NamespacedCachePool($outerPool, 'inner');
@@ -148,7 +148,7 @@ class IntegrationTest extends TestCase
         $this->assertSame('outer hierarchy', $outerPool->getItem('|inner|key')->get());
     }
 
-    public function testNestedNamespaceDoesNotCollideWithSeparatorInNamespace(): void
+    public function testNestedNamespaceDoesNotCollideWithSeparatorInNamespace()
     {
         $flatPool = new NamespacedCachePool($this->cache, 'outer|inner');
         $flatItem = $flatPool->getItem('key')->set('flat');
@@ -163,7 +163,7 @@ class IntegrationTest extends TestCase
         $this->assertSame('nested', $nestedPool->getItem('key')->get());
     }
 
-    public function testReservedCharactersInNamespaceAreEncoded(): void
+    public function testReservedCharactersInNamespaceAreEncoded()
     {
         $pool = new NamespacedCachePool($this->cache, '{}()/\\@:%|!');
 
@@ -174,7 +174,7 @@ class IntegrationTest extends TestCase
         $this->assertFalse($pool->hasItem('key'));
     }
 
-    public function testNamespaceEncodingUsesOnlyPortablePsrCharacters(): void
+    public function testNamespaceEncodingUsesOnlyPortablePsrCharacters()
     {
         $pool = new NamespacedCachePool($this->cache, "billing-prod\u{00E9}");
 
@@ -182,7 +182,7 @@ class IntegrationTest extends TestCase
         $this->assertTrue($this->cache->hasItem('|billing_x2D_prod_xC3__xA9_|key'));
     }
 
-    public function testLiteralEncodingMarkerDoesNotCollideWithEncodedNamespace(): void
+    public function testLiteralEncodingMarkerDoesNotCollideWithEncodedNamespace()
     {
         $encoded = new NamespacedCachePool($this->cache, '%');
         $literal = new NamespacedCachePool($this->cache, '_x25_');
@@ -194,7 +194,7 @@ class IntegrationTest extends TestCase
         $this->assertSame('literal', $literal->getItem('key')->get());
     }
 
-    public function testHierarchyControlCharactersRemainPartOfThePublicKey(): void
+    public function testHierarchyControlCharactersRemainPartOfThePublicKey()
     {
         $pool = new NamespacedCachePool($this->cache, 'namespace');
 
@@ -220,7 +220,7 @@ class IntegrationTest extends TestCase
         $this->assertTrue($this->cache->hasItem("|namespace|cl\u{00E9}"));
     }
 
-    public function testNamespacesRemainIsolatedOnAGenericPsr6Pool(): void
+    public function testNamespacesRemainIsolatedOnAGenericPsr6Pool()
     {
         $cache = new GenericCachePool(new ArrayCachePool());
         $first = new NamespacedCachePool($cache, 'first');
@@ -236,7 +236,7 @@ class IntegrationTest extends TestCase
         $this->assertSame('second value', $second->getItem('key')->get());
     }
 
-    public function testNestedNamespaceAndOuterHierarchyRemainIsolatedOnAGenericPool(): void
+    public function testNestedNamespaceAndOuterHierarchyRemainIsolatedOnAGenericPool()
     {
         $cache = new GenericCachePool(new ArrayCachePool());
         $outer = new NamespacedCachePool($cache, 'outer');
@@ -255,7 +255,7 @@ class IntegrationTest extends TestCase
         $this->assertSame('nested again', $nested->getItem('key')->get());
     }
 
-    public function testEmptyNamespaceCannotClearAHierarchicalPoolRoot(): void
+    public function testEmptyNamespaceCannotClearAHierarchicalPoolRoot()
     {
         $this->assertTrue($this->cache->save($this->cache->getItem('|outside|child')->set('outside')));
 
@@ -268,7 +268,7 @@ class IntegrationTest extends TestCase
         $this->assertTrue($this->cache->hasItem('|outside|child'));
     }
 
-    public function testEmptyNamespaceIsRejectedForAGenericPool(): void
+    public function testEmptyNamespaceIsRejectedForAGenericPool()
     {
         $backend = new ArrayCachePool();
         $this->assertTrue($backend->save($backend->getItem('outside')->set('outside')));
@@ -282,19 +282,19 @@ class IntegrationTest extends TestCase
         $this->assertTrue($backend->hasItem('outside'));
     }
 
-    public function testHierarchyDeletionInvalidatesDescendantsOnAHierarchicalPool(): void
+    public function testHierarchyDeletionInvalidatesDescendantsOnAHierarchicalPool()
     {
         $this->assertHierarchyDeletion(new NamespacedCachePool($this->cache, 'namespace'), false);
     }
 
-    public function testHierarchyDeletionInvalidatesDescendantsOnAGenericPool(): void
+    public function testHierarchyDeletionInvalidatesDescendantsOnAGenericPool()
     {
         $cache = new GenericCachePool(new ArrayCachePool());
 
         $this->assertHierarchyDeletion(new NamespacedCachePool($cache, 'namespace'), true);
     }
 
-    public function testEvictedGenerationMetadataDoesNotResurrectClearedValues(): void
+    public function testEvictedGenerationMetadataDoesNotResurrectClearedValues()
     {
         $backend = new ArrayCachePool();
         $pool = new NamespacedCachePool(new GenericCachePool($backend), 'namespace');
@@ -307,7 +307,7 @@ class IntegrationTest extends TestCase
         $this->assertFalse($pool->hasItem('key'));
     }
 
-    public function testHierarchyRootDeletionInvalidatesDescendantsOnAHierarchicalPool(): void
+    public function testHierarchyRootDeletionInvalidatesDescendantsOnAHierarchicalPool()
     {
         $pool = new NamespacedCachePool($this->cache, 'namespace');
         $this->assertTrue($pool->save($pool->getItem('|parent|child')->set('value')));
@@ -318,7 +318,7 @@ class IntegrationTest extends TestCase
         $this->assertSame('plain value', $pool->getItem('plain')->get());
     }
 
-    public function testHierarchyRootDeletionInvalidatesDescendantsOnAGenericPool(): void
+    public function testHierarchyRootDeletionInvalidatesDescendantsOnAGenericPool()
     {
         $pool = new NamespacedCachePool(new GenericCachePool(new ArrayCachePool()), 'namespace');
         $this->assertTrue($pool->save($pool->getItem('|parent|child')->set('value')));

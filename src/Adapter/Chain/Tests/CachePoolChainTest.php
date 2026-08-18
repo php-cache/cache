@@ -28,7 +28,7 @@ use Psr\SimpleCache\CacheInterface;
  */
 class CachePoolChainTest extends TestCase
 {
-    public function testRejectsPoolsThatCannotTransferPhpCacheItems(): void
+    public function testRejectsPoolsThatCannotTransferPhpCacheItems()
     {
         $pool = $this->createMock(TaggableCacheItemPoolInterface::class);
 
@@ -37,7 +37,7 @@ class CachePoolChainTest extends TestCase
         new CachePoolChain([$pool]);
     }
 
-    public function testProvidesPsr16AccessDirectly(): void
+    public function testProvidesPsr16AccessDirectly()
     {
         $cache = new CachePoolChain([new ArrayCachePool(), new ArrayCachePool()]);
 
@@ -46,7 +46,7 @@ class CachePoolChainTest extends TestCase
         self::assertSame('value', $cache->get('key'));
     }
 
-    public function testSaveRejectsGenericItemsBeforeWritingToAnyPool(): void
+    public function testSaveRejectsGenericItemsBeforeWritingToAnyPool()
     {
         $pool = $this->createMock(PhpCachePool::class);
         $pool->expects(self::never())->method('save');
@@ -57,7 +57,7 @@ class CachePoolChainTest extends TestCase
         (new CachePoolChain([$pool]))->save($item);
     }
 
-    public function testSaveDeferredRejectsGenericItemsBeforeWritingToAnyPool(): void
+    public function testSaveDeferredRejectsGenericItemsBeforeWritingToAnyPool()
     {
         $pool = $this->createMock(PhpCachePool::class);
         $pool->expects(self::never())->method('saveDeferred');
@@ -68,7 +68,7 @@ class CachePoolChainTest extends TestCase
         (new CachePoolChain([$pool]))->saveDeferred($item);
     }
 
-    public function testPoolFailureIsRethrownByDefault(): void
+    public function testPoolFailureIsRethrownByDefault()
     {
         $exception = new CachePoolException('failed');
         $pool = $this->createMock(PhpCachePool::class);
@@ -79,7 +79,7 @@ class CachePoolChainTest extends TestCase
         (new CachePoolChain([$pool]))->getItem('key');
     }
 
-    public function testRawBackendExceptionIsRethrownByDefault(): void
+    public function testRawBackendExceptionIsRethrownByDefault()
     {
         $exception = new \RuntimeException('backend unavailable');
         $pool = $this->createMock(PhpCachePool::class);
@@ -90,7 +90,7 @@ class CachePoolChainTest extends TestCase
         (new CachePoolChain([$pool]))->getItem('key');
     }
 
-    public function testSkippedPoolFailureIsLoggedAndRemoved(): void
+    public function testSkippedPoolFailureIsLoggedAndRemoved()
     {
         $exception = new CachePoolException('failed');
         $failedPool = $this->createMock(PhpCachePool::class);
@@ -118,7 +118,7 @@ class CachePoolChainTest extends TestCase
         self::assertSame('value', $chain->getItem('key')->get());
     }
 
-    public function testSkipOnFailureFallsBackAfterRawBackendException(): void
+    public function testSkipOnFailureFallsBackAfterRawBackendException()
     {
         $failedPool = $this->createMock(PhpCachePool::class);
         $failedPool->expects(self::once())
@@ -134,7 +134,7 @@ class CachePoolChainTest extends TestCase
         self::assertSame('value', $chain->getItem('key')->get());
     }
 
-    public function testSkipOnFailureAppliesToEveryPoolOperation(): void
+    public function testSkipOnFailureAppliesToEveryPoolOperation()
     {
         foreach ([
             'getItems',
@@ -167,7 +167,7 @@ class CachePoolChainTest extends TestCase
         }
     }
 
-    public function testGetItemReturnsLastPoolMiss(): void
+    public function testGetItemReturnsLastPoolMiss()
     {
         $item = (new CachePoolChain([new ArrayCachePool()]))->getItem('key');
 
@@ -175,7 +175,7 @@ class CachePoolChainTest extends TestCase
         self::assertFalse($item->isHit());
     }
 
-    public function testGetItemThrowsAfterOnlyPoolFails(): void
+    public function testGetItemThrowsAfterOnlyPoolFails()
     {
         $pool = $this->createMock(PhpCachePool::class);
         $pool->method('getItem')->willThrowException(new CachePoolException('failed'));
@@ -187,7 +187,7 @@ class CachePoolChainTest extends TestCase
     }
 
     #[DataProvider('operationProvider')]
-    public function testOperationThrowsAfterEveryPoolFails(string $operation): void
+    public function testOperationThrowsAfterEveryPoolFails(string $operation)
     {
         $pool = $this->createMock(PhpCachePool::class);
         $pool->method($operation)->willThrowException(new CachePoolException('failed'));
@@ -223,7 +223,7 @@ class CachePoolChainTest extends TestCase
         yield 'invalidate tags' => ['invalidateTags'];
     }
 
-    public function testGetItemsThrowsAfterEveryPoolFails(): void
+    public function testGetItemsThrowsAfterEveryPoolFails()
     {
         $pool = $this->createMock(PhpCachePool::class);
         $pool->method('getItems')->willThrowException(new CachePoolException('failed'));
@@ -234,7 +234,7 @@ class CachePoolChainTest extends TestCase
         $chain->getItems(['key']);
     }
 
-    public function testGetItemsTreatsLazyItemFailureAsPoolFailure(): void
+    public function testGetItemsTreatsLazyItemFailureAsPoolFailure()
     {
         $item = new CacheItem('key', static function (): array {
             throw new CachePoolException('failed');
@@ -248,7 +248,7 @@ class CachePoolChainTest extends TestCase
         $chain->getItems(['key']);
     }
 
-    public function testGetItemsDiscardsPartialResultsFromAFailedPool(): void
+    public function testGetItemsDiscardsPartialResultsFromAFailedPool()
     {
         $failedItem = new CacheItem('second', static function (): array {
             throw new CachePoolException('failed');
@@ -270,14 +270,14 @@ class CachePoolChainTest extends TestCase
         self::assertSame('also good', $items['second']->get());
     }
 
-    public function testEmptyChainThrows(): void
+    public function testEmptyChainThrows()
     {
         $this->expectException(\Cache\Adapter\Chain\Exception\NoPoolAvailableException::class);
 
         (new CachePoolChain([]))->getItem('key');
     }
 
-    public function testInvalidateTagDelegatesToPools(): void
+    public function testInvalidateTagDelegatesToPools()
     {
         $pool = $this->createMock(PhpCachePool::class);
         $pool->expects(self::once())->method('invalidateTags')->with(['tag'])->willReturn(true);
@@ -285,7 +285,7 @@ class CachePoolChainTest extends TestCase
         self::assertTrue((new CachePoolChain([$pool]))->invalidateTag('tag'));
     }
 
-    public function testGetItemsSkipsFailureWhileBackfillingPool(): void
+    public function testGetItemsSkipsFailureWhileBackfillingPool()
     {
         $miss = new CacheItem('key', false);
         $hit = new CacheItem('key', true, 'value');
@@ -302,7 +302,7 @@ class CachePoolChainTest extends TestCase
         self::assertSame('value', $items['key']->get());
     }
 
-    public function testGetItemSkipsFailureWhileBackfillingPool(): void
+    public function testGetItemSkipsFailureWhileBackfillingPool()
     {
         $miss = new CacheItem('key', false);
         $failedPool = $this->createMock(PhpCachePool::class);
@@ -317,7 +317,7 @@ class CachePoolChainTest extends TestCase
         self::assertSame('value', $chain->getItem('key')->get());
     }
 
-    public function testGetItemsKeepsTheHighestPriorityHitForDuplicateKeys(): void
+    public function testGetItemsKeepsTheHighestPriorityHitForDuplicateKeys()
     {
         $firstPool = new ArrayCachePool();
         $firstPool->save($firstPool->getItem('key')->set('first'));
@@ -329,7 +329,7 @@ class CachePoolChainTest extends TestCase
         self::assertSame('first', $items['key']->get());
     }
 
-    public function testClearCallsEveryPoolAfterFailure(): void
+    public function testClearCallsEveryPoolAfterFailure()
     {
         $firstPool = $this->createMock(PhpCachePool::class);
         $firstPool->expects(self::once())->method('clear')->willReturn(false);
@@ -339,7 +339,7 @@ class CachePoolChainTest extends TestCase
         self::assertFalse((new CachePoolChain([$firstPool, $secondPool]))->clear());
     }
 
-    public function testDeleteItemCallsEveryPoolAfterFailure(): void
+    public function testDeleteItemCallsEveryPoolAfterFailure()
     {
         $firstPool = $this->createMock(PhpCachePool::class);
         $firstPool->expects(self::once())->method('deleteItem')->with('key')->willReturn(false);
@@ -349,7 +349,7 @@ class CachePoolChainTest extends TestCase
         self::assertFalse((new CachePoolChain([$firstPool, $secondPool]))->deleteItem('key'));
     }
 
-    public function testDeleteItemsCallsEveryPoolAfterFailure(): void
+    public function testDeleteItemsCallsEveryPoolAfterFailure()
     {
         $firstPool = $this->createMock(PhpCachePool::class);
         $firstPool->expects(self::once())->method('deleteItems')->with(['key'])->willReturn(false);
@@ -359,7 +359,7 @@ class CachePoolChainTest extends TestCase
         self::assertFalse((new CachePoolChain([$firstPool, $secondPool]))->deleteItems(['key']));
     }
 
-    public function testGetItemsDoesNotTreatInvalidKeyAsPoolFailure(): void
+    public function testGetItemsDoesNotTreatInvalidKeyAsPoolFailure()
     {
         $chainPool = new CachePoolChain([new ArrayCachePool(), new ArrayCachePool()], ['skip_on_failure' => true]);
 
@@ -368,7 +368,7 @@ class CachePoolChainTest extends TestCase
         $chainPool->getItems([true]);
     }
 
-    public function testDeleteItemsDoesNotTreatInvalidKeyAsPoolFailure(): void
+    public function testDeleteItemsDoesNotTreatInvalidKeyAsPoolFailure()
     {
         $chainPool = new CachePoolChain([new ArrayCachePool(), new ArrayCachePool()], ['skip_on_failure' => true]);
 
@@ -401,7 +401,7 @@ class CachePoolChainTest extends TestCase
         $this->assertTrue($loadedItem->isHit());
     }
 
-    public function testGetItemBackfillsStoredTags(): void
+    public function testGetItemBackfillsStoredTags()
     {
         $firstPool = new ArrayCachePool();
         $secondPool = new ArrayCachePool();
@@ -464,7 +464,7 @@ class CachePoolChainTest extends TestCase
         $this->assertEquals($secondExpirationTime, $loadedItem->getExpirationTimestamp());
     }
 
-    public function testGetItemsBackfillStoredTags(): void
+    public function testGetItemsBackfillStoredTags()
     {
         $firstPool = new ArrayCachePool();
         $secondPool = new ArrayCachePool();

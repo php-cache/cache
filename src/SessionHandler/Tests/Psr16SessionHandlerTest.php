@@ -43,7 +43,7 @@ class Psr16SessionHandlerTest extends SessionHandlerTestCase
         $this->assertEquals('', $this->handler->read('foo'));
     }
 
-    public function testReadReturnsFalseWithoutReadingWhenLockCannotBeAcquired(): void
+    public function testReadReturnsFalseWithoutReadingWhenLockCannotBeAcquired()
     {
         $lock = new RecordingSessionLock(false);
         $this->psr16->expects($this->never())
@@ -59,7 +59,7 @@ class Psr16SessionHandlerTest extends SessionHandlerTestCase
         $this->assertSame("acquire foo\n", $lock->events);
     }
 
-    public function testValidateIdReturnsFalseWithoutReadingWhenLockCannotBeAcquired(): void
+    public function testValidateIdReturnsFalseWithoutReadingWhenLockCannotBeAcquired()
     {
         $lock = new RecordingSessionLock(false);
         $this->psr16->expects($this->never())
@@ -80,7 +80,7 @@ class Psr16SessionHandlerTest extends SessionHandlerTestCase
         $this->assertEquals('bar', $this->handler->read('foo'));
     }
 
-    public function testReadTreatsNonStringValuesAsMisses(): void
+    public function testReadTreatsNonStringValuesAsMisses()
     {
         $this->psr16->expects($this->once())
             ->method('get')
@@ -89,7 +89,7 @@ class Psr16SessionHandlerTest extends SessionHandlerTestCase
         $this->assertSame('', $this->handler->read('foo'));
     }
 
-    public function testLockIsHeldThroughWriteAndTimestampUpdateUntilClose(): void
+    public function testLockIsHeldThroughWriteAndTimestampUpdateUntilClose()
     {
         $this->psr16->expects($this->exactly(2))
             ->method('get')
@@ -107,7 +107,7 @@ class Psr16SessionHandlerTest extends SessionHandlerTestCase
         $this->assertSame("acquire foo\nrelease foo\n", $this->lock->events);
     }
 
-    public function testSwitchingSessionsReleasesThePreviousLock(): void
+    public function testSwitchingSessionsReleasesThePreviousLock()
     {
         $this->psr16->expects($this->exactly(2))
             ->method('get')
@@ -121,7 +121,7 @@ class Psr16SessionHandlerTest extends SessionHandlerTestCase
         );
     }
 
-    public function testWritingARegeneratedSessionSwitchesLocks(): void
+    public function testWritingARegeneratedSessionSwitchesLocks()
     {
         $this->psr16->expects($this->once())
             ->method('get')
@@ -139,7 +139,7 @@ class Psr16SessionHandlerTest extends SessionHandlerTestCase
         );
     }
 
-    public function testWriteReleasesTheLockWhenStorageThrows(): void
+    public function testWriteReleasesTheLockWhenStorageThrows()
     {
         $exception = new \RuntimeException('write failed');
         $this->psr16->expects($this->once())
@@ -161,7 +161,7 @@ class Psr16SessionHandlerTest extends SessionHandlerTestCase
         $this->assertSame("acquire foo\nrelease foo\n", $this->lock->events);
     }
 
-    public function testWriteReturnsFalseWithoutStorageWhenLockCannotBeAcquired(): void
+    public function testWriteReturnsFalseWithoutStorageWhenLockCannotBeAcquired()
     {
         $lock = new RecordingSessionLock(false);
         $this->psr16->expects($this->never())
@@ -172,7 +172,7 @@ class Psr16SessionHandlerTest extends SessionHandlerTestCase
         $this->assertSame("acquire foo\n", $lock->events);
     }
 
-    public function testTimestampUpdateReleasesTheLockWhenStorageThrows(): void
+    public function testTimestampUpdateReleasesTheLockWhenStorageThrows()
     {
         $exception = new \RuntimeException('timestamp update failed');
         $invocation = 0;
@@ -198,7 +198,7 @@ class Psr16SessionHandlerTest extends SessionHandlerTestCase
         $this->assertSame("acquire foo\nrelease foo\n", $this->lock->events);
     }
 
-    public function testTimestampUpdateReturnsFalseWithoutStorageWhenLockCannotBeAcquired(): void
+    public function testTimestampUpdateReturnsFalseWithoutStorageWhenLockCannotBeAcquired()
     {
         $lock = new RecordingSessionLock(false);
         $this->psr16->expects($this->never())
@@ -209,7 +209,7 @@ class Psr16SessionHandlerTest extends SessionHandlerTestCase
         $this->assertSame("acquire foo\n", $lock->events);
     }
 
-    public function testDestroyReleasesTheLock(): void
+    public function testDestroyReleasesTheLock()
     {
         $this->psr16->expects($this->once())
             ->method('get')
@@ -224,7 +224,7 @@ class Psr16SessionHandlerTest extends SessionHandlerTestCase
         $this->assertSame("acquire foo\nrelease foo\n", $this->lock->events);
     }
 
-    public function testDestroyReleasesTheLockWhenStorageThrows(): void
+    public function testDestroyReleasesTheLockWhenStorageThrows()
     {
         $exception = new \RuntimeException('delete failed');
         $this->psr16->expects($this->once())
@@ -246,7 +246,7 @@ class Psr16SessionHandlerTest extends SessionHandlerTestCase
         $this->assertSame("acquire foo\nrelease foo\n", $this->lock->events);
     }
 
-    public function testDestroyReturnsFalseWithoutStorageWhenLockCannotBeAcquired(): void
+    public function testDestroyReturnsFalseWithoutStorageWhenLockCannotBeAcquired()
     {
         $lock = new RecordingSessionLock(false);
         $this->psr16->expects($this->never())
@@ -257,7 +257,7 @@ class Psr16SessionHandlerTest extends SessionHandlerTestCase
         $this->assertSame("acquire foo\n", $lock->events);
     }
 
-    public function testEmptyNewSessionIsDiscardedWithoutCacheDelete(): void
+    public function testEmptyNewSessionIsDiscardedWithoutCacheDelete()
     {
         $this->psr16->expects($this->once())
             ->method('get')
@@ -291,7 +291,7 @@ class Psr16SessionHandlerTest extends SessionHandlerTestCase
     }
 
     #[DataProvider('getOptionFixtures')]
-    public function testSupportedOptions(array $options, bool $supported): void
+    public function testSupportedOptions(array $options, bool $supported)
     {
         try {
             new Psr16SessionHandler($this->psr16, new RecordingSessionLock(), $options);
@@ -326,7 +326,7 @@ class Psr16SessionHandlerTest extends SessionHandlerTestCase
         $this->assertTrue($this->handler->updateTimestamp('foo', 'session value'));
     }
 
-    public function testUpdateTimestampReturnsFalseForMissingSession(): void
+    public function testUpdateTimestampReturnsFalseForMissingSession()
     {
         $this->psr16->expects($this->once())
             ->method('get')

@@ -57,7 +57,7 @@ class IntegrationPoolTest extends CachePoolTest
         $pool->saveDeferred(new CacheItem('save_valid_exceptiond'));
     }
 
-    public function testSaveRejectsAnEncryptedItemFromAnotherPool(): void
+    public function testSaveRejectsAnEncryptedItemFromAnotherPool()
     {
         $pool = $this->createCachePool();
         $otherPool = $this->createCachePool();
@@ -67,7 +67,7 @@ class IntegrationPoolTest extends CachePoolTest
         $pool->save($otherPool->getItem('key')->set('value'));
     }
 
-    public function testSaveDeferredRejectsAnEncryptedItemFromAnotherPool(): void
+    public function testSaveDeferredRejectsAnEncryptedItemFromAnotherPool()
     {
         $pool = $this->createCachePool();
         $otherPool = $this->createCachePool();
@@ -77,7 +77,7 @@ class IntegrationPoolTest extends CachePoolTest
         $pool->saveDeferred($otherPool->getItem('key')->set('value'));
     }
 
-    public function testEncryptedPoolsCanBeNested(): void
+    public function testEncryptedPoolsCanBeNested()
     {
         $innerPool = $this->createCachePool();
         $outerPool = new EncryptedCachePool($innerPool, Key::createNewRandomKey());

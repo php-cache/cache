@@ -48,12 +48,12 @@ class DoctrineCacheBridgeTest extends TestCase
         $this->itemMock = m::mock(CacheItemInterface::class);
     }
 
-    public function testConstructor(): void
+    public function testConstructor()
     {
         $this->assertInstanceOf(DoctrineCacheBridge::class, $this->bridge);
     }
 
-    public function testFetch(): void
+    public function testFetch()
     {
         $this->itemMock->shouldReceive('isHit')->times(1)->andReturn(true);
         $this->itemMock->shouldReceive('get')->times(1)->andReturn('some_value');
@@ -63,7 +63,7 @@ class DoctrineCacheBridgeTest extends TestCase
         $this->assertEquals('some_value', $this->bridge->fetch('some_item'));
     }
 
-    public function testFetchMiss(): void
+    public function testFetchMiss()
     {
         $this->itemMock->shouldReceive('isHit')->times(1)->andReturn(false);
 
@@ -72,7 +72,7 @@ class DoctrineCacheBridgeTest extends TestCase
         $this->assertFalse($this->bridge->fetch('no_item'));
     }
 
-    public function testContains(): void
+    public function testContains()
     {
         $this->mock->shouldReceive('hasItem')->withArgs(['[no_item][1]'])->andReturn(false);
         $this->mock->shouldReceive('hasItem')->withArgs(['[some_item][1]'])->andReturn(true);
@@ -81,7 +81,7 @@ class DoctrineCacheBridgeTest extends TestCase
         $this->assertTrue($this->bridge->contains('some_item'));
     }
 
-    public function testSave(): void
+    public function testSave()
     {
         $this->itemMock->shouldReceive('set')->twice()->with('dummy_data');
         $this->itemMock->shouldReceive('expiresAfter')->once()->with(2);
@@ -92,25 +92,25 @@ class DoctrineCacheBridgeTest extends TestCase
         $this->assertTrue($this->bridge->save('some_item', 'dummy_data', 2));
     }
 
-    public function testDelete(): void
+    public function testDelete()
     {
         $this->mock->shouldReceive('deleteItem')->once()->with('[some_item][1]')->andReturn(true);
 
         $this->assertTrue($this->bridge->delete('some_item'));
     }
 
-    public function testGetCache(): void
+    public function testGetCache()
     {
         $this->assertInstanceOf(CacheItemPoolInterface::class, $this->bridge->getCachePool());
     }
 
-    public function testGetStats(): void
+    public function testGetStats()
     {
         $this->assertNull($this->bridge->getStats());
     }
 
     #[DataProvider('invalidKeys')]
-    public function testInvalidKeys(string $key, string $normalizedKey): void
+    public function testInvalidKeys(string $key, string $normalizedKey)
     {
         $normalizedKey = sprintf('[%s][1]', $normalizedKey);
         $this->itemMock->shouldReceive('isHit')->andReturn(false);

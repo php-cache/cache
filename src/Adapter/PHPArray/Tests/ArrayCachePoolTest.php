@@ -21,7 +21,7 @@ use Psr\Log\LoggerInterface;
 
 class ArrayCachePoolTest extends TestCase
 {
-    public function testForeignItemIsRejectedBySave(): void
+    public function testForeignItemIsRejectedBySave()
     {
         $pool = new ArrayCachePool();
         $logger = $this->createMock(LoggerInterface::class);
@@ -39,14 +39,14 @@ class ArrayCachePoolTest extends TestCase
         $pool->save($this->createStub(CacheItemInterface::class));
     }
 
-    public function testForeignItemIsRejectedBySaveDeferred(): void
+    public function testForeignItemIsRejectedBySaveDeferred()
     {
         $this->expectException(InvalidArgumentException::class);
 
         (new ArrayCachePool())->saveDeferred($this->createStub(CacheItemInterface::class));
     }
 
-    public function testStorageExceptionIsWrappedWhenClearing(): void
+    public function testStorageExceptionIsWrappedWhenClearing()
     {
         $exception = new \RuntimeException('failed');
         $pool = new ThrowingArrayCachePool();
@@ -61,7 +61,7 @@ class ArrayCachePoolTest extends TestCase
         }
     }
 
-    public function testStorageExceptionIsWrappedWhenSaving(): void
+    public function testStorageExceptionIsWrappedWhenSaving()
     {
         $exception = new \RuntimeException('failed');
         $pool = new ThrowingArrayCachePool();
@@ -76,7 +76,7 @@ class ArrayCachePoolTest extends TestCase
         }
     }
 
-    public function testSetMultipleWrapsItemExpirationFailure(): void
+    public function testSetMultipleWrapsItemExpirationFailure()
     {
         $exception = new InvalidArgumentException('invalid');
         $item = $this->createMock(PhpCacheItem::class);
@@ -92,7 +92,7 @@ class ArrayCachePoolTest extends TestCase
         }
     }
 
-    public function testSetMultipleAttemptsEveryItemAndAlwaysCommits(): void
+    public function testSetMultipleAttemptsEveryItemAndAlwaysCommits()
     {
         $pool = new PartialDeferredArrayCachePool();
 
@@ -102,7 +102,7 @@ class ArrayCachePoolTest extends TestCase
         self::assertSame('two', $pool->getItem('second')->get());
     }
 
-    public function testDeletedLimitedItemIsNoLongerTracked(): void
+    public function testDeletedLimitedItemIsNoLongerTracked()
     {
         $pool = new ArrayCachePool(2);
         $pool->save($pool->getItem('key1')->set('value1'));
@@ -117,7 +117,7 @@ class ArrayCachePoolTest extends TestCase
         self::assertTrue($pool->hasItem('key4'));
     }
 
-    public function testDirectValueReadsBackingStorage(): void
+    public function testDirectValueReadsBackingStorage()
     {
         $storage = ['key' => 'value'];
         $pool = new ArrayCachePool(null, $storage);
@@ -126,7 +126,7 @@ class ArrayCachePoolTest extends TestCase
         self::assertNull($pool->getDirectValue('missing'));
     }
 
-    public function testMalformedStoredPayloadIsAMiss(): void
+    public function testMalformedStoredPayloadIsAMiss()
     {
         foreach ([[0 => 'value'], ['value', [123], null]] as $payload) {
             $storage = ['key' => $payload];
@@ -136,7 +136,7 @@ class ArrayCachePoolTest extends TestCase
         }
     }
 
-    public function testMalformedTagIndexIsDiscarded(): void
+    public function testMalformedTagIndexIsDiscarded()
     {
         foreach (['invalid', [123]] as $tagIndex) {
             $storage = ['tag!tag' => $tagIndex];
@@ -147,7 +147,7 @@ class ArrayCachePoolTest extends TestCase
         }
     }
 
-    public function testSavingHierarchicalItemRepairsMalformedPath(): void
+    public function testSavingHierarchicalItemRepairsMalformedPath()
     {
         $storage = ['aaa' => 'invalid'];
         $pool = new ArrayCachePool(null, $storage);
@@ -191,7 +191,7 @@ class ArrayCachePoolTest extends TestCase
         $this->assertTrue($pool->hasItem('key4'));
     }
 
-    public function testLimitKeepsUpdatedItem(): void
+    public function testLimitKeepsUpdatedItem()
     {
         $pool = new ArrayCachePool(2);
         $pool->save($pool->getItem('key1')->set('value1'));
@@ -202,7 +202,7 @@ class ArrayCachePoolTest extends TestCase
         self::assertSame('value2', $pool->getItem('key2')->get());
     }
 
-    public function testLimitCanBeReusedAfterClear(): void
+    public function testLimitCanBeReusedAfterClear()
     {
         $pool = new ArrayCachePool(2);
         $pool->save($pool->getItem('key1')->set('value1'));
@@ -213,7 +213,7 @@ class ArrayCachePoolTest extends TestCase
         self::assertSame('replacement', $pool->getItem('key1')->get());
     }
 
-    public function testFailedSaveKeepsExistingTagIndex(): void
+    public function testFailedSaveKeepsExistingTagIndex()
     {
         $pool = new FailingArrayCachePool();
         $pool->save($pool->getItem('key')->set('original')->setTags(['foo']));
@@ -227,7 +227,7 @@ class ArrayCachePoolTest extends TestCase
         self::assertFalse($pool->hasItem('key'));
     }
 
-    public function testDeleteReportsADeferredCommitFailure(): void
+    public function testDeleteReportsADeferredCommitFailure()
     {
         $pool = new FailingArrayCachePool();
         self::assertTrue($pool->saveDeferred($pool->getItem('deferred')->set('value')->setTags(['tag'])));
@@ -236,7 +236,7 @@ class ArrayCachePoolTest extends TestCase
         self::assertFalse($pool->deleteItem('other'));
     }
 
-    public function testDeleteItemsDoesNotPersistRequestedDeferredItems(): void
+    public function testDeleteItemsDoesNotPersistRequestedDeferredItems()
     {
         $pool = new FailingArrayCachePool();
         self::assertTrue($pool->saveDeferred($pool->getItem('first')->set('value')));
@@ -248,7 +248,7 @@ class ArrayCachePoolTest extends TestCase
         self::assertFalse($pool->hasItem('second'));
     }
 
-    public function testCommitDoesNotReplayItemsAfterDeletingAnExpiredDeferredItem(): void
+    public function testCommitDoesNotReplayItemsAfterDeletingAnExpiredDeferredItem()
     {
         $pool = new DuplicateWriteFailingArrayCachePool();
         self::assertTrue($pool->saveDeferred($pool->getItem('expired')->set('old')->expiresAfter(-1)));
@@ -259,7 +259,7 @@ class ArrayCachePoolTest extends TestCase
         self::assertSame('value', $pool->getItem('live')->get());
     }
 
-    public function testCommitKeepsFailedAndUnattemptedItemsDeferredAfterAnException(): void
+    public function testCommitKeepsFailedAndUnattemptedItemsDeferredAfterAnException()
     {
         $pool = new OneTimeThrowingArrayCachePool();
         self::assertTrue($pool->saveDeferred($pool->getItem('first')->set('one')));
@@ -279,7 +279,7 @@ class ArrayCachePoolTest extends TestCase
         self::assertSame('three', $pool->getItem('last')->get());
     }
 
-    public function testStaleTagIndexDoesNotDeleteReplacement(): void
+    public function testStaleTagIndexDoesNotDeleteReplacement()
     {
         $pool = new FailingArrayCachePool();
         $pool->addTagEntry('foo', 'key');

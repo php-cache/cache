@@ -23,7 +23,7 @@ final class ApcuCachePoolTest extends TestCase
 {
     #[RunInSeparateProcess]
     #[PreserveGlobalState(false)]
-    public function testSavedItemRoundTripsAsNativePayload(): void
+    public function testSavedItemRoundTripsAsNativePayload()
     {
         require_once __DIR__.'/Fixtures/apcu_functions.php';
 
@@ -50,7 +50,7 @@ final class ApcuCachePoolTest extends TestCase
     #[DataProvider('invalidPayloads')]
     #[RunInSeparateProcess]
     #[PreserveGlobalState(false)]
-    public function testCorruptPayloadIsACacheMiss(mixed $payload): void
+    public function testCorruptPayloadIsACacheMiss(mixed $payload)
     {
         require_once __DIR__.'/Fixtures/apcu_functions.php';
 

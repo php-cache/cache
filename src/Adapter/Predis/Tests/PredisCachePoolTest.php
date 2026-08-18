@@ -19,7 +19,7 @@ use Predis\Command\CommandInterface;
 
 class PredisCachePoolTest extends TestCase
 {
-    public function testRepeatedTagSavesKeepOneIndexEntry(): void
+    public function testRepeatedTagSavesKeepOneIndexEntry()
     {
         $client = new PayloadClient(false);
         $pool = new PredisCachePool($client);
@@ -37,7 +37,7 @@ class PredisCachePoolTest extends TestCase
         ], $client->setRemovalArguments);
     }
 
-    public function testValidTaggedBackendPayloadIsHit(): void
+    public function testValidTaggedBackendPayloadIsHit()
     {
         $payload = serialize([true, 'value', ['tag' => 'tag'], null]);
         $item = (new PredisCachePool(new PayloadClient($payload)))->getItem('key');
@@ -47,7 +47,7 @@ class PredisCachePoolTest extends TestCase
     }
 
     #[DataProvider('invalidPayloadProvider')]
-    public function testInvalidBackendPayloadIsCacheMiss(mixed $payload): void
+    public function testInvalidBackendPayloadIsCacheMiss(mixed $payload)
     {
         $item = (new PredisCachePool(new PayloadClient($payload)))->getItem('key');
 

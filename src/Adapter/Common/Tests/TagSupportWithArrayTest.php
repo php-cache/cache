@@ -16,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 
 final class TagSupportWithArrayTest extends TestCase
 {
-    public function testListOperationsNormalizeStoredValues(): void
+    public function testListOperationsNormalizeStoredValues()
     {
         $store = new InMemoryTagListStore();
 
@@ -36,7 +36,7 @@ final class TagSupportWithArrayTest extends TestCase
         self::assertSame([], $store->readList('tag'));
     }
 
-    public function testListOperationsReportStorageFailures(): void
+    public function testListOperationsReportStorageFailures()
     {
         $store = new InMemoryTagListStore();
         $store->writeSucceeds = false;

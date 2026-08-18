@@ -26,7 +26,7 @@ use Psr\Cache\CacheItemInterface;
  */
 class NamespacedCachePoolTest extends TestCase
 {
-    public function testCreatePreservesNativeTagSupport(): void
+    public function testCreatePreservesNativeTagSupport()
     {
         $pool = NamespacedCachePool::create(new ArrayCachePool(), 'namespace');
 
@@ -46,7 +46,7 @@ class NamespacedCachePoolTest extends TestCase
         $this->assertFalse($pool->hasItem('second'));
     }
 
-    public function testTagInvalidationIsIsolatedBetweenNamespaces(): void
+    public function testTagInvalidationIsIsolatedBetweenNamespaces()
     {
         $backend = new ArrayCachePool();
         $first = NamespacedCachePool::create($backend, 'first');
@@ -66,7 +66,7 @@ class NamespacedCachePoolTest extends TestCase
         $this->assertSame('second', $second->getItem('key')->get());
     }
 
-    public function testTagInvalidationIsIsolatedInNestedNamespaces(): void
+    public function testTagInvalidationIsIsolatedInNestedNamespaces()
     {
         $backend = new ArrayCachePool();
         $outer = NamespacedCachePool::create($backend, 'outer');
@@ -84,7 +84,7 @@ class NamespacedCachePoolTest extends TestCase
         $this->assertSame('outer', $outer->getItem('key')->get());
     }
 
-    public function testCreateDoesNotAdvertiseTagsForAGenericPool(): void
+    public function testCreateDoesNotAdvertiseTagsForAGenericPool()
     {
         $pool = NamespacedCachePool::create($this->getHierarchyCacheStub(), 'namespace');
 
@@ -147,7 +147,7 @@ class NamespacedCachePoolTest extends TestCase
     }
 
     #[DataProvider('invalidIterableKeyProvider')]
-    public function testGetItemsRejectsNonStringKeys(mixed $key): void
+    public function testGetItemsRejectsNonStringKeys(mixed $key)
     {
         $pool = new NamespacedCachePool($this->getHierarchyCacheStub(), 'ns');
 
@@ -210,7 +210,7 @@ class NamespacedCachePoolTest extends TestCase
     }
 
     #[DataProvider('invalidIterableKeyProvider')]
-    public function testDeleteItemsRejectsNonStringKeys(mixed $key): void
+    public function testDeleteItemsRejectsNonStringKeys(mixed $key)
     {
         $pool = new NamespacedCachePool($this->getHierarchyCacheStub(), 'ns');
 
@@ -249,7 +249,7 @@ class NamespacedCachePoolTest extends TestCase
         $this->assertEquals($returnValue, $pool->saveDeferred($pool->getItem($key)));
     }
 
-    public function testSaveRejectsItemsFromAnotherPool(): void
+    public function testSaveRejectsItemsFromAnotherPool()
     {
         $pool = new NamespacedCachePool($this->getHierarchyCacheStub(), 'first');
         $otherItem = $this->createMock(CacheItemInterface::class);
@@ -262,7 +262,7 @@ class NamespacedCachePoolTest extends TestCase
         $pool->save($otherPool->getItem('key'));
     }
 
-    public function testSaveDeferredRejectsItemsFromAnotherPool(): void
+    public function testSaveDeferredRejectsItemsFromAnotherPool()
     {
         $pool = new NamespacedCachePool($this->getHierarchyCacheStub(), 'first');
         $otherItem = $this->createMock(CacheItemInterface::class);

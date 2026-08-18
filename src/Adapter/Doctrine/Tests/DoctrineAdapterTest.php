@@ -39,20 +39,20 @@ class DoctrineAdapterTest extends TestCase
         $this->pool = new DoctrineCachePool($this->mockDoctrine);
     }
 
-    public function testConstructor(): void
+    public function testConstructor()
     {
         $this->assertInstanceOf(DoctrineCachePool::class, $this->pool);
         $this->assertInstanceOf(CacheItemPoolInterface::class, $this->pool);
     }
 
-    public function testGetCache(): void
+    public function testGetCache()
     {
         $this->assertInstanceOf(Cache::class, $this->pool->getCache());
         $this->assertEquals($this->mockDoctrine, $this->pool->getCache());
     }
 
     #[DataProvider('invalidPayloads')]
-    public function testCorruptPayloadIsACacheMiss(mixed $payload): void
+    public function testCorruptPayloadIsACacheMiss(mixed $payload)
     {
         $this->mockDoctrine->shouldReceive('fetch')->once()->with('corrupt')->andReturn($payload);
 
@@ -71,7 +71,7 @@ class DoctrineAdapterTest extends TestCase
         yield 'invalid expiration' => [serialize([true, 'value', [], 'tomorrow'])];
     }
 
-    public function testCorruptTagListIsIgnored(): void
+    public function testCorruptTagListIsIgnored()
     {
         $this->mockDoctrine->shouldReceive('fetch')->once()->with('tag!corrupt')->andReturn(42);
         $this->mockDoctrine->shouldReceive('delete')->once()->with('tag!corrupt')->andReturn(true);
@@ -79,7 +79,7 @@ class DoctrineAdapterTest extends TestCase
         self::assertTrue($this->pool->invalidateTag('corrupt'));
     }
 
-    public function testInvalidatingAnExistingTagReportsABackendFailure(): void
+    public function testInvalidatingAnExistingTagReportsABackendFailure()
     {
         $this->mockDoctrine->shouldReceive('fetch')->once()->with('tag!tag')->andReturn([]);
         $this->mockDoctrine->shouldReceive('delete')->once()->with('tag!tag')->andReturn(false);
@@ -88,14 +88,14 @@ class DoctrineAdapterTest extends TestCase
         self::assertFalse($this->pool->invalidateTag('tag'));
     }
 
-    public function testDeletingAMissingItemIsSuccessful(): void
+    public function testDeletingAMissingItemIsSuccessful()
     {
         $pool = new DoctrineCachePool(new InMemoryDoctrineCache());
 
         self::assertTrue($pool->deleteItem('missing'));
     }
 
-    public function testDeletingAnExistingItemReportsABackendFailure(): void
+    public function testDeletingAnExistingItemReportsABackendFailure()
     {
         $cache = new InMemoryDoctrineCache();
         $pool = new DoctrineCachePool($cache);
@@ -106,14 +106,14 @@ class DoctrineAdapterTest extends TestCase
         self::assertTrue($pool->hasItem('key'));
     }
 
-    public function testInvalidatingAMissingTagIsSuccessful(): void
+    public function testInvalidatingAMissingTagIsSuccessful()
     {
         $pool = new DoctrineCachePool(new InMemoryDoctrineCache());
 
         self::assertTrue($pool->invalidateTag('missing'));
     }
 
-    public function testClear(): void
+    public function testClear()
     {
         $this->assertFalse($this->pool->clear());
 

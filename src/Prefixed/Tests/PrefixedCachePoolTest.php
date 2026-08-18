@@ -25,7 +25,7 @@ use Psr\Cache\CacheItemPoolInterface;
  */
 class PrefixedCachePoolTest extends TestCase
 {
-    public function testCreatePreservesNativeTagSupport(): void
+    public function testCreatePreservesNativeTagSupport()
     {
         $pool = PrefixedCachePool::create(new ArrayCachePool(), 'prefix.');
 
@@ -45,14 +45,14 @@ class PrefixedCachePoolTest extends TestCase
         $this->assertFalse($pool->hasItem('second'));
     }
 
-    public function testCreateDoesNotAdvertiseTagsForAGenericPool(): void
+    public function testCreateDoesNotAdvertiseTagsForAGenericPool()
     {
         $pool = PrefixedCachePool::create($this->getCacheStub(), 'prefix.');
 
         $this->assertNotInstanceOf(TaggableCacheItemPoolInterface::class, $pool);
     }
 
-    public function testReservedCharactersInPrefixAreEncoded(): void
+    public function testReservedCharactersInPrefixAreEncoded()
     {
         $backend = new ArrayCachePool();
         $pool = new PrefixedCachePool($backend, '{}()/\\@:%|!');
@@ -62,7 +62,7 @@ class PrefixedCachePoolTest extends TestCase
         $this->assertSame('value', $pool->getItem('key')->get());
     }
 
-    public function testEncodedPrefixUsesOnlyPortablePsrCharacters(): void
+    public function testEncodedPrefixUsesOnlyPortablePsrCharacters()
     {
         $item = $this->createMock(CacheItemInterface::class);
         $item->method('getKey')->willReturn('_x7B_key');
@@ -75,7 +75,7 @@ class PrefixedCachePoolTest extends TestCase
         $this->assertSame('key', (new PrefixedCachePool($backend, '{'))->getItem('key')->getKey());
     }
 
-    public function testLiteralEncodingMarkerDoesNotCollideWithEncodedPrefix(): void
+    public function testLiteralEncodingMarkerDoesNotCollideWithEncodedPrefix()
     {
         $backend = new ArrayCachePool();
         $encoded = new PrefixedCachePool($backend, '%');
@@ -143,7 +143,7 @@ class PrefixedCachePoolTest extends TestCase
         $this->assertSame($key1, $items[$key1]->getKey());
     }
 
-    public function testGetItemsPreservesNumericStringKeysWithAnEmptyPrefix(): void
+    public function testGetItemsPreservesNumericStringKeysWithAnEmptyPrefix()
     {
         $item = $this->createMock(CacheItemInterface::class);
         $item->method('getKey')->willReturn('123');
@@ -161,7 +161,7 @@ class PrefixedCachePoolTest extends TestCase
     }
 
     #[DataProvider('invalidIterableKeyProvider')]
-    public function testGetItemsRejectsNonStringKeys(mixed $key): void
+    public function testGetItemsRejectsNonStringKeys(mixed $key)
     {
         $pool = new PrefixedCachePool($this->getCacheStub(), 'ns');
 
@@ -224,7 +224,7 @@ class PrefixedCachePoolTest extends TestCase
     }
 
     #[DataProvider('invalidIterableKeyProvider')]
-    public function testDeleteItemsRejectsNonStringKeys(mixed $key): void
+    public function testDeleteItemsRejectsNonStringKeys(mixed $key)
     {
         $pool = new PrefixedCachePool($this->getCacheStub(), 'ns');
 
@@ -263,7 +263,7 @@ class PrefixedCachePoolTest extends TestCase
         $this->assertEquals($returnValue, $pool->saveDeferred($pool->getItem($key)));
     }
 
-    public function testSaveRejectsItemsFromAnotherPool(): void
+    public function testSaveRejectsItemsFromAnotherPool()
     {
         $pool = new PrefixedCachePool($this->getCacheStub(), 'first.');
         $otherItem = $this->createMock(CacheItemInterface::class);
@@ -276,7 +276,7 @@ class PrefixedCachePoolTest extends TestCase
         $pool->save($otherPool->getItem('key'));
     }
 
-    public function testSaveDeferredRejectsItemsFromAnotherPool(): void
+    public function testSaveDeferredRejectsItemsFromAnotherPool()
     {
         $pool = new PrefixedCachePool($this->getCacheStub(), 'first.');
         $otherItem = $this->createMock(CacheItemInterface::class);

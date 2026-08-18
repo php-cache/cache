@@ -22,7 +22,7 @@ use PHPUnit\Framework\TestCase;
 class MongoDBCachePoolTest extends TestCase
 {
     #[RunInSeparateProcess]
-    public function testExpiringItemCanBeOverwrittenWithoutExpiration(): void
+    public function testExpiringItemCanBeOverwrittenWithoutExpiration()
     {
         if (!class_exists(UTCDateTime::class)) {
             eval('namespace MongoDB\\BSON { class UTCDateTime { public function __construct(public int $milliseconds) {} } }');
@@ -49,7 +49,7 @@ class MongoDBCachePoolTest extends TestCase
         self::assertSame(['expiresAt' => true], $updates[1]['$unset'] ?? null);
     }
 
-    public function testValidTaggedBackendDocumentIsHit(): void
+    public function testValidTaggedBackendDocumentIsHit()
     {
         $collection = $this->createMock(Collection::class);
         $collection->method('findOne')->willReturn([
@@ -65,7 +65,7 @@ class MongoDBCachePoolTest extends TestCase
     }
 
     #[DataProvider('invalidDocumentProvider')]
-    public function testInvalidBackendDocumentIsCacheMiss(array|object|null $document): void
+    public function testInvalidBackendDocumentIsCacheMiss(array|object|null $document)
     {
         $collection = $this->createMock(Collection::class);
         $collection->method('findOne')->willReturn($document);

@@ -19,7 +19,7 @@ use Psr\Cache\CacheItemPoolInterface;
 
 final class GenerationMetadataTest extends TestCase
 {
-    public function testGenerationMetadataProbesPastAnOccupiedBackendKey(): void
+    public function testGenerationMetadataProbesPastAnOccupiedBackendKey()
     {
         $backend = new ArrayCachePool();
         $collisionKey = 'ns.g.'.sha1('|namespace');
@@ -38,7 +38,7 @@ final class GenerationMetadataTest extends TestCase
         $this->assertFalse($pool->hasItem('key'));
     }
 
-    public function testGenerationProbeDoesNotMoveWhenAnEarlierCollisionDisappears(): void
+    public function testGenerationProbeDoesNotMoveWhenAnEarlierCollisionDisappears()
     {
         $backend = new ArrayCachePool();
         $collisionKey = 'ns.g.'.sha1('|namespace');

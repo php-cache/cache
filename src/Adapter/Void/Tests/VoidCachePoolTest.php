@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 final class VoidCachePoolTest extends TestCase
 {
-    public function testTagOperationsSucceed(): void
+    public function testTagOperationsSucceed()
     {
         $pool = new VoidCachePool();
         $item = $pool->getItem('key')->set('value')->setTags(['tag']);

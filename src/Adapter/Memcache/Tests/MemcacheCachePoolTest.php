@@ -19,7 +19,7 @@ use PHPUnit\Framework\TestCase;
 class MemcacheCachePoolTest extends TestCase
 {
     #[RunInSeparateProcess]
-    public function testTimeToLiveMoreThanThirtyDaysUsesAbsoluteTimestamp(): void
+    public function testTimeToLiveMoreThanThirtyDaysUsesAbsoluteTimestamp()
     {
         if (class_exists(\Memcache::class)) {
             $this->markTestSkipped('This test uses a local Memcache stub.');
@@ -36,7 +36,7 @@ class MemcacheCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testValidTaggedBackendPayloadIsHit(): void
+    public function testValidTaggedBackendPayloadIsHit()
     {
         if (class_exists(\Memcache::class)) {
             $this->markTestSkipped('This test uses a local Memcache stub.');
@@ -54,7 +54,7 @@ class MemcacheCachePoolTest extends TestCase
 
     #[DataProvider('invalidPayloadProvider')]
     #[RunInSeparateProcess]
-    public function testInvalidBackendPayloadIsCacheMiss(mixed $payload): void
+    public function testInvalidBackendPayloadIsCacheMiss(mixed $payload)
     {
         if (class_exists(\Memcache::class)) {
             $this->markTestSkipped('This test uses a local Memcache stub.');

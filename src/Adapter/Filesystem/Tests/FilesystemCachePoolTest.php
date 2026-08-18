@@ -51,7 +51,7 @@ class FilesystemCachePoolTest extends TestCase
         $this->assertFalse($this->getFilesystem()->fileExists('cache/test_ttl_null'));
     }
 
-    public function testClearIgnoresFileRemovedByAnotherProcess(): void
+    public function testClearIgnoresFileRemovedByAnotherProcess()
     {
         $filesystem = $this->createMock(FilesystemOperator::class);
         $filesystem->method('listContents')->willReturn(new DirectoryListing(new \ArrayIterator([new FileAttributes('cache/key')])));
@@ -70,7 +70,7 @@ class FilesystemCachePoolTest extends TestCase
         $this->assertTrue($this->getFilesystem()->fileExists('foobar/test_path'));
     }
 
-    public function testFilesystemAndFolderCanBeReconfigured(): void
+    public function testFilesystemAndFolderCanBeReconfigured()
     {
         $filesystem = $this->createMock(FilesystemOperator::class);
         $replacement = $this->createMock(FilesystemOperator::class);
@@ -89,7 +89,7 @@ class FilesystemCachePoolTest extends TestCase
     }
 
     #[DataProvider('unsafeFolderProvider')]
-    public function testRejectsUnsafeRootFolder(string $folder): void
+    public function testRejectsUnsafeRootFolder(string $folder)
     {
         $this->expectException(InvalidArgumentException::class);
 
@@ -127,7 +127,7 @@ class FilesystemCachePoolTest extends TestCase
         $this->getFilesystem()->delete('cache/corrupt');
     }
 
-    public function testMalformedSerializedCacheFileIsMiss(): void
+    public function testMalformedSerializedCacheFileIsMiss()
     {
         $pool = $this->createCachePool();
 
@@ -136,7 +136,7 @@ class FilesystemCachePoolTest extends TestCase
         $this->assertFalse($pool->getItem('malformed')->isHit());
     }
 
-    public function testCorruptedTagListIsEmpty(): void
+    public function testCorruptedTagListIsEmpty()
     {
         $pool = $this->createCachePool();
 
@@ -145,7 +145,7 @@ class FilesystemCachePoolTest extends TestCase
         $this->assertTrue($pool->invalidateTag('corrupt_tag'));
     }
 
-    public function testClearKeepsCacheDirectory(): void
+    public function testClearKeepsCacheDirectory()
     {
         $pool = $this->createCachePool();
         $pool->save($pool->getItem('before_clear')->set('value'));

@@ -22,7 +22,7 @@ class MemcachedCachePoolTest extends TestCase
     use CreatePoolTrait;
 
     #[RunInSeparateProcess]
-    public function testValidTaggedBackendPayloadIsHit(): void
+    public function testValidTaggedBackendPayloadIsHit()
     {
         if (class_exists(\Memcached::class)) {
             $this->markTestSkipped('This test uses a local Memcached stub.');
@@ -42,7 +42,7 @@ class MemcachedCachePoolTest extends TestCase
      * Ensures that items with a TTL larger than 30 days can be stored in memcached
      * https://github.com/memcached/memcached/wiki/Programming#expiration.
      */
-    public function testTimeToLiveMoreThan30days(): void
+    public function testTimeToLiveMoreThan30days()
     {
         $pool = $this->createCachePool();
 
@@ -55,7 +55,7 @@ class MemcachedCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testGetMultipleUsesNativeGetMulti(): void
+    public function testGetMultipleUsesNativeGetMulti()
     {
         if (class_exists(\Memcached::class)) {
             $this->markTestSkipped('This test uses a local Memcached stub.');
@@ -76,7 +76,7 @@ class MemcachedCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testGetMultipleReportsNativeFailure(): void
+    public function testGetMultipleReportsNativeFailure()
     {
         if (class_exists(\Memcached::class)) {
             $this->markTestSkipped('This test uses a local Memcached stub.');
@@ -90,7 +90,7 @@ class MemcachedCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testSetMultipleUsesNativeSetMultiAndRemovesOldTags(): void
+    public function testSetMultipleUsesNativeSetMultiAndRemovesOldTags()
     {
         if (class_exists(\Memcached::class)) {
             $this->markTestSkipped('This test uses a local Memcached stub.');
@@ -115,7 +115,7 @@ class MemcachedCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testSetMultipleReportsATagIndexWriteFailure(): void
+    public function testSetMultipleReportsATagIndexWriteFailure()
     {
         if (class_exists(\Memcached::class)) {
             $this->markTestSkipped('This test uses a local Memcached stub.');
@@ -132,7 +132,7 @@ class MemcachedCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testDeleteMultipleUsesNativeDeleteMultiAndRemovesOldTags(): void
+    public function testDeleteMultipleUsesNativeDeleteMultiAndRemovesOldTags()
     {
         if (class_exists(\Memcached::class)) {
             $this->markTestSkipped('This test uses a local Memcached stub.');
@@ -152,7 +152,7 @@ class MemcachedCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testDeleteMultipleReportsATagIndexWriteFailure(): void
+    public function testDeleteMultipleReportsATagIndexWriteFailure()
     {
         if (class_exists(\Memcached::class)) {
             $this->markTestSkipped('This test uses a local Memcached stub.');
@@ -169,7 +169,7 @@ class MemcachedCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testHierarchyDeleteReportsANativeIncrementFailure(): void
+    public function testHierarchyDeleteReportsANativeIncrementFailure()
     {
         if (class_exists(\Memcached::class)) {
             $this->markTestSkipped('This test uses a local Memcached stub.');
@@ -181,7 +181,7 @@ class MemcachedCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testDeleteMultipleReportsANativeIncrementFailure(): void
+    public function testDeleteMultipleReportsANativeIncrementFailure()
     {
         if (class_exists(\Memcached::class)) {
             $this->markTestSkipped('This test uses a local Memcached stub.');
@@ -194,7 +194,7 @@ class MemcachedCachePoolTest extends TestCase
 
     #[DataProvider('invalidPayloadProvider')]
     #[RunInSeparateProcess]
-    public function testInvalidBackendPayloadIsCacheMiss(mixed $payload): void
+    public function testInvalidBackendPayloadIsCacheMiss(mixed $payload)
     {
         if (class_exists(\Memcached::class)) {
             $this->markTestSkipped('This test uses a local Memcached stub.');

@@ -23,7 +23,7 @@ class RedisCachePoolTest extends TestCase
      * Tests that an exception is thrown if invalid object is
      * passed to the constructor.
      */
-    public function testConstructorWithInvalidObject(): void
+    public function testConstructorWithInvalidObject()
     {
         $this->expectException(CachePoolException::class);
 
@@ -31,7 +31,7 @@ class RedisCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testRepeatedTagSavesKeepOneIndexEntry(): void
+    public function testRepeatedTagSavesKeepOneIndexEntry()
     {
         if (class_exists(\Redis::class)) {
             $this->markTestSkipped('This test uses a local Redis stub.');
@@ -117,7 +117,7 @@ class RedisCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testValidTaggedBackendPayloadIsHit(): void
+    public function testValidTaggedBackendPayloadIsHit()
     {
         if (class_exists(\Redis::class)) {
             $this->markTestSkipped('This test uses a local Redis stub.');
@@ -134,7 +134,7 @@ class RedisCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testDeleteReportsANativeFailure(): void
+    public function testDeleteReportsANativeFailure()
     {
         if (class_exists(\Redis::class)) {
             $this->markTestSkipped('This test uses a local Redis stub.');
@@ -146,7 +146,7 @@ class RedisCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testTagInvalidationReportsANativeListDeleteFailure(): void
+    public function testTagInvalidationReportsANativeListDeleteFailure()
     {
         if (class_exists(\Redis::class)) {
             $this->markTestSkipped('This test uses a local Redis stub.');
@@ -158,7 +158,7 @@ class RedisCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testTagInvalidationReportsANativeListReadFailure(): void
+    public function testTagInvalidationReportsANativeListReadFailure()
     {
         if (class_exists(\Redis::class)) {
             $this->markTestSkipped('This test uses a local Redis stub.');
@@ -170,7 +170,7 @@ class RedisCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testSaveReportsANativeTagIndexWriteFailure(): void
+    public function testSaveReportsANativeTagIndexWriteFailure()
     {
         if (class_exists(\Redis::class)) {
             $this->markTestSkipped('This test uses a local Redis stub.');
@@ -184,7 +184,7 @@ class RedisCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testDeleteReportsANativeTagIndexWriteFailure(): void
+    public function testDeleteReportsANativeTagIndexWriteFailure()
     {
         if (class_exists(\Redis::class)) {
             $this->markTestSkipped('This test uses a local Redis stub.');
@@ -199,7 +199,7 @@ class RedisCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testSaveReportsANativePreviousTagIndexRemovalFailure(): void
+    public function testSaveReportsANativePreviousTagIndexRemovalFailure()
     {
         if (class_exists(\Redis::class)) {
             $this->markTestSkipped('This test uses a local Redis stub.');
@@ -216,7 +216,7 @@ class RedisCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testInvalidationReportsANativeTagIndexWriteFailure(): void
+    public function testInvalidationReportsANativeTagIndexWriteFailure()
     {
         if (class_exists(\Redis::class)) {
             $this->markTestSkipped('This test uses a local Redis stub.');
@@ -231,7 +231,7 @@ class RedisCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testHierarchyDeleteReportsANativeIncrementFailure(): void
+    public function testHierarchyDeleteReportsANativeIncrementFailure()
     {
         if (class_exists(\Redis::class)) {
             $this->markTestSkipped('This test uses a local Redis stub.');
@@ -244,7 +244,7 @@ class RedisCachePoolTest extends TestCase
 
     #[DataProvider('invalidPayloadProvider')]
     #[RunInSeparateProcess]
-    public function testInvalidBackendPayloadIsCacheMiss(mixed $payload): void
+    public function testInvalidBackendPayloadIsCacheMiss(mixed $payload)
     {
         if (class_exists(\Redis::class)) {
             $this->markTestSkipped('This test uses a local Redis stub.');

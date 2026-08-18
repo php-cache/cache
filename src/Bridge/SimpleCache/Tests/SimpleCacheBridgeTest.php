@@ -50,7 +50,7 @@ class SimpleCacheBridgeTest extends TestCase
         $this->itemMock = m::mock(CacheItemInterface::class);
     }
 
-    public function testPoolInvalidArgumentsAreWrapped(): void
+    public function testPoolInvalidArgumentsAreWrapped()
     {
         foreach ([
             'get' => 'getItem',
@@ -86,7 +86,7 @@ class SimpleCacheBridgeTest extends TestCase
         }
     }
 
-    public function testSetMultipleWrapsItemInvalidArgument(): void
+    public function testSetMultipleWrapsItemInvalidArgument()
     {
         $exception = new PoolInvalidArgumentException('invalid');
         $item = $this->createMock(CacheItemInterface::class);
@@ -105,7 +105,7 @@ class SimpleCacheBridgeTest extends TestCase
         }
     }
 
-    public function testGetMultipleWrapsLazyPoolInvalidArgument(): void
+    public function testGetMultipleWrapsLazyPoolInvalidArgument()
     {
         $exception = new class('invalid') extends \RuntimeException implements \Psr\Cache\InvalidArgumentException {
         };
@@ -124,7 +124,7 @@ class SimpleCacheBridgeTest extends TestCase
         }
     }
 
-    public function testSetMultipleWrapsLazyPoolInvalidArgument(): void
+    public function testSetMultipleWrapsLazyPoolInvalidArgument()
     {
         $exception = new class('invalid') extends \RuntimeException implements \Psr\Cache\InvalidArgumentException {
         };
@@ -143,7 +143,7 @@ class SimpleCacheBridgeTest extends TestCase
         }
     }
 
-    public function testSetMultipleDoesNotMutateBeforeLazyIterationCompletes(): void
+    public function testSetMultipleDoesNotMutateBeforeLazyIterationCompletes()
     {
         $exception = new class('invalid') extends \RuntimeException implements \Psr\Cache\InvalidArgumentException {
         };
@@ -167,7 +167,7 @@ class SimpleCacheBridgeTest extends TestCase
         }
     }
 
-    public function testSetMultipleAttemptsEveryItemAndAlwaysCommits(): void
+    public function testSetMultipleAttemptsEveryItemAndAlwaysCommits()
     {
         $first = $this->createMock(CacheItemInterface::class);
         $first->method('getKey')->willReturn('first');
@@ -186,7 +186,7 @@ class SimpleCacheBridgeTest extends TestCase
         self::assertFalse((new SimpleCacheBridge($pool))->setMultiple(['first' => 'one', 'second' => 'two']));
     }
 
-    public function testClearReturnsPoolResult(): void
+    public function testClearReturnsPoolResult()
     {
         $pool = $this->createMock(CacheItemPoolInterface::class);
         $pool->expects(self::once())->method('clear')->willReturn(true);
@@ -194,7 +194,7 @@ class SimpleCacheBridgeTest extends TestCase
         self::assertTrue((new SimpleCacheBridge($pool))->clear());
     }
 
-    public function testGetMultipleUsesDefaultForMisses(): void
+    public function testGetMultipleUsesDefaultForMisses()
     {
         $item = $this->createMock(CacheItemInterface::class);
         $item->method('getKey')->willReturn('key');
@@ -209,7 +209,7 @@ class SimpleCacheBridgeTest extends TestCase
         );
     }
 
-    public function testGetMultiplePreservesNumericStringKeys(): void
+    public function testGetMultiplePreservesNumericStringKeys()
     {
         $item = $this->createMock(CacheItemInterface::class);
         $item->method('getKey')->willReturn('123');
@@ -225,7 +225,7 @@ class SimpleCacheBridgeTest extends TestCase
         }
     }
 
-    public function testSetMultipleConvertsIntegerKeys(): void
+    public function testSetMultipleConvertsIntegerKeys()
     {
         $item = $this->createMock(CacheItemInterface::class);
         $item->method('getKey')->willReturn('1');
@@ -240,7 +240,7 @@ class SimpleCacheBridgeTest extends TestCase
         self::assertTrue((new SimpleCacheBridge($pool))->setMultiple([1 => 'value']));
     }
 
-    public function testMultipleOperationsRejectNonStringKeys(): void
+    public function testMultipleOperationsRejectNonStringKeys()
     {
         $bridge = new SimpleCacheBridge($this->createStub(CacheItemPoolInterface::class));
 
@@ -254,7 +254,7 @@ class SimpleCacheBridgeTest extends TestCase
         }
     }
 
-    public function testOperationsRejectInvalidKeys(): void
+    public function testOperationsRejectInvalidKeys()
     {
         $bridge = new SimpleCacheBridge($this->createStub(CacheItemPoolInterface::class));
 
