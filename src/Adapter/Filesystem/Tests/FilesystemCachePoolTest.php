@@ -54,7 +54,7 @@ class FilesystemCachePoolTest extends TestCase
     public function testClearIgnoresFileRemovedByAnotherProcess(): void
     {
         $filesystem = $this->createMock(FilesystemOperator::class);
-        $filesystem->method('listContents')->willReturn(new DirectoryListing([new FileAttributes('cache/key')]));
+        $filesystem->method('listContents')->willReturn(new DirectoryListing(new \ArrayIterator([new FileAttributes('cache/key')])));
         $filesystem->method('fileExists')->with('cache/key')->willReturn(false);
         $filesystem->method('delete')->with('cache/key')->willThrowException(UnableToDeleteFile::atLocation('cache/key'));
 
