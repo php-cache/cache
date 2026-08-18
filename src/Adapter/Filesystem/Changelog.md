@@ -1,8 +1,24 @@
-# Change Log
+# Changelog
 
-The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
+Each release groups changes under Added, Removed, Changed, or Fixed headings.
 
-## UNRELEASED
+## 2.0.0
+
+### Added
+
+* Add accessors for the Flysystem instance and cache directory.
+
+### Changed
+
+* Require PHP 8.2 or later.
+* Support Flysystem 2 and 3 through `FilesystemOperator`.
+* Require `psr/cache` 3 and `psr/simple-cache` 3.
+* Add native parameter and return types required by the PSR interfaces.
+* Normalize leading and trailing slashes in `setFolder()`.
+
+### Fixed
+
+* Reject folder values that resolve to the Flysystem root or traverse through a parent directory.
 
 ## 1.2.0
 
@@ -33,7 +49,7 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ### Changed
 
-* The behavior of `CacheItem::getTags()` has changed. It will not return the tags stored in the cache storage.
+* The behavior of `CacheItem::getTags()` has changed. It does not return tags stored in the cache storage.
 
 ### Removed
 

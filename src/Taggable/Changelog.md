@@ -2,7 +2,24 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
-## UNRELEASED
+## 2.0.0
+
+### Changed
+
+* Require PHP 8.2 or later.
+* Require `psr/cache` 3.
+* Add native parameter and return types required by the PSR interfaces.
+* Persist `TaggablePSR6PoolAdapter::saveDeferred()` immediately so a wrapped pool cannot commit an item without its tag metadata.
+
+### Added
+
+* Let subclasses replace tag-list operations. The pools remain private, while the constructor and list hooks form the extension API.
+* Use late static binding in `TaggablePSR6PoolAdapter::makeTaggable()`.
+
+### Fixed
+
+* Keep tag indexes intact when deleting or clearing the wrapped pool fails.
+* Report tag-store write and delete failures to callers.
 
 ## 1.2.0
 

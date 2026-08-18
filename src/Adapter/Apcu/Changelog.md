@@ -2,7 +2,20 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
-## UNRELEASED
+## 2.0.0
+
+### Changed
+
+* Require PHP 8.2 or later.
+* Require `psr/cache` 3 and `psr/simple-cache` 3.
+* Add native parameter and return types required by the PSR interfaces.
+* Store APCu payloads as native arrays instead of serialized strings. Clear APCu before upgrading or rolling back.
+
+## 1.3.0
+
+### Fixed
+
+* Pass a zero TTL to APCu when an item has no expiration.
 
 ## 1.2.0
 

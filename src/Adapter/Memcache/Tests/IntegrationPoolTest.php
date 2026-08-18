@@ -13,13 +13,12 @@ namespace Cache\Adapter\Memcache\Tests;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Cache\IntegrationTests\CachePoolTest;
-use Memcache;
 
 class IntegrationPoolTest extends CachePoolTest
 {
-    private $client;
+    private ?\Memcache $client = null;
 
-    public function createCachePool()
+    public function createCachePool(): MemcacheCachePool
     {
         if (!class_exists('Memcache')) {
             $this->markTestSkipped();
@@ -28,10 +27,10 @@ class IntegrationPoolTest extends CachePoolTest
         return new MemcacheCachePool($this->getClient());
     }
 
-    private function getClient()
+    private function getClient(): \Memcache
     {
-        if ($this->client === null) {
-            $this->client = new Memcache();
+        if (null === $this->client) {
+            $this->client = new \Memcache();
             $this->client->connect('localhost', 11211);
         }
 

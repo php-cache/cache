@@ -2,7 +2,19 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
-## UNRELEASED
+## 2.0.0
+
+### Changed
+
+* Require PHP 8.2 or later.
+* Require `psr/cache` 3 and `psr/simple-cache` 3.
+* Add native parameter and return types required by the PSR interfaces.
+
+### Fixed
+
+* Preserve numeric-string keys returned by `getMultiple()`.
+* Translate lazy PSR-6 invalid-key failures to PSR-16 exceptions before mutating a bulk write.
+* Attempt every `setMultiple()` write and commit accepted deferred items even when another item fails.
 
 ## 1.2.0
 

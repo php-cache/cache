@@ -17,12 +17,12 @@ trait CreatePoolTrait
 {
     private $cacheArray = [];
 
-    public function createCachePool()
+    public function createCachePool(): ArrayCachePool
     {
         return new ArrayCachePool(null, $this->cacheArray);
     }
 
-    public function createSimpleCache()
+    public function createSimpleCache(): ArrayCachePool
     {
         return $this->createCachePool();
     }

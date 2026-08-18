@@ -12,8 +12,16 @@
 namespace Cache\Adapter\Doctrine\Tests;
 
 use Cache\IntegrationTests\TaggableCachePoolTest;
+use Cache\TagInterop\TaggableCacheItemPoolInterface;
 
 class IntegrationTagTest extends TaggableCachePoolTest
 {
-    use CreatePoolTrait;
+    use CreatePoolTrait {
+        createCachePool as private createDoctrineCachePool;
+    }
+
+    public function createCachePool(): TaggableCacheItemPoolInterface
+    {
+        return $this->createDoctrineCachePool();
+    }
 }

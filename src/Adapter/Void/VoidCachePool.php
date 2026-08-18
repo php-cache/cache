@@ -20,61 +20,50 @@ use Cache\Hierarchy\HierarchicalPoolInterface;
  */
 class VoidCachePool extends AbstractCachePool implements HierarchicalPoolInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    protected function fetchObjectFromCache($key)
+    protected function fetchObjectFromCache(string $key): array
     {
         return [false, null, [], null];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function clearAllObjectsFromCache()
+    protected function clearAllObjectsFromCache(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function clearOneObjectFromCache($key)
+    protected function clearOneObjectFromCache(string $key): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function storeItemInCache(PhpCacheItem $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, ?int $ttl): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function clearTags(array $tags)
+    /** @param list<string> $tags */
+    public function clearTags(array $tags): bool
     {
         return true;
     }
 
-    protected function getList($name)
+    /** @return list<string> */
+    protected function getList(string $name): array
     {
         return [];
     }
 
-    protected function removeList($name)
+    protected function removeList(string $name): bool
     {
         return true;
     }
 
-    protected function appendListItem($name, $key)
+    protected function appendListItem(string $name, string $key): bool
     {
+        return true;
     }
 
-    protected function removeListItem($name, $key)
+    protected function removeListItem(string $name, string $key): bool
     {
+        return true;
     }
 }

@@ -24,44 +24,29 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
 {
     use HierarchicalCachePoolTrait;
 
-    /**
-     * @type \Redis
-     */
-    protected $cache;
+    protected \Redis|\RedisArray|\RedisCluster $cache;
 
-    /**
-     * @param \Redis|\RedisArray|\RedisCluster $cache
-     */
-    public function __construct($cache)
+    /** @var array<string, true> */
+    private array $failedListReads = [];
+
+    public function __construct(mixed $cache)
     {
         if (!$cache instanceof \Redis
             && !$cache instanceof \RedisArray
             && !$cache instanceof \RedisCluster
         ) {
-            throw new CachePoolException(
-                'Cache instance must be of type \Redis, \RedisArray, or \RedisCluster'
-            );
+            throw new CachePoolException('Cache instance must be of type \Redis, \RedisArray, or \RedisCluster');
         }
 
         $this->cache = $cache;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function fetchObjectFromCache($key)
+    protected function fetchObjectFromCache(string $key): array
     {
-        if (false === $result = unserialize($this->cache->get($this->getHierarchyKey($key)))) {
-            return [false, null, [], null];
-        }
-
-        return $result;
+        return $this->decodeCacheItem($this->cache->get($this->getHierarchyKey($key))) ?? [false, null, [], null];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function clearAllObjectsFromCache()
+    protected function clearAllObjectsFromCache(): bool
     {
         if ($this->cache instanceof \RedisCluster) {
             return $this->clearAllObjectsFromCacheCluster();
@@ -70,7 +55,7 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         $result = $this->cache->flushDb();
 
         if (!is_array($result)) {
-            return $result;
+            return true === $result;
         }
 
         $success = true;
@@ -90,8 +75,12 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      *
      * @return bool false if error
      */
-    protected function clearAllObjectsFromCacheCluster()
+    protected function clearAllObjectsFromCacheCluster(): bool
     {
+        if (!$this->cache instanceof \RedisCluster) {
+            return false;
+        }
+
         $nodes = $this->cache->_masters();
 
         foreach ($nodes as $node) {
@@ -103,72 +92,119 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function clearOneObjectFromCache($key)
+    protected function clearOneObjectFromCache(string $key): bool
     {
-        $path      = null;
+        $path = null;
         $keyString = $this->getHierarchyKey($key, $path);
-        if ($path) {
-            $this->cache->incr($path);
+        $generationAdvanced = true;
+        if (null !== $path) {
+            $generationAdvanced = false !== $this->cache->incr($path);
         }
         $this->clearHierarchyKeyCache();
 
-        return $this->cache->del($keyString) >= 0;
+        $deleted = $this->cache->del($keyString);
+
+        return $generationAdvanced && is_int($deleted) && $deleted >= 0;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function storeItemInCache(PhpCacheItem $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, ?int $ttl): bool
     {
-        $key  = $this->getHierarchyKey($item->getKey());
+        $key = $this->getHierarchyKey($item->getKey());
         $data = serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]);
-        if ($ttl === null || $ttl === 0) {
-            return $this->cache->set($key, $data);
+        if (null === $ttl || 0 === $ttl) {
+            return $this->isSuccessfulWrite($this->cache->set($key, $data));
         }
 
-        return $this->cache->setex($key, $ttl, $data);
+        return $this->isSuccessfulWrite($this->cache->setex($key, $ttl, $data));
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getDirectValue($key)
+    public function getDirectValue(string $key): mixed
     {
         return $this->cache->get($key);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function appendListItem($name, $value)
+    protected function appendListItem(string $name, string $value): bool
     {
-        $this->cache->lPush($name, $value);
+        $added = $this->cache->sAdd($name, $value);
+
+        return is_int($added) && $added >= 0;
+    }
+
+    protected function getList(string $name): array
+    {
+        $items = $this->cache->sMembers($name);
+        if (!is_array($items)) {
+            $this->failedListReads[$name] = true;
+
+            return [];
+        }
+
+        unset($this->failedListReads[$name]);
+
+        return array_values(array_filter($items, is_string(...)));
+    }
+
+    protected function removeList(string $name): bool
+    {
+        if (isset($this->failedListReads[$name])) {
+            unset($this->failedListReads[$name]);
+
+            return false;
+        }
+
+        $deleted = $this->cache->del($name);
+
+        return is_int($deleted) && $deleted >= 0;
+    }
+
+    protected function removeListItem(string $name, string $key): bool
+    {
+        $removed = $this->cache->sRem($name, $key);
+
+        return is_int($removed) && $removed >= 0;
     }
 
     /**
-     * {@inheritdoc}
+     * @return array{true, mixed, array<string, string>, int|null}|null
      */
-    protected function getList($name)
+    private function decodeCacheItem(mixed $payload): ?array
     {
-        return $this->cache->lRange($name, 0, -1);
+        if (!is_string($payload)) {
+            return null;
+        }
+
+        try {
+            $cacheItem = @unserialize($payload);
+        } catch (\Throwable) {
+            return null;
+        }
+        if (!is_array($cacheItem) || !array_is_list($cacheItem) || 4 !== count($cacheItem)) {
+            return null;
+        }
+
+        [$hit, $value, $tags, $expirationTimestamp] = $cacheItem;
+        if (true !== $hit || !is_array($tags)) {
+            return null;
+        }
+
+        $validTags = [];
+        foreach ($tags as $tag) {
+            if (!is_string($tag)) {
+                return null;
+            }
+
+            $validTags[$tag] = $tag;
+        }
+
+        if (null !== $expirationTimestamp && !is_int($expirationTimestamp)) {
+            return null;
+        }
+
+        return [true, $value, $validTags, $expirationTimestamp];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function removeList($name)
+    private function isSuccessfulWrite(mixed $response): bool
     {
-        return $this->cache->del($name);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function removeListItem($name, $key)
-    {
-        return $this->cache->lrem($name, $key, 0);
+        return true === $response || 'OK' === $response;
     }
 }

@@ -12,44 +12,53 @@
 namespace Cache\Adapter\Chain;
 
 use Cache\Adapter\Chain\Exception\NoPoolAvailableException;
-use Cache\Adapter\Chain\Exception\PoolFailedException;
-use Cache\Adapter\Common\Exception\CachePoolException;
-use Cache\TagInterop\TaggableCacheItemPoolInterface;
+use Cache\Adapter\Common\CacheItem;
+use Cache\Adapter\Common\Exception\InvalidArgumentException;
+use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\PhpCachePool;
+use Cache\Bridge\SimpleCache\SimpleCacheBridge;
 use Psr\Cache\CacheItemInterface;
-use Psr\Cache\CacheItemPoolInterface;
+use Psr\Cache\InvalidArgumentException as CacheInvalidArgumentException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
+use Psr\SimpleCache\CacheInterface;
 
 /**
+ * `skip_on_failure` removes a pool after a backend exception, then the operation continues.
+ * invalid cache keys always throw and never remove a pool.
+ *
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
-class CachePoolChain implements CacheItemPoolInterface, TaggableCacheItemPoolInterface, LoggerAwareInterface
+class CachePoolChain implements PhpCachePool, CacheInterface, LoggerAwareInterface
 {
-    /**
-     * @type LoggerInterface
-     */
-    private $logger;
+    private ?LoggerInterface $logger = null;
 
     /**
-     * @type TaggableCacheItemPoolInterface[]|CacheItemPoolInterface[]
+     * @var array<array-key, PhpCachePool>
      */
-    private $pools;
+    private array $pools;
 
     /**
-     * @type array
+     * @var array{skip_on_failure: bool}
      */
-    private $options;
+    private array $options;
 
     /**
-     * @param array $pools
-     * @param array $options {
-     *
-     *      @type  bool  $skip_on_failure If true we will remove a pool form the chain if it fails.
-     * }
+     * @param array<array-key, mixed>       $pools
+     * @param array{skip_on_failure?: bool} $options
      */
     public function __construct(array $pools, array $options = [])
     {
-        $this->pools = $pools;
+        $validatedPools = [];
+        foreach ($pools as $key => $pool) {
+            if (!$pool instanceof PhpCachePool) {
+                throw new \InvalidArgumentException('Every chain member must implement PhpCachePool.');
+            }
+
+            $validatedPools[$key] = $pool;
+        }
+
+        $this->pools = $validatedPools;
 
         if (!isset($options['skip_on_failure'])) {
             $options['skip_on_failure'] = false;
@@ -58,14 +67,10 @@ class CachePoolChain implements CacheItemPoolInterface, TaggableCacheItemPoolInt
         $this->options = $options;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getItem($key)
+    public function getItem(string $key): PhpCacheItem
     {
-        $found     = false;
-        $result    = null;
-        $item      = null;
+        $result = null;
+        $item = null;
         $needsSave = [];
 
         foreach ($this->getPools() as $poolKey => $pool) {
@@ -73,230 +78,373 @@ class CachePoolChain implements CacheItemPoolInterface, TaggableCacheItemPoolInt
                 $item = $pool->getItem($key);
 
                 if ($item->isHit()) {
-                    $found  = true;
                     $result = $item;
                     break;
                 }
 
-                $needsSave[] = $pool;
-            } catch (CachePoolException $e) {
+                $needsSave[] = [$poolKey, $pool];
+            } catch (\Exception $e) {
                 $this->handleException($poolKey, __FUNCTION__, $e);
             }
         }
 
-        if ($found) {
-            foreach ($needsSave as $pool) {
-                $pool->save($result);
+        if (null !== $result) {
+            foreach ($needsSave as [$poolKey, $pool]) {
+                try {
+                    $pool->save($this->createBackfillItem($result));
+                } catch (\Exception $e) {
+                    $this->handleException($poolKey, __FUNCTION__, $e);
+                }
             }
 
-            $item = $result;
+            return $result;
         }
 
-        return $item;
+        if (null !== $item) {
+            return $item;
+        }
+
+        throw new NoPoolAvailableException('No valid cache pool available for the chain.');
     }
 
     /**
-     * {@inheritdoc}
+     * @param list<string> $keys
+     *
+     * @return iterable<string, PhpCacheItem>
      */
-    public function getItems(array $keys = [])
+    public function getItems(array $keys = []): iterable
     {
-        $hits          = [];
-        $loadedItems   = [];
+        $keys = $this->prepareKeys($keys);
+        $hits = [];
+        $loadedItems = [];
         $notFoundItems = [];
-        $keysCount     = count($keys);
+        $keysCount = count($keys);
+        $poolResponded = false;
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
                 $items = $pool->getItems($keys);
+                $poolHits = [];
+                $poolLoadedItems = [];
+                $poolNotFoundItems = [];
 
-                /** @type CacheItemInterface $item */
+                /** @var PhpCacheItem $item */
                 foreach ($items as $item) {
+                    $itemKey = $item->getKey();
+                    $mappedKey = "\0".$itemKey;
                     if ($item->isHit()) {
-                        $hits[$item->getKey()] = $item;
-                        unset($keys[array_search($item->getKey(), $keys)]);
-                    } else {
-                        $notFoundItems[$poolKey][$item->getKey()] = $item->getKey();
+                        if (!isset($hits[$mappedKey]) && !isset($poolHits[$mappedKey])) {
+                            $poolHits[$mappedKey] = $item;
+                            unset($poolNotFoundItems[$mappedKey]);
+                        }
+                    } elseif (!isset($hits[$mappedKey]) && !isset($poolHits[$mappedKey])) {
+                        $poolNotFoundItems[$mappedKey] = $itemKey;
                     }
-                    $loadedItems[$item->getKey()] = $item;
+                    $poolLoadedItems[$mappedKey] = $item;
+                }
+
+                $poolResponded = true;
+                foreach ($poolHits as $mappedKey => $item) {
+                    $hits[$mappedKey] = $item;
+                    $position = array_search($item->getKey(), $keys, true);
+                    if (false !== $position) {
+                        unset($keys[$position]);
+                    }
+                }
+                $loadedItems = array_replace($loadedItems, $poolLoadedItems);
+                if ([] !== $poolNotFoundItems) {
+                    $notFoundItems[$poolKey] = $poolNotFoundItems;
                 }
                 if (count($hits) === $keysCount) {
                     break;
                 }
-            } catch (CachePoolException $e) {
+            } catch (\Exception $e) {
                 $this->handleException($poolKey, __FUNCTION__, $e);
             }
+        }
+
+        if (!$poolResponded) {
+            throw new NoPoolAvailableException('No valid cache pool available for the chain.');
         }
 
         if (!empty($hits) && !empty($notFoundItems)) {
             foreach ($notFoundItems as $poolKey => $itemKeys) {
                 try {
-                    $pool  = $this->getPools()[$poolKey];
+                    $pool = $this->getPools()[$poolKey];
                     $found = false;
                     foreach ($itemKeys as $itemKey) {
-                        if (!empty($hits[$itemKey])) {
+                        $mappedKey = "\0".$itemKey;
+                        if (isset($hits[$mappedKey])) {
                             $found = true;
-                            $pool->saveDeferred($hits[$itemKey]);
+                            $pool->saveDeferred($this->createBackfillItem($hits[$mappedKey]));
                         }
                     }
                     if ($found) {
                         $pool->commit();
                     }
-                } catch (CachePoolException $e) {
+                } catch (\Exception $e) {
                     $this->handleException($poolKey, __FUNCTION__, $e);
                 }
             }
         }
 
-        return array_merge($loadedItems, $hits);
+        return $this->generateItems(array_replace($loadedItems, $hits));
     }
 
     /**
-     * {@inheritdoc}
+     * @param array<array-key, mixed> $keys
+     *
+     * @return list<string>
      */
-    public function hasItem($key)
+    private function prepareKeys(array $keys): array
     {
+        $validatedKeys = [];
+        foreach ($keys as $key) {
+            if (!is_string($key)) {
+                throw new InvalidArgumentException(sprintf('Cache key must be string, "%s" given', get_debug_type($key)));
+            }
+            if ('' === $key) {
+                throw new InvalidArgumentException('Cache key cannot be an empty string');
+            }
+            if (preg_match('|[\{\}\(\)/\\\\\@\:]|', $key)) {
+                throw new InvalidArgumentException(sprintf('Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:', $key));
+            }
+
+            $validatedKeys["\0".$key] = $key;
+        }
+
+        return array_values($validatedKeys);
+    }
+
+    private function createBackfillItem(PhpCacheItem $item): PhpCacheItem
+    {
+        $backfill = new CacheItem($item->getKey(), true, $item->get());
+        $backfill->setTags(array_replace($item->getPreviousTags(), $item->getTags()));
+
+        if (null !== $expirationTimestamp = $item->getExpirationTimestamp()) {
+            $backfill->expiresAt((new \DateTimeImmutable())->setTimestamp($expirationTimestamp));
+        }
+
+        return $backfill;
+    }
+
+    /**
+     * @param array<string, PhpCacheItem> $items
+     *
+     * @return \Generator<string, PhpCacheItem>
+     */
+    private function generateItems(array $items): \Generator
+    {
+        foreach ($items as $item) {
+            yield $item->getKey() => $item;
+        }
+    }
+
+    public function hasItem(string $key): bool
+    {
+        $poolResponded = false;
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
-                if ($pool->hasItem($key)) {
+                $hasItem = $pool->hasItem($key);
+                $poolResponded = true;
+                if ($hasItem) {
                     return true;
                 }
-            } catch (CachePoolException $e) {
+            } catch (\Exception $e) {
                 $this->handleException($poolKey, __FUNCTION__, $e);
             }
         }
+
+        $this->ensurePoolResponded($poolResponded);
 
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function clear()
+    public function clear(): bool
     {
         $result = true;
+        $poolResponded = false;
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
-                $result = $result && $pool->clear();
-            } catch (CachePoolException $e) {
+                $result = $pool->clear() && $result;
+                $poolResponded = true;
+            } catch (\Exception $e) {
                 $this->handleException($poolKey, __FUNCTION__, $e);
             }
         }
 
+        $this->ensurePoolResponded($poolResponded);
+
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function deleteItem($key)
+    public function deleteItem(string $key): bool
     {
         $result = true;
+        $poolResponded = false;
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
-                $result = $result && $pool->deleteItem($key);
-            } catch (CachePoolException $e) {
+                $result = $pool->deleteItem($key) && $result;
+                $poolResponded = true;
+            } catch (\Exception $e) {
                 $this->handleException($poolKey, __FUNCTION__, $e);
             }
         }
 
+        $this->ensurePoolResponded($poolResponded);
+
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function deleteItems(array $keys)
+    public function deleteItems(array $keys): bool
     {
         $result = true;
+        $poolResponded = false;
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
-                $result = $result && $pool->deleteItems($keys);
-            } catch (CachePoolException $e) {
+                $result = $pool->deleteItems($keys) && $result;
+                $poolResponded = true;
+            } catch (\Exception $e) {
                 $this->handleException($poolKey, __FUNCTION__, $e);
             }
         }
 
+        $this->ensurePoolResponded($poolResponded);
+
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function save(CacheItemInterface $item)
+    public function save(CacheItemInterface $item): bool
     {
+        if (!$item instanceof PhpCacheItem) {
+            throw new InvalidArgumentException('Cache items are not transferable between pools. Item MUST implement PhpCacheItem.');
+        }
+
         $result = true;
+        $poolResponded = false;
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
                 $result = $pool->save($item) && $result;
-            } catch (CachePoolException $e) {
+                $poolResponded = true;
+            } catch (\Exception $e) {
                 $this->handleException($poolKey, __FUNCTION__, $e);
             }
         }
 
+        $this->ensurePoolResponded($poolResponded);
+
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function saveDeferred(CacheItemInterface $item)
+    public function saveDeferred(CacheItemInterface $item): bool
     {
+        if (!$item instanceof PhpCacheItem) {
+            throw new InvalidArgumentException('Cache items are not transferable between pools. Item MUST implement PhpCacheItem.');
+        }
+
         $result = true;
+        $poolResponded = false;
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
                 $result = $pool->saveDeferred($item) && $result;
-            } catch (CachePoolException $e) {
+                $poolResponded = true;
+            } catch (\Exception $e) {
                 $this->handleException($poolKey, __FUNCTION__, $e);
             }
         }
 
+        $this->ensurePoolResponded($poolResponded);
+
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function commit()
+    public function commit(): bool
     {
         $result = true;
+        $poolResponded = false;
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
                 $result = $pool->commit() && $result;
-            } catch (CachePoolException $e) {
+                $poolResponded = true;
+            } catch (\Exception $e) {
                 $this->handleException($poolKey, __FUNCTION__, $e);
             }
         }
 
+        $this->ensurePoolResponded($poolResponded);
+
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function invalidateTag($tag)
+    public function invalidateTag(string $tag): bool
     {
         return $this->invalidateTags([$tag]);
     }
 
     /**
-     * {@inheritdoc}
+     * @param list<string> $tags
      */
-    public function invalidateTags(array $tags)
+    public function invalidateTags(array $tags): bool
     {
         $result = true;
+        $poolResponded = false;
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
                 $result = $pool->invalidateTags($tags) && $result;
-            } catch (CachePoolException $e) {
+                $poolResponded = true;
+            } catch (\Exception $e) {
                 $this->handleException($poolKey, __FUNCTION__, $e);
             }
         }
 
+        $this->ensurePoolResponded($poolResponded);
+
         return $result;
     }
 
+    public function get(string $key, mixed $default = null): mixed
+    {
+        return $this->simpleCacheBridge()->get($key, $default);
+    }
+
+    public function set(string $key, mixed $value, int|\DateInterval|null $ttl = null): bool
+    {
+        return $this->simpleCacheBridge()->set($key, $value, $ttl);
+    }
+
+    public function delete(string $key): bool
+    {
+        return $this->simpleCacheBridge()->delete($key);
+    }
+
     /**
-     * @param LoggerInterface $logger
+     * @param iterable<mixed> $keys
      */
+    public function getMultiple(iterable $keys, mixed $default = null): iterable
+    {
+        return $this->simpleCacheBridge()->getMultiple($keys, $default);
+    }
+
+    /**
+     * @param iterable<array-key, mixed> $values
+     */
+    public function setMultiple(iterable $values, int|\DateInterval|null $ttl = null): bool
+    {
+        return $this->simpleCacheBridge()->setMultiple($values, $ttl);
+    }
+
+    /**
+     * @param iterable<mixed> $keys
+     */
+    public function deleteMultiple(iterable $keys): bool
+    {
+        return $this->simpleCacheBridge()->deleteMultiple($keys);
+    }
+
+    public function has(string $key): bool
+    {
+        return $this->simpleCacheBridge()->has($key);
+    }
+
     public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
@@ -305,21 +453,19 @@ class CachePoolChain implements CacheItemPoolInterface, TaggableCacheItemPoolInt
     /**
      * Logs with an arbitrary level if the logger exists.
      *
-     * @param mixed  $level
-     * @param string $message
-     * @param array  $context
+     * @param array<string, mixed> $context
      */
-    protected function log($level, $message, array $context = [])
+    protected function log(mixed $level, string $message, array $context = []): void
     {
-        if ($this->logger !== null) {
+        if (null !== $this->logger) {
             $this->logger->log($level, $message, $context);
         }
     }
 
     /**
-     * @return array|\Psr\Cache\CacheItemPoolInterface[]
+     * @return array<array-key, PhpCachePool>
      */
-    protected function getPools()
+    protected function getPools(): array
     {
         if (empty($this->pools)) {
             throw new NoPoolAvailableException('No valid cache pool available for the chain.');
@@ -328,16 +474,9 @@ class CachePoolChain implements CacheItemPoolInterface, TaggableCacheItemPoolInt
         return $this->pools;
     }
 
-    /**
-     * @param string             $poolKey
-     * @param string             $operation
-     * @param CachePoolException $exception
-     *
-     * @throws PoolFailedException
-     */
-    private function handleException($poolKey, $operation, CachePoolException $exception)
+    private function handleException(int|string $poolKey, string $operation, \Exception $exception): void
     {
-        if (!$this->options['skip_on_failure']) {
+        if ($exception instanceof CacheInvalidArgumentException || !$this->options['skip_on_failure']) {
             throw $exception;
         }
 
@@ -352,5 +491,17 @@ class CachePoolChain implements CacheItemPoolInterface, TaggableCacheItemPoolInt
         );
 
         unset($this->pools[$poolKey]);
+    }
+
+    private function ensurePoolResponded(bool $poolResponded): void
+    {
+        if (!$poolResponded) {
+            throw new NoPoolAvailableException('No valid cache pool available for the chain.');
+        }
+    }
+
+    private function simpleCacheBridge(): SimpleCacheBridge
+    {
+        return new SimpleCacheBridge($this);
     }
 }

@@ -13,10 +13,11 @@ namespace Cache\Adapter\Apcu\Tests;
 
 use Cache\Adapter\Apcu\ApcuCachePool;
 use Cache\IntegrationTests\TaggableCachePoolTest;
+use Cache\TagInterop\TaggableCacheItemPoolInterface;
 
 class IntegrationTagTest extends TaggableCachePoolTest
 {
-    public function createCachePool()
+    public function createCachePool(): TaggableCacheItemPoolInterface
     {
         if (defined('HHVM_VERSION') || !function_exists('apcu_store') || (function_exists('apcu_enabled') && !apcu_enabled())) {
             $this->markTestSkipped();

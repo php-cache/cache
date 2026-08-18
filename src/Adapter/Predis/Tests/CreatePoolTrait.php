@@ -16,22 +16,22 @@ use Predis\Client;
 
 trait CreatePoolTrait
 {
-    private $client = null;
+    private ?Client $client = null;
 
-    public function createCachePool()
+    public function createCachePool(): PredisCachePool
     {
         return new PredisCachePool($this->getClient());
     }
 
-    public function createSimpleCache()
+    public function createSimpleCache(): PredisCachePool
     {
         return $this->createCachePool();
     }
 
-    private function getClient()
+    private function getClient(): Client
     {
-        if ($this->client === null) {
-            $this->client = new Client('tcp:/127.0.0.1:6379');
+        if (null === $this->client) {
+            $this->client = new Client('tcp://127.0.0.1:6379');
         }
 
         return $this->client;

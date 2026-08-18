@@ -13,34 +13,28 @@ namespace Cache\Encryption\Tests;
 
 use Cache\Adapter\Common\CacheItem;
 use Cache\Adapter\Common\Exception\InvalidArgumentException;
-use Cache\Adapter\Filesystem\FilesystemCachePool;
+use Cache\Adapter\PHPArray\ArrayCachePool;
 use Cache\Encryption\EncryptedCachePool;
 use Cache\IntegrationTests\CachePoolTest;
 use Defuse\Crypto\Key;
-use League\Flysystem\Adapter\Local;
-use League\Flysystem\Filesystem;
+use Psr\Cache\CacheItemPoolInterface;
 
 class IntegrationPoolTest extends CachePoolTest
 {
-    protected $skippedTests = [
+    private array $storage = [];
+
+    protected array $skippedTests = [
         'testBasicUsageWithLongKey' => 'Long keys are not supported.',
     ];
 
     /**
-     * @type Filesystem
-     */
-    private $filesystem;
-
-    /**
      * @throws \Defuse\Crypto\Exception\BadFormatException
      * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
-     *
-     * @return EncryptedCachePool|\Psr\Cache\CacheItemPoolInterface
      */
-    public function createCachePool()
+    public function createCachePool(): CacheItemPoolInterface
     {
         return new EncryptedCachePool(
-            new FilesystemCachePool($this->getFilesystem()),
+            new ArrayCachePool(null, $this->storage),
             Key::loadFromAsciiSafeString('def000007c57b06c65b0df4bcac939924e42605d8d76e1462b619318bf94107c28db30c5394b4242db5e45563e1226cffcdff8123fa214ea1fcc4aa10b0ddb1b4a587b7e')
         );
     }
@@ -63,12 +57,34 @@ class IntegrationPoolTest extends CachePoolTest
         $pool->saveDeferred(new CacheItem('save_valid_exceptiond'));
     }
 
-    private function getFilesystem()
+    public function testSaveRejectsAnEncryptedItemFromAnotherPool(): void
     {
-        if ($this->filesystem === null) {
-            $this->filesystem = new Filesystem(new Local(__DIR__.'/cache'.rand(1, 100000)));
-        }
+        $pool = $this->createCachePool();
+        $otherPool = $this->createCachePool();
 
-        return $this->filesystem;
+        $this->expectException(InvalidArgumentException::class);
+
+        $pool->save($otherPool->getItem('key')->set('value'));
+    }
+
+    public function testSaveDeferredRejectsAnEncryptedItemFromAnotherPool(): void
+    {
+        $pool = $this->createCachePool();
+        $otherPool = $this->createCachePool();
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $pool->saveDeferred($otherPool->getItem('key')->set('value'));
+    }
+
+    public function testEncryptedPoolsCanBeNested(): void
+    {
+        $innerPool = $this->createCachePool();
+        $outerPool = new EncryptedCachePool($innerPool, Key::createNewRandomKey());
+
+        $item = $outerPool->getItem('key');
+        $item->set('value');
+        $this->assertTrue($outerPool->save($item));
+        $this->assertSame('value', $outerPool->getItem('key')->get());
     }
 }

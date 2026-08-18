@@ -13,16 +13,17 @@ namespace Cache\Adapter\Chain\Tests;
 
 use Cache\Adapter\Chain\CachePoolChain;
 use Cache\IntegrationTests\CachePoolTest;
+use Psr\Cache\CacheItemPoolInterface;
 
 class IntegrationPoolTest extends CachePoolTest
 {
     use CreatePoolTrait;
 
-    protected $skippedTests = [
+    protected array $skippedTests = [
         'testBasicUsageWithLongKey' => 'Long keys are not supported.',
     ];
 
-    public function createCachePool()
+    public function createCachePool(): CacheItemPoolInterface
     {
         return new CachePoolChain($this->getAdapters());
     }

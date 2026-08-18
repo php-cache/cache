@@ -30,17 +30,17 @@ class HierarchicalCachePoolTest extends TestCase
     {
         $path = null;
 
-        $pool   = new CachePool();
+        $pool = new CachePool();
         $result = $pool->exposeGetHierarchyKey('key', $path);
         $this->assertEquals('key', $result);
         $this->assertNull($path);
 
-        $pool   = new CachePool(['idx_1', 'idx_2', 'idx_3']);
+        $pool = new CachePool(['idx_1', 'idx_2', 'idx_3']);
         $result = $pool->exposeGetHierarchyKey('|foo|bar', $path);
         $this->assertEqualsSha1('root!!idx_1!foo!!idx_2!bar!!idx_3!', $result);
         $this->assertEqualsSha1('path!root!!idx_1!foo!!idx_2!bar!', $path);
 
-        $pool   = new CachePool(['idx_1', 'idx_2', 'idx_3']);
+        $pool = new CachePool(['idx_1', 'idx_2', 'idx_3']);
         $result = $pool->exposeGetHierarchyKey('|', $path);
         $this->assertEqualsSha1('path!root!', $path);
         $this->assertEqualsSha1('root!!idx_1!', $result);
@@ -50,17 +50,17 @@ class HierarchicalCachePoolTest extends TestCase
     {
         $path = null;
 
-        $pool   = new CachePool();
+        $pool = new CachePool();
         $result = $pool->exposeGetHierarchyKey('key!tagHash', $path);
         $this->assertEquals('key!tagHash', $result);
         $this->assertNull($path);
 
-        $pool   = new CachePool(['idx_1', 'idx_2', 'idx_3']);
+        $pool = new CachePool(['idx_1', 'idx_2', 'idx_3']);
         $result = $pool->exposeGetHierarchyKey('|foo|bar!tagHash', $path);
         $this->assertEqualsSha1('root!tagHash!idx_1!foo!tagHash!idx_2!bar!tagHash!idx_3!', $result);
         $this->assertEqualsSha1('path!root!tagHash!idx_1!foo!tagHash!idx_2!bar!tagHash', $path);
 
-        $pool   = new CachePool(['idx_1', 'idx_2', 'idx_3']);
+        $pool = new CachePool(['idx_1', 'idx_2', 'idx_3']);
         $result = $pool->exposeGetHierarchyKey('|!tagHash', $path);
         $this->assertEqualsSha1('path!root!tagHash', $path);
         $this->assertEqualsSha1('root!tagHash!idx_1!', $result);
@@ -88,7 +88,7 @@ class HierarchicalCachePoolTest extends TestCase
     {
         $path = null;
 
-        $pool   = new CachePool(['idx_1', 'idx_2', 'idx_3']);
+        $pool = new CachePool(['idx_1', 'idx_2', 'idx_3']);
         $result = $pool->exposeGetHierarchyKey('|foo', $path);
         $this->assertEqualsSha1('root!!idx_1!foo!!idx_2!', $result);
         $this->assertEqualsSha1('path!root!!idx_1!foo!', $path);
@@ -103,7 +103,6 @@ class HierarchicalCachePoolTest extends TestCase
     {
         $pool = new CachePool();
         $prop = new \ReflectionProperty('Cache\Hierarchy\Tests\Helper\CachePool', 'keyCache');
-        $prop->setAccessible(true);
 
         // add some values to the prop and make sure they are beeing cleared
         $prop->setValue($pool, ['foo' => 'bar', 'baz' => 'biz']);
@@ -113,9 +112,8 @@ class HierarchicalCachePoolTest extends TestCase
 
     public function testIsHierarchyKey()
     {
-        $pool   = new CachePool();
+        $pool = new CachePool();
         $method = new \ReflectionMethod('Cache\Hierarchy\Tests\Helper\CachePool', 'isHierarchyKey');
-        $method->setAccessible(true);
 
         $this->assertFalse($method->invoke($pool, 'key'));
         $this->assertFalse($method->invoke($pool, 'key|bar'));
@@ -126,9 +124,8 @@ class HierarchicalCachePoolTest extends TestCase
 
     public function testExplodeKey()
     {
-        $pool   = new CachePool();
+        $pool = new CachePool();
         $method = new \ReflectionMethod('Cache\Hierarchy\Tests\Helper\CachePool', 'explodeKey');
-        $method->setAccessible(true);
 
         $result = $method->invoke($pool, '|key');
         $this->assertCount(2, $result);
@@ -146,9 +143,8 @@ class HierarchicalCachePoolTest extends TestCase
 
     public function testExplodeKeyWithTags()
     {
-        $pool   = new CachePool();
+        $pool = new CachePool();
         $method = new \ReflectionMethod('Cache\Hierarchy\Tests\Helper\CachePool', 'explodeKey');
-        $method->setAccessible(true);
 
         $result = $method->invoke($pool, '|key|bar!hash');
         $this->assertCount(3, $result);

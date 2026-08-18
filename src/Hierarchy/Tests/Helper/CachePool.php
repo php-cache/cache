@@ -22,27 +22,28 @@ class CachePool
 {
     use HierarchicalCachePoolTrait;
 
-    private $storeValues = [];
+    /** @var list<mixed> */
+    private array $storeValues = [];
 
     /**
-     * @param array $storeValues
+     * @param list<mixed> $storeValues
      */
     public function __construct(array $storeValues = [])
     {
         $this->storeValues = $storeValues;
     }
 
-    public function exposeClearHierarchyKeyCache()
+    public function exposeClearHierarchyKeyCache(): void
     {
         $this->clearHierarchyKeyCache();
     }
 
-    public function exposeGetHierarchyKey($key, &$pathKey = null)
+    public function exposeGetHierarchyKey(string $key, ?string &$pathKey = null): string
     {
         return $this->getHierarchyKey($key, $pathKey);
     }
 
-    protected function getDirectValue($key)
+    public function getDirectValue(string $key): mixed
     {
         return array_shift($this->storeValues);
     }

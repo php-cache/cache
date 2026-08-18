@@ -13,86 +13,228 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['7.4', '8.0', '8.1']
+        php: ['8.2', '8.3', '8.4', '8.5']
 
     services:
       redis:
-        image: redis:6.0.0
+        image: redis:7.2.15-bookworm
         ports:
           - 6379:6379
-      redis-cluster:
-        image: grokzen/redis-cluster:5.0.4
-        ports:
-          - 7000:7000
-          - 7001:7001
-          - 7002:7002
-        env:
-          STANDALONE: 1
       memcached:
         image: memcached:1.6.5
         ports:
           - 11211:11211
       mongodb:
-        image: mongo
+        image: mongo:8.0
         ports:
           - 27017:27017
 
     steps:
       - name: Set up PHP
-        uses: shivammathur/setup-php@2.7.0
+        uses: shivammathur/setup-php@2.37.2
         with:
           php-version: ${{ matrix.php }}
           coverage: none
-          tools: pecl
-          extensions: redis, memcached, mongodb, apcu, apc
+          tools: composer:v2
+          extensions: redis, memcache, memcached, mongodb, apcu
           ini-values: apc.enable_cli=1
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
+
+      - name: Start Redis cluster
+        run: bash .github/start-redis-cluster.sh
 
       - name: Download dependencies
-        env:
-          PHP_VERSION: ${{ matrix.php }}
-        run: |
-          CURRENT_DIR=$(pwd)
-          ok=0
-          for PACKAGE in $(find src -maxdepth 4 -type f -name phpunit.xml.dist -printf '%h\n' | sort)
-          do
-            echo ::group::$PACKAGE
-            echo "$CURRENT_DIR/$PACKAGE"
-            cd "$CURRENT_DIR/$PACKAGE"
-
-            localExit=0
-            if [ $PHP_VERSION = '8.0' ]; then
-              COMPOSER_OPTIONS=' --ignore-platform-req=php'
-            fi
-            composer update --no-interaction --prefer-dist --optimize-autoloader $COMPOSER_OPTIONS || localExit=1
-            ok=$(( $localExit || $ok ))
-            echo ::endgroup::
-            if [ $localExit -ne 0 ]; then
-              echo "::error::$PACKAGE error"
-            fi
-          done
-
-          exit $ok
+        run: composer update --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Run tests
+        run: composer test
+
+      - name: Show Redis cluster logs
+        if: failure()
+        continue-on-error: true
+        run: docker logs php-cache-redis-cluster
+
+      - name: Remove Redis cluster
+        if: always()
+        continue-on-error: true
+        run: docker rm --force php-cache-redis-cluster
+
+  minimum-dependencies:
+    name: Minimum dependencies
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:7.2.15-bookworm
+        ports:
+          - 6379:6379
+      memcached:
+        image: memcached:1.6.5
+        ports:
+          - 11211:11211
+      mongodb:
+        image: mongo:8.0
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: Set up PHP
+        uses: shivammathur/setup-php@2.37.2
+        with:
+          php-version: '8.2'
+          coverage: none
+          tools: composer:v2
+          extensions: redis, memcache, memcached, mongodb, apcu
+          ini-values: apc.enable_cli=1
+
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Start Redis cluster
+        run: bash .github/start-redis-cluster.sh
+
+      - name: Download minimum dependencies
+        run: composer update --no-interaction --prefer-dist --prefer-lowest --prefer-stable --optimize-autoloader
+
+      - name: Run tests
+        run: composer test
+
+      - name: Show Redis cluster logs
+        if: failure()
+        continue-on-error: true
+        run: docker logs php-cache-redis-cluster
+
+      - name: Remove Redis cluster
+        if: always()
+        continue-on-error: true
+        run: docker rm --force php-cache-redis-cluster
+
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:7.2.15-bookworm
+        ports:
+          - 6379:6379
+      memcached:
+        image: memcached:1.6.5
+        ports:
+          - 11211:11211
+      mongodb:
+        image: mongo:8.0
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: Set up PHP
+        uses: shivammathur/setup-php@2.37.2
+        with:
+          php-version: '8.2'
+          coverage: xdebug
+          tools: composer:v2
+          extensions: redis, memcache, memcached, mongodb, apcu
+          ini-values: apc.enable_cli=1
+
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Start Redis cluster
+        run: bash .github/start-redis-cluster.sh
+
+      - name: Download dependencies
+        run: composer update --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Enforce coverage
+        run: composer coverage
+
+      - name: Show Redis cluster logs
+        if: failure()
+        continue-on-error: true
+        run: docker logs php-cache-redis-cluster
+
+      - name: Remove Redis cluster
+        if: always()
+        continue-on-error: true
+        run: docker rm --force php-cache-redis-cluster
+
+  split-packages:
+    name: Split packages
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:7.2.15-bookworm
+        ports:
+          - 6379:6379
+      memcached:
+        image: memcached:1.6.5
+        ports:
+          - 11211:11211
+      mongodb:
+        image: mongo:8.0
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: Set up PHP
+        uses: shivammathur/setup-php@2.37.2
+        with:
+          php-version: '8.2'
+          coverage: none
+          tools: composer:v2
+          extensions: redis, memcache, memcached, mongodb, apcu
+          ini-values: apc.enable_cli=1
+
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Checkout integration tests
+        uses: actions/checkout@v7
+        with:
+          repository: php-cache/integration-tests
+          path: .ci/integration-tests
+
+      - name: Start Redis cluster
+        run: bash .github/start-redis-cluster.sh
+
+      - name: Install and test split packages
         run: |
-          CURRENT_DIR=$(pwd)
-          ok=0
-          for PACKAGE in $(find src -maxdepth 4 -type f -name phpunit.xml.dist -printf '%h\n' | sort)
-          do
-            echo ::group::$PACKAGE
-            echo "$CURRENT_DIR/$PACKAGE"
-            cd "$CURRENT_DIR/$PACKAGE"
+          status=0
 
-            localExit=0
-            ./vendor/bin/phpunit 2>&1 || localExit=1
-            ok=$(( $localExit || $ok ))
-            echo ::endgroup::
-            if [ $localExit -ne 0 ]; then
-              echo "::error::$PACKAGE failed"
+          while IFS= read -r composer_file; do
+            package="${composer_file%/composer.json}"
+            echo "::group::${package}"
+
+            if ! composer config --working-dir="${package}" repositories.integration-tests path "${GITHUB_WORKSPACE}/.ci/integration-tests" ||
+               ! composer config --working-dir="${package}" repositories.split-packages path "${GITHUB_WORKSPACE}/src/*" ||
+               ! composer config --working-dir="${package}" repositories.split-packages-nested path "${GITHUB_WORKSPACE}/src/*/*" ||
+               ! composer update --working-dir="${package}" --no-interaction --prefer-dist --optimize-autoloader; then
+              status=1
+              echo "::endgroup::"
+              continue
             fi
-          done
 
-          exit $ok
+            if [[ -f "${package}/phpunit.xml.dist" ]]; then
+              (cd "${package}" && ./vendor/bin/phpunit) || status=1
+            else
+              (cd "${package}" && php -r "require 'vendor/autoload.php';") || status=1
+            fi
+
+            echo "::endgroup::"
+          done < <(find src -mindepth 2 -maxdepth 3 -name composer.json | sort)
+
+          exit "${status}"
+
+      - name: Show Redis cluster logs
+        if: failure()
+        continue-on-error: true
+        run: docker logs php-cache-redis-cluster
+
+      - name: Remove Redis cluster
+        if: always()
+        continue-on-error: true
+        run: docker rm --force php-cache-redis-cluster

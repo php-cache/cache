@@ -25,86 +25,64 @@ use Psr\SimpleCache\CacheInterface;
  */
 abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, CacheInterface
 {
-    const SEPARATOR_TAG = '!';
+    public const SEPARATOR_TAG = '!';
+
+    private ?LoggerInterface $logger = null;
 
     /**
-     * @type LoggerInterface
+     * @var array<string, PhpCacheItem>
      */
-    private $logger;
+    protected array $deferred = [];
 
     /**
-     * @type PhpCacheItem[] deferred
-     */
-    protected $deferred = [];
-
-    /**
-     * @param PhpCacheItem $item
-     * @param int|null     $ttl  seconds from now
+     * @param int|null $ttl seconds from now
      *
      * @return bool true if saved
      */
-    abstract protected function storeItemInCache(PhpCacheItem $item, $ttl);
+    abstract protected function storeItemInCache(PhpCacheItem $item, ?int $ttl): bool;
 
     /**
      * Fetch an object from the cache implementation.
      *
      * If it is a cache miss, it MUST return [false, null, [], null]
      *
-     * @param string $key
-     *
-     * @return array with [isHit, value, tags[], expirationTimestamp]
+     * @return array{0: bool, 1: mixed, 2: array<string, string>, 3: int|null}
      */
-    abstract protected function fetchObjectFromCache($key);
+    abstract protected function fetchObjectFromCache(string $key): array;
 
     /**
      * Clear all objects from cache.
      *
      * @return bool false if error
      */
-    abstract protected function clearAllObjectsFromCache();
+    abstract protected function clearAllObjectsFromCache(): bool;
 
     /**
      * Remove one object from cache.
-     *
-     * @param string $key
-     *
-     * @return bool
      */
-    abstract protected function clearOneObjectFromCache($key);
+    abstract protected function clearOneObjectFromCache(string $key): bool;
 
     /**
      * Get an array with all the values in the list named $name.
      *
-     * @param string $name
-     *
-     * @return array
+     * @return array<int, string>
      */
-    abstract protected function getList($name);
+    abstract protected function getList(string $name): array;
 
     /**
      * Remove the list.
-     *
-     * @param string $name
-     *
-     * @return bool
      */
-    abstract protected function removeList($name);
+    abstract protected function removeList(string $name): bool;
 
     /**
      * Add a item key on a list named $name.
-     *
-     * @param string $name
-     * @param string $key
      */
-    abstract protected function appendListItem($name, $key);
+    abstract protected function appendListItem(string $name, string $key): bool;
 
     /**
      * Remove an item from the list.
-     *
-     * @param string $name
-     * @param string $key
      */
-    abstract protected function removeListItem($name, $key);
+    abstract protected function removeListItem(string $name, string $key): bool;
 
     /**
      * Make sure to commit before we destruct.
@@ -114,14 +92,11 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
         $this->commit();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getItem($key)
+    public function getItem(string $key): PhpCacheItem
     {
         $this->validateKey($key);
         if (isset($this->deferred[$key])) {
-            /** @type CacheItem $item */
+            /** @var CacheItem $item */
             $item = clone $this->deferred[$key];
             $item->moveTagsToPrevious();
 
@@ -140,22 +115,34 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
     }
 
     /**
-     * {@inheritdoc}
+     * @param array<array-key, string> $keys
+     *
+     * @return iterable<string, PhpCacheItem>
      */
-    public function getItems(array $keys = [])
+    public function getItems(array $keys = []): iterable
     {
-        $items = [];
+        $validatedKeys = [];
         foreach ($keys as $key) {
-            $items[$key] = $this->getItem($key);
+            $key = $this->validateKey($key);
+            $validatedKeys["\0".$key] = $key;
         }
 
-        return $items;
+        return $this->generateItems(array_values($validatedKeys));
     }
 
     /**
-     * {@inheritdoc}
+     * @param list<string> $keys
+     *
+     * @return \Generator<string, PhpCacheItem>
      */
-    public function hasItem($key)
+    private function generateItems(array $keys): \Generator
+    {
+        foreach ($keys as $key) {
+            yield $key => $this->getItem($key);
+        }
+    }
+
+    public function hasItem(string $key): bool
     {
         try {
             return $this->getItem($key)->isHit();
@@ -164,10 +151,7 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function clear()
+    public function clear(): bool
     {
         // Clear the deferred items
         $this->deferred = [];
@@ -179,10 +163,7 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function deleteItem($key)
+    public function deleteItem(string $key): bool
     {
         try {
             return $this->deleteItems([$key]);
@@ -191,23 +172,28 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function deleteItems(array $keys)
+    public function deleteItems(array $keys): bool
     {
-        $deleted = true;
+        $validatedKeys = [];
         foreach ($keys as $key) {
-            $this->validateKey($key);
+            $validatedKeys[] = $this->validateKey($key);
+        }
 
-            // Delete form deferred
+        foreach ($validatedKeys as $key) {
             unset($this->deferred[$key]);
+        }
 
-            // We have to commit here to be able to remove deferred hierarchy items
-            $this->commit();
-            $this->preRemoveItem($key);
+        $deleted = $this->commit();
+        foreach ($validatedKeys as $key) {
+            $item = $this->getItem($key);
+            $tags = $this->getTagEntries($item);
 
             if (!$this->clearOneObjectFromCache($key)) {
+                $deleted = false;
+                continue;
+            }
+
+            if (!$this->removeTagEntries($item, $tags)) {
                 $deleted = false;
             }
         }
@@ -215,66 +201,79 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
         return $deleted;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function save(CacheItemInterface $item)
+    public function save(CacheItemInterface $item): bool
     {
         if (!$item instanceof PhpCacheItem) {
             $e = new InvalidArgumentException('Cache items are not transferable between pools. Item MUST implement PhpCacheItem.');
             $this->handleException($e, __FUNCTION__);
         }
 
-        $this->removeTagEntries($item);
-        $this->saveTags($item);
         $timeToLive = null;
         if (null !== $timestamp = $item->getExpirationTimestamp()) {
-            $timeToLive = $timestamp - time();
-
-            if ($timeToLive < 0) {
+            $now = time();
+            if ($timestamp <= $now) {
                 return $this->deleteItem($item->getKey());
             }
+
+            $timeToLive = $timestamp - $now;
         }
 
         try {
-            return $this->storeItemInCache($item, $timeToLive);
+            $previousTags = $this->getTagEntries($item);
+            if (!$this->storeItemInCache($item, $timeToLive)) {
+                return false;
+            }
+
+            unset($this->deferred[$item->getKey()]);
+            $tagsRemoved = $this->removeTagEntries($item, $previousTags);
+            $tagsSaved = $this->saveTags($item);
+
+            return $tagsSaved && $tagsRemoved;
         } catch (\Exception $e) {
             $this->handleException($e, __FUNCTION__);
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function saveDeferred(CacheItemInterface $item)
+    public function saveDeferred(CacheItemInterface $item): bool
     {
+        if (!$item instanceof PhpCacheItem) {
+            $e = new InvalidArgumentException('Cache items are not transferable between pools. Item MUST implement PhpCacheItem.');
+            $this->handleException($e, __FUNCTION__);
+        }
+
         $this->deferred[$item->getKey()] = $item;
 
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function commit()
+    public function commit(): bool
     {
-        $saved = true;
-        foreach ($this->deferred as $item) {
-            if (!$this->save($item)) {
-                $saved = false;
-            }
-        }
+        $deferred = $this->deferred;
         $this->deferred = [];
+        $pending = $deferred;
+
+        $saved = true;
+        foreach ($deferred as $key => $item) {
+            try {
+                if (!$this->save($item)) {
+                    $saved = false;
+                }
+            } catch (\Throwable $e) {
+                $this->deferred = array_replace($pending, $this->deferred);
+
+                throw $e;
+            }
+
+            unset($pending[$key]);
+        }
 
         return $saved;
     }
 
     /**
-     * @param string $key
-     *
      * @throws InvalidArgumentException
      */
-    protected function validateKey($key)
+    protected function validateKey(mixed $key): string
     {
         if (!is_string($key)) {
             $e = new InvalidArgumentException(sprintf(
@@ -294,11 +293,10 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
             ));
             $this->handleException($e, __FUNCTION__);
         }
+
+        return $key;
     }
 
-    /**
-     * @param LoggerInterface $logger
-     */
     public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
@@ -307,13 +305,11 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
     /**
      * Logs with an arbitrary level if the logger exists.
      *
-     * @param mixed  $level
-     * @param string $message
-     * @param array  $context
+     * @param array<string, mixed> $context
      */
-    protected function log($level, $message, array $context = [])
+    protected function log(mixed $level, string $message, array $context = []): void
     {
-        if ($this->logger !== null) {
+        if (null !== $this->logger) {
             $this->logger->log($level, $message, $context);
         }
     }
@@ -321,12 +317,9 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
     /**
      * Log exception and rethrow it.
      *
-     * @param \Exception $e
-     * @param string     $function
-     *
      * @throws CachePoolException
      */
-    private function handleException(\Exception $e, $function)
+    private function handleException(\Exception $e, string $function): never
     {
         $level = 'alert';
         if ($e instanceof InvalidArgumentException) {
@@ -342,45 +335,51 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
     }
 
     /**
-     * @param array $tags
-     *
-     * @return bool
+     * @param list<string> $tags
      */
-    public function invalidateTags(array $tags)
+    public function invalidateTags(array $tags): bool
     {
+        $invalidTags = array_fill_keys($tags, true);
         $itemIds = [];
         foreach ($tags as $tag) {
-            $itemIds = array_merge($itemIds, $this->getList($this->getTagKey($tag)));
+            foreach ($this->getList($this->getTagKey($tag)) as $itemId) {
+                $stored = $this->fetchObjectFromCache($itemId);
+                foreach ($stored[2] as $storedTag) {
+                    if ($stored[0] && isset($invalidTags[$storedTag])) {
+                        $itemIds[$itemId] = $itemId;
+                        break;
+                    }
+                }
+            }
         }
 
         // Remove all items with the tag
-        $success = $this->deleteItems($itemIds);
+        $success = $this->deleteItems(array_values($itemIds));
 
         if ($success) {
             // Remove the tag list
             foreach ($tags as $tag) {
-                $this->removeList($this->getTagKey($tag));
-                $l = $this->getList($this->getTagKey($tag));
+                $success = $this->removeList($this->getTagKey($tag)) && $success;
             }
         }
 
         return $success;
     }
 
-    public function invalidateTag($tag)
+    public function invalidateTag(string $tag): bool
     {
         return $this->invalidateTags([$tag]);
     }
 
-    /**
-     * @param PhpCacheItem $item
-     */
-    protected function saveTags(PhpCacheItem $item)
+    protected function saveTags(PhpCacheItem $item): bool
     {
+        $saved = true;
         $tags = $item->getTags();
         foreach ($tags as $tag) {
-            $this->appendListItem($this->getTagKey($tag), $item->getKey());
+            $saved = $this->appendListItem($this->getTagKey($tag), $item->getKey()) && $saved;
         }
+
+        return $saved;
     }
 
     /**
@@ -388,43 +387,49 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
      * we MUST remove the tags. If we fail to remove the tags a new item with
      * the same key will automatically get the previous tags.
      *
-     * @param string $key
-     *
      * @return $this
      */
-    protected function preRemoveItem($key)
+    protected function preRemoveItem(string $key): static
     {
         $item = $this->getItem($key);
-        $this->removeTagEntries($item);
+        $this->removeTagEntries($item, $this->getTagEntries($item));
 
         return $this;
     }
 
     /**
-     * @param PhpCacheItem $item
+     * @return array<string, string>
      */
-    private function removeTagEntries(PhpCacheItem $item)
+    private function getTagEntries(PhpCacheItem $item): array
     {
+        $stored = $this->fetchObjectFromCache($item->getKey());
         $tags = $item->getPreviousTags();
-        foreach ($tags as $tag) {
-            $this->removeListItem($this->getTagKey($tag), $item->getKey());
+        foreach ($stored[2] as $tag) {
+            $tags[$tag] = $tag;
         }
+
+        return $tags;
     }
 
     /**
-     * @param string $tag
-     *
-     * @return string
+     * @param array<string, string> $tags
      */
-    protected function getTagKey($tag)
+    private function removeTagEntries(PhpCacheItem $item, array $tags): bool
+    {
+        $removed = true;
+        foreach ($tags as $tag) {
+            $removed = $this->removeListItem($this->getTagKey($tag), $item->getKey()) && $removed;
+        }
+
+        return $removed;
+    }
+
+    protected function getTagKey(string $tag): string
     {
         return 'tag'.self::SEPARATOR_TAG.$tag;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function get($key, $default = null)
+    public function get(string $key, mixed $default = null): mixed
     {
         $item = $this->getItem($key);
         if (!$item->isHit()) {
@@ -434,10 +439,7 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
         return $item->get();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function set($key, $value, $ttl = null)
+    public function set(string $key, mixed $value, int|\DateInterval|null $ttl = null): bool
     {
         $item = $this->getItem($key);
         $item->set($value);
@@ -446,26 +448,14 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
         return $this->save($item);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function delete($key)
+    public function delete(string $key): bool
     {
         return $this->deleteItem($key);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getMultiple($keys, $default = null)
+    public function getMultiple(iterable $keys, mixed $default = null): iterable
     {
-        if (!is_array($keys)) {
-            if (!$keys instanceof \Traversable) {
-                throw new InvalidArgumentException('$keys is neither an array nor Traversable');
-            }
-
-            // Since we need to throw an exception if *any* key is invalid, it doesn't
-            // make sense to wrap iterators or something like that.
+        if ($keys instanceof \Traversable) {
             $keys = iterator_to_array($keys, false);
         }
 
@@ -475,15 +465,14 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
     }
 
     /**
-     * @param $default
-     * @param $items
+     * @param iterable<string, CacheItemInterface> $items
      *
-     * @return \Generator
+     * @return \Generator<string, mixed, mixed, void>
      */
-    private function generateValues($default, $items)
+    private function generateValues(mixed $default, iterable $items): \Generator
     {
         foreach ($items as $key => $item) {
-            /** @type $item CacheItemInterface */
+            /** @var CacheItemInterface $item */
             if (!$item->isHit()) {
                 yield $key => $default;
             } else {
@@ -493,28 +482,22 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
     }
 
     /**
-     * {@inheritdoc}
+     * @param iterable<string|int, mixed> $values
      */
-    public function setMultiple($values, $ttl = null)
+    public function setMultiple(iterable $values, int|\DateInterval|null $ttl = null): bool
     {
-        if (!is_array($values)) {
-            if (!$values instanceof \Traversable) {
-                throw new InvalidArgumentException('$values is neither an array nor Traversable');
-            }
-        }
-
-        $keys        = [];
+        $keys = [];
         $arrayValues = [];
         foreach ($values as $key => $value) {
             if (is_int($key)) {
                 $key = (string) $key;
             }
             $this->validateKey($key);
-            $keys[]            = $key;
+            $keys[] = $key;
             $arrayValues[$key] = $value;
         }
 
-        $items       = $this->getItems($keys);
+        $items = $this->getItems($keys);
         $itemSuccess = true;
         foreach ($items as $key => $item) {
             $item->set($arrayValues[$key]);
@@ -525,34 +508,28 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
                 throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
             }
 
-            $itemSuccess = $itemSuccess && $this->saveDeferred($item);
+            $itemSaved = $this->saveDeferred($item);
+            $itemSuccess = $itemSaved && $itemSuccess;
         }
 
-        return $itemSuccess && $this->commit();
+        $itemsCommitted = $this->commit();
+
+        return $itemSuccess && $itemsCommitted;
     }
 
     /**
-     * {@inheritdoc}
+     * @param iterable<string> $keys
      */
-    public function deleteMultiple($keys)
+    public function deleteMultiple(iterable $keys): bool
     {
-        if (!is_array($keys)) {
-            if (!$keys instanceof \Traversable) {
-                throw new InvalidArgumentException('$keys is neither an array nor Traversable');
-            }
-
-            // Since we need to throw an exception if *any* key is invalid, it doesn't
-            // make sense to wrap iterators or something like that.
+        if ($keys instanceof \Traversable) {
             $keys = iterator_to_array($keys, false);
         }
 
         return $this->deleteItems($keys);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function has($key)
+    public function has(string $key): bool
     {
         return $this->hasItem($key);
     }

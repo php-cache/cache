@@ -14,10 +14,11 @@ namespace Cache\Util\SimpleCache;
 use Psr\SimpleCache\CacheInterface;
 
 if (!function_exists('\Cache\Util\SimpleCache\remember')) {
-    function remember(CacheInterface $cache, $key, $ttl, callable $createResult)
+    function remember(CacheInterface $cache, string $key, \DateInterval|int|null $ttl, callable $createResult): mixed
     {
-        $res = $cache->get($key);
-        if ($res) {
+        $miss = new \stdClass();
+        $res = $cache->get($key, $miss);
+        if ($miss !== $res) {
             return $res;
         }
 

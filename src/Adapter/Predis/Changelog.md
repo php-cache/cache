@@ -2,7 +2,15 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
-## UNRELEASED
+## 2.0.0
+
+### Changed
+
+* Require PHP 8.2 or later.
+* Support Predis 2 and 3.
+* Require `psr/cache` 3 and `psr/simple-cache` 3.
+* Add native parameter and return types required by the PSR interfaces.
+* Store tag indexes as Redis sets instead of lists. Clear the cache before upgrading or rolling back.
 
 ## 1.2.0
 

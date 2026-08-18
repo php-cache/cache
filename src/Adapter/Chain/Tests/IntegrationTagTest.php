@@ -13,12 +13,13 @@ namespace Cache\Adapter\Chain\Tests;
 
 use Cache\Adapter\Chain\CachePoolChain;
 use Cache\IntegrationTests\TaggableCachePoolTest;
+use Cache\TagInterop\TaggableCacheItemPoolInterface;
 
 class IntegrationTagTest extends TaggableCachePoolTest
 {
     use CreatePoolTrait;
 
-    public function createCachePool()
+    public function createCachePool(): TaggableCacheItemPoolInterface
     {
         return new CachePoolChain($this->getAdapters());
     }

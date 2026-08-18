@@ -11,6 +11,7 @@
 
 namespace Cache\Taggable;
 
+use Cache\Taggable\Exception\InvalidArgumentException;
 use Cache\TagInterop\TaggableCacheItemInterface;
 use Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Psr\Cache\CacheItemInterface;
@@ -36,26 +37,21 @@ use Psr\Cache\CacheItemPoolInterface;
  * main pool is cleared.
  *
  * @author Magnus Nordlander <magnus@fervo.se>
+ *
+ * @phpstan-consistent-constructor
  */
 class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
 {
-    /**
-     * @type CacheItemPoolInterface
-     */
-    private $cachePool;
+    private CacheItemPoolInterface $cachePool;
 
-    /**
-     * @type CacheItemPoolInterface
-     */
-    private $tagStorePool;
+    private CacheItemPoolInterface $tagStorePool;
 
-    /**
-     * @param CacheItemPoolInterface $cachePool
-     * @param CacheItemPoolInterface $tagStorePool
-     */
-    private function __construct(CacheItemPoolInterface $cachePool, CacheItemPoolInterface $tagStorePool = null)
+    private readonly object $owner;
+
+    protected function __construct(CacheItemPoolInterface $cachePool, ?CacheItemPoolInterface $tagStorePool = null)
     {
         $this->cachePool = $cachePool;
+        $this->owner = new \stdClass();
         if ($tagStorePool) {
             $this->tagStorePool = $tagStorePool;
         } else {
@@ -66,242 +62,307 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
     /**
      * @param CacheItemPoolInterface      $cachePool    The pool to which to add tagging capabilities
      * @param CacheItemPoolInterface|null $tagStorePool The pool to store tags in. If null is passed, the main pool is used
-     *
-     * @return TaggableCacheItemPoolInterface
      */
-    public static function makeTaggable(CacheItemPoolInterface $cachePool, CacheItemPoolInterface $tagStorePool = null)
+    public static function makeTaggable(CacheItemPoolInterface $cachePool, ?CacheItemPoolInterface $tagStorePool = null): TaggableCacheItemPoolInterface
     {
-        if ($cachePool instanceof TaggableCacheItemPoolInterface && $tagStorePool === null) {
+        if ($cachePool instanceof TaggableCacheItemPoolInterface && null === $tagStorePool) {
             return $cachePool;
         }
 
-        return new self($cachePool, $tagStorePool);
+        return new static($cachePool, $tagStorePool);
+    }
+
+    public function getItem(string $key): TaggableCacheItemInterface
+    {
+        $this->validateKey($key);
+
+        return TaggablePSR6ItemAdapter::makeTaggable($this->cachePool->getItem($key), $this->owner);
     }
 
     /**
-     * {@inheritdoc}
+     * @param array<array-key, string> $keys
+     *
+     * @return iterable<string, TaggableCacheItemInterface>
      */
-    public function getItem($key)
+    public function getItems(array $keys = []): iterable
     {
-        return TaggablePSR6ItemAdapter::makeTaggable($this->cachePool->getItem($key));
+        $keys = $this->validateKeys($keys);
+
+        return $this->wrapItems($this->cachePool->getItems($keys));
     }
 
     /**
-     * {@inheritdoc}
+     * @param iterable<array-key, mixed> $items
+     *
+     * @return \Generator<string, TaggableCacheItemInterface>
      */
-    public function getItems(array $keys = [])
+    private function wrapItems(iterable $items): \Generator
     {
-        $items = $this->cachePool->getItems($keys);
+        foreach ($items as $item) {
+            if (!$item instanceof CacheItemInterface) {
+                throw new \UnexpectedValueException('A cache pool returned an invalid cache item.');
+            }
 
-        $wrappedItems = [];
-        foreach ($items as $key => $item) {
-            $wrappedItems[$key] = TaggablePSR6ItemAdapter::makeTaggable($item);
+            yield $item->getKey() => TaggablePSR6ItemAdapter::makeTaggable($item, $this->owner);
         }
-
-        return $wrappedItems;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function hasItem($key)
+    public function hasItem(string $key): bool
     {
+        $this->validateKey($key);
+
         return $this->cachePool->hasItem($key);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function clear()
+    public function clear(): bool
     {
-        $ret = $this->cachePool->clear();
-
-        return $this->tagStorePool->clear() && $ret; // Is this acceptable?
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function deleteItem($key)
-    {
-        $this->preRemoveItem($key);
-
-        return $this->cachePool->deleteItem($key);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function deleteItems(array $keys)
-    {
-        foreach ($keys as $key) {
-            $this->preRemoveItem($key);
+        if (!$this->cachePool->clear()) {
+            return false;
         }
 
-        return $this->cachePool->deleteItems($keys);
+        return $this->tagStorePool === $this->cachePool || $this->tagStorePool->clear();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function save(CacheItemInterface $item)
+    public function deleteItem(string $key): bool
     {
-        $this->removeTagEntries($item);
-        $this->saveTags($item);
+        $this->validateKey($key);
+        $item = $this->getItem($key);
+        $tags = $this->getTagEntries($item);
 
-        return $this->cachePool->save($item->unwrap());
+        if (!$this->cachePool->deleteItem($key)) {
+            return false;
+        }
+
+        return $this->removeTagEntries($item, $tags);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function saveDeferred(CacheItemInterface $item)
+    public function deleteItems(array $keys): bool
     {
-        $this->saveTags($item);
+        $keys = $this->validateKeys($keys);
+        $entries = [];
+        foreach ($keys as $key) {
+            $item = $this->getItem($key);
+            $entries[] = [$item, $this->getTagEntries($item)];
+        }
 
-        return $this->cachePool->saveDeferred($item->unwrap());
+        if (!$this->cachePool->deleteItems($keys)) {
+            return false;
+        }
+
+        $tagsRemoved = true;
+        foreach ($entries as [$item, $tags]) {
+            $tagsRemoved = $this->removeTagEntries($item, $tags) && $tagsRemoved;
+        }
+
+        return $tagsRemoved;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function commit()
+    private function validateKey(string $key): void
     {
-        $this->tagStorePool->commit();
-        $this->cachePool->commit();
+        if ('' === $key) {
+            throw new InvalidArgumentException('Cache key cannot be an empty string');
+        }
+
+        if (preg_match('|[\{\}\(\)/\\\@\:]|', $key)) {
+            throw new InvalidArgumentException(sprintf('Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:', $key));
+        }
     }
 
     /**
-     * {@inheritdoc}
+     * @param array<array-key, mixed> $keys
+     *
+     * @return list<string>
      */
-    protected function appendListItem($name, $value)
+    private function validateKeys(array $keys): array
+    {
+        $validatedKeys = [];
+        foreach ($keys as $key) {
+            if (!is_string($key)) {
+                throw new InvalidArgumentException(sprintf('Cache key must be string, "%s" given', get_debug_type($key)));
+            }
+
+            $this->validateKey($key);
+            $validatedKeys[] = $key;
+        }
+
+        return $validatedKeys;
+    }
+
+    public function save(CacheItemInterface $item): bool
+    {
+        if (!$item instanceof TaggablePSR6ItemAdapter || !$item->isOwnedBy($this->owner)) {
+            throw new InvalidArgumentException('Cache items are not transferable between pools. Item MUST implement TaggablePSR6ItemAdapter.');
+        }
+
+        $previousTags = $this->getTagEntries($item);
+
+        if (!$this->cachePool->save($item->unwrap())) {
+            return false;
+        }
+
+        $tagsRemoved = $this->removeTagEntries($item, $previousTags);
+        if ($this->cachePool->hasItem($item->getKey())) {
+            $tagsSaved = $this->saveTags($item);
+
+            return $tagsSaved && $tagsRemoved;
+        }
+
+        return $tagsRemoved;
+    }
+
+    public function saveDeferred(CacheItemInterface $item): bool
+    {
+        return $this->save($item);
+    }
+
+    public function commit(): bool
+    {
+        $itemsSaved = $this->cachePool->commit();
+        $tagsSaved = $this->tagStorePool === $this->cachePool || $this->tagStorePool->commit();
+
+        return $tagsSaved && $itemsSaved;
+    }
+
+    protected function appendListItem(string $name, string $value): bool
     {
         $listItem = $this->tagStorePool->getItem($name);
-        if (!is_array($list = $listItem->get())) {
-            $list = [];
-        }
-
+        $list = $this->getList($name);
         $list[] = $value;
         $listItem->set($list);
-        $this->tagStorePool->save($listItem);
+
+        return $this->tagStorePool->save($listItem);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function removeList($name)
+    protected function removeList(string $name): bool
     {
         return $this->tagStorePool->deleteItem($name);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function removeListItem($name, $key)
+    protected function removeListItem(string $name, string $key): bool
     {
         $listItem = $this->tagStorePool->getItem($name);
-        if (!is_array($list = $listItem->get())) {
-            $list = [];
+        $list = [];
+        foreach ($this->getList($name) as $value) {
+            if ($value !== $key) {
+                $list[] = $value;
+            }
         }
 
-        $list = array_filter($list, function ($value) use ($key) {
-            return $value !== $key;
-        });
-
         $listItem->set($list);
-        $this->tagStorePool->save($listItem);
+
+        return $this->tagStorePool->save($listItem);
     }
 
     /**
-     * {@inheritdoc}
+     * @return list<string>
      */
-    protected function getList($name)
+    protected function getList(string $name): array
     {
         $listItem = $this->tagStorePool->getItem($name);
-        if (!is_array($list = $listItem->get())) {
-            $list = [];
+        $stored = $listItem->get();
+        if (!is_array($stored)) {
+            return [];
+        }
+
+        $list = [];
+        foreach ($stored as $value) {
+            if (is_string($value)) {
+                $list[] = $value;
+            }
         }
 
         return $list;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getTagKey($tag)
+    protected function getTagKey(string $tag): string
     {
         return '__tag.'.$tag;
     }
 
-    /**
-     * @param TaggablePSR6ItemAdapter $item
-     *
-     * @return $this
-     */
-    private function saveTags(TaggablePSR6ItemAdapter $item)
+    /** Save the item's current tags in the tag store. */
+    private function saveTags(TaggablePSR6ItemAdapter $item): bool
     {
-        $tags = $item->getTags();
-        foreach ($tags as $tag) {
-            $this->appendListItem($this->getTagKey($tag), $item->getKey());
-        }
-
-        return $this;
+        return $this->saveTagEntries($item->getKey(), $item->getTags());
     }
 
     /**
-     * {@inheritdoc}
+     * @param array<string, string> $tags
      */
-    public function invalidateTags(array $tags)
+    private function saveTagEntries(string $key, array $tags): bool
     {
+        $saved = true;
+        foreach ($tags as $tag) {
+            $saved = $this->appendListItem($this->getTagKey($tag), $key) && $saved;
+        }
+
+        return $saved;
+    }
+
+    /**
+     * @param array<array-key, string> $tags
+     */
+    public function invalidateTags(array $tags): bool
+    {
+        $invalidTags = array_fill_keys($tags, true);
         $itemIds = [];
         foreach ($tags as $tag) {
-            $itemIds = array_merge($itemIds, $this->getList($this->getTagKey($tag)));
+            foreach ($this->getList($this->getTagKey($tag)) as $itemId) {
+                $item = $this->getItem($itemId);
+                if (!$item->isHit()) {
+                    continue;
+                }
+
+                foreach ($item->getPreviousTags() as $storedTag) {
+                    if (isset($invalidTags[$storedTag])) {
+                        $itemIds[$itemId] = $itemId;
+                        break;
+                    }
+                }
+            }
         }
 
         // Remove all items with the tag
-        $success = $this->deleteItems($itemIds);
+        $success = $this->deleteItems(array_values($itemIds));
 
         if ($success) {
             // Remove the tag list
             foreach ($tags as $tag) {
-                $this->removeList($this->getTagKey($tag));
+                $success = $this->removeList($this->getTagKey($tag)) && $success;
             }
         }
 
         return $success;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function invalidateTag($tag)
+    public function invalidateTag(string $tag): bool
     {
         return $this->invalidateTags([$tag]);
     }
 
     /**
-     * Removes the key form all tag lists.
-     *
-     * @param string $key
-     *
-     * @return $this
+     * @return array<string, string>
      */
-    private function preRemoveItem($key)
+    private function getTagEntries(TaggableCacheItemInterface $item): array
     {
-        $item = $this->getItem($key);
-        $this->removeTagEntries($item);
+        $tags = $item->getPreviousTags();
+        $stored = TaggablePSR6ItemAdapter::makeTaggable($this->cachePool->getItem($item->getKey()), $this->owner);
+        foreach ($stored->getPreviousTags() as $tag) {
+            $tags[$tag] = $tag;
+        }
 
-        return $this;
+        return $tags;
     }
 
     /**
-     * @param TaggableCacheItemInterface $item
+     * @param array<string, string> $tags
      */
-    private function removeTagEntries($item)
+    private function removeTagEntries(TaggableCacheItemInterface $item, array $tags): bool
     {
-        $tags = $item->getPreviousTags();
+        $removed = true;
         foreach ($tags as $tag) {
-            $this->removeListItem($this->getTagKey($tag), $item->getKey());
+            $removed = $this->removeListItem($this->getTagKey($tag), $item->getKey()) && $removed;
         }
+
+        return $removed;
     }
 }

@@ -1,14 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" backupGlobals="false" backupStaticAttributes="false" colors="true" convertErrorsToExceptions="true" convertNoticesToExceptions="true" convertWarningsToExceptions="true" processIsolation="false" stopOnFailure="false" bootstrap="vendor/autoload.php" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
-  <testsuites>
-    <testsuite name="Main Test Suite">
-      <directory>./src/*/Tests</directory>
-      <directory>./src/*/*/Tests</directory>
-    </testsuite>
-  </testsuites>
-  <php>
-    <env name="MONGODB_HOST" value="localhost:27017"/>
-    <env name="MONGODB_COLLECTION" value="psr6test.cache"/>
-    <env name="MONGODB_DATABASE" value="test"/>
-  </php>
+
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         cacheDirectory=".phpunit.cache"
+         colors="true">
+    <testsuites>
+        <testsuite name="main">
+            <directory>src/*/Tests</directory>
+            <directory>src/*/*/Tests</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+        <exclude>
+            <directory>src/Adapter/Apcu/Tests</directory>
+            <directory>src/Adapter/Chain/Tests</directory>
+            <directory>src/Adapter/Common/Tests</directory>
+            <directory>src/Adapter/Doctrine/Tests</directory>
+            <directory>src/Adapter/Filesystem/Tests</directory>
+            <directory>src/Adapter/Illuminate/Tests</directory>
+            <directory>src/Adapter/Memcache/Tests</directory>
+            <directory>src/Adapter/Memcached/Tests</directory>
+            <directory>src/Adapter/MongoDB/Tests</directory>
+            <directory>src/Adapter/PHPArray/Tests</directory>
+            <directory>src/Adapter/Predis/Tests</directory>
+            <directory>src/Adapter/Redis/Tests</directory>
+            <directory>src/Adapter/Void/Tests</directory>
+            <directory>src/Bridge/Doctrine/Tests</directory>
+            <directory>src/Bridge/SimpleCache/Tests</directory>
+            <directory>src/Encryption/Tests</directory>
+            <directory>src/Hierarchy/Tests</directory>
+            <directory>src/Namespaced/Tests</directory>
+            <directory>src/Prefixed/Tests</directory>
+            <directory>src/SessionHandler/Tests</directory>
+            <directory>src/Taggable/Tests</directory>
+            <directory>src/Util/Tests</directory>
+        </exclude>
+    </source>
+    <php>
+        <env name="MONGODB_HOST" value="localhost:27017"/>
+        <env name="MONGODB_COLLECTION" value="psr6test.cache"/>
+        <env name="MONGODB_DATABASE" value="test"/>
+    </php>
 </phpunit>

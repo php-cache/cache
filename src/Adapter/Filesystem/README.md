@@ -1,45 +1,50 @@
-# Filesystem PSR-6 Cache pool 
-[![Gitter](https://badges.gitter.im/php-cache/cache.svg)](https://gitter.im/php-cache/cache?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+# Filesystem PSR-6 cache pool
+
 [![Latest Stable Version](https://poser.pugx.org/cache/filesystem-adapter/v/stable)](https://packagist.org/packages/cache/filesystem-adapter)
-[![codecov.io](https://codecov.io/github/php-cache/filesystem-adapter/coverage.svg?branch=master)](https://codecov.io/github/php-cache/filesystem-adapter?branch=master)
-[![Total Downloads](https://poser.pugx.org/cache/filesystem-adapter/downloads)](https://packagist.org/packages/cache/filesystem-adapter)
-[![Monthly Downloads](https://poser.pugx.org/cache/filesystem-adapter/d/monthly.png)](https://packagist.org/packages/cache/filesystem-adapter)
+[![Coverage](https://codecov.io/gh/php-cache/filesystem-adapter/branch/master/graph/badge.svg)](https://codecov.io/gh/php-cache/filesystem-adapter)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
-This is a PSR-6 cache implementation using Filesystem. It is a part of the PHP Cache organisation. To read about 
-features like tagging and hierarchy support please read the shared documentation at [www.php-cache.com](http://www.php-cache.com). 
+This package provides PSR-6 and PSR-16 cache implementations backed by [Flysystem](https://flysystem.thephpleague.com/). It supports Flysystem 2.x and 3.x.
 
-This implementation is using the excellent [Flysystem](http://flysystem.thephpleague.com/).
-
-### Install
+## Installation
 
 ```bash
-composer require cache/filesystem-adapter
+composer require cache/filesystem-adapter:^2.0
 ```
 
-### Use
-
-To create an instance of `FilesystemCachePool` you need to configure a `Filesystem` and its adapter. 
+## Usage
 
 ```php
-use League\Flysystem\Adapter\Local;
-use League\Flysystem\Filesystem;
 use Cache\Adapter\Filesystem\FilesystemCachePool;
+use League\Flysystem\Filesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 
-$filesystemAdapter = new Local(__DIR__.'/');
-$filesystem        = new Filesystem($filesystemAdapter);
-
+$filesystem = new Filesystem(new LocalFilesystemAdapter(__DIR__.'/storage'));
 $pool = new FilesystemCachePool($filesystem);
 ```
 
-You can change the folder the cache pool will write to through the `setFolder` setter:
+The pool stores entries in the `cache` directory by default. Pass another directory to the constructor when needed:
 
 ```php
-$pool = new FilesystemCachePool($filesystem);
-$pool->setFolder('path/to/cache');
+$pool = new FilesystemCachePool($filesystem, 'path/to/cache');
 ```
 
-### Contribute
+Use the accessors when an extending app needs to inspect or replace the Flysystem instance or cache directory:
 
-Contributions are very welcome! Send a pull request to the [main repository](https://github.com/php-cache/cache) or 
-report any issues you find on the [issue tracker](http://issues.php-cache.com).
+```php
+$pool->setFolder('tenant/cache');
+$pool->setFilesystem($replacementFilesystem);
+
+$folder = $pool->getFolder();
+$filesystem = $pool->getFilesystem();
+```
+
+`setFolder()` normalizes forward and backward slashes. It removes empty and current-directory segments such as `.`.
+
+It rejects folders that resolve to the Flysystem root or contain a parent-directory segment such as `cache/..`. The constructor applies the same checks to its folder argument.
+
+`setFilesystem()` creates the current cache directory on the replacement filesystem.
+
+## Contributing
+
+Send pull requests to the [main repository](https://github.com/php-cache/cache). Report issues on the [GitHub issue tracker](https://github.com/php-cache/cache/issues).

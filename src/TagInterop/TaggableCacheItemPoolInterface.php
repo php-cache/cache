@@ -27,34 +27,29 @@ interface TaggableCacheItemPoolInterface extends CacheItemPoolInterface
      *
      * @param string $tag The tag to invalidate
      *
-     * @throws InvalidArgumentException When $tags is not valid
-     *
      * @return bool True on success
+     *
+     * @throws InvalidArgumentException When $tags is not valid
      */
-    public function invalidateTag($tag);
+    public function invalidateTag(string $tag): bool;
 
     /**
      * Invalidates cached items using tags.
      *
-     * @param string[] $tags An array of tags to invalidate
-     *
-     * @throws InvalidArgumentException When $tags is not valid
+     * @param array<array-key, string> $tags An array of tags to invalidate
      *
      * @return bool True on success
+     *
+     * @throws InvalidArgumentException When $tags is not valid
      */
-    public function invalidateTags(array $tags);
+    public function invalidateTags(array $tags): bool;
+
+    public function getItem(string $key): TaggableCacheItemInterface;
 
     /**
-     * {@inheritdoc}
+     * @param array<array-key, string> $keys
      *
-     * @return TaggableCacheItemInterface
+     * @return iterable<string, TaggableCacheItemInterface>
      */
-    public function getItem($key);
-
-    /**
-     * {@inheritdoc}
-     *
-     * @return array|\Traversable|TaggableCacheItemInterface[]
-     */
-    public function getItems(array $keys = []);
+    public function getItems(array $keys = []): iterable;
 }

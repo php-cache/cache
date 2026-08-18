@@ -18,15 +18,12 @@ use PHPUnit\Framework\TestCase;
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  * @author Daniel Bannert <d.bannert@anolilab.de>
  */
-abstract class AbstractSessionHandlerTest extends TestCase
+abstract class SessionHandlerTestCase extends TestCase
 {
-    const TTL    = 100;
-    const PREFIX = 'pre';
+    public const TTL = 100;
+    public const PREFIX = 'pre';
 
-    /**
-     * @type \SessionHandlerInterface|\SessionUpdateTimestampHandlerInterface
-     */
-    protected $handler;
+    protected \SessionHandlerInterface&\SessionUpdateTimestampHandlerInterface $handler;
 
     public function testOpen()
     {
@@ -40,6 +37,6 @@ abstract class AbstractSessionHandlerTest extends TestCase
 
     public function testGc()
     {
-        $this->assertTrue($this->handler->gc(4711));
+        $this->assertSame(0, $this->handler->gc(4711));
     }
 }

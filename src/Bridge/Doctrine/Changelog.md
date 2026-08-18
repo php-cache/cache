@@ -2,6 +2,14 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 4.0.0
+
+### Changed
+
+* Require PHP 8.2 or later.
+* Require Doctrine Cache 2.2 and a PSR-6 implementation compatible with `psr/cache` 3.
+* Add native parameter and return types required by Doctrine Cache 2.2.
+
 ## 3.2.0
 
 * Support for PHP 8.1

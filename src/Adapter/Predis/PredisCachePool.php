@@ -16,6 +16,7 @@ use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
 use Predis\ClientInterface as Client;
+use Predis\Response\Status;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
@@ -24,110 +25,131 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
 {
     use HierarchicalCachePoolTrait;
 
-    /**
-     * @type Client
-     */
-    protected $cache;
+    protected Client $cache;
 
-    /**
-     * @param Client $cache
-     */
     public function __construct(Client $cache)
     {
         $this->cache = $cache;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function fetchObjectFromCache($key)
+    protected function fetchObjectFromCache(string $key): array
     {
-        if (false === $result = unserialize($this->cache->get($this->getHierarchyKey($key)))) {
-            return [false, null, [], null];
-        }
-
-        return $result;
+        return $this->decodeCacheItem($this->cache->get($this->getHierarchyKey($key))) ?? [false, null, [], null];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function clearAllObjectsFromCache()
+    protected function clearAllObjectsFromCache(): bool
     {
-        return 'OK' === $this->cache->flushdb()->getPayload();
+        return $this->isOkResponse($this->cache->flushdb());
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function clearOneObjectFromCache($key)
+    protected function clearOneObjectFromCache(string $key): bool
     {
-        $path      = null;
+        $path = null;
         $keyString = $this->getHierarchyKey($key, $path);
-        if ($path) {
+        if (null !== $path) {
             $this->cache->incr($path);
         }
         $this->clearHierarchyKeyCache();
 
-        return $this->cache->del($keyString) >= 0;
+        $deleted = $this->cache->del($keyString);
+
+        return $deleted >= 0;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function storeItemInCache(PhpCacheItem $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, ?int $ttl): bool
     {
-        if ($ttl < 0) {
+        if (null !== $ttl && $ttl < 0) {
             return false;
         }
 
-        $key  = $this->getHierarchyKey($item->getKey());
+        $key = $this->getHierarchyKey($item->getKey());
         $data = serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]);
 
-        if ($ttl === null || $ttl === 0) {
-            return 'OK' === $this->cache->set($key, $data)->getPayload();
+        if (null === $ttl || 0 === $ttl) {
+            return $this->isOkResponse($this->cache->set($key, $data));
         }
 
-        return 'OK' === $this->cache->setex($key, $ttl, $data)->getPayload();
+        return $this->isOkResponse($this->cache->setex($key, $ttl, $data));
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getDirectValue($key)
+    public function getDirectValue(string $key): mixed
     {
         return $this->cache->get($key);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function appendListItem($name, $value)
+    protected function appendListItem(string $name, string $value): bool
     {
-        $this->cache->lpush($name, $value);
+        $added = $this->cache->sadd($name, [$value]);
+
+        return $added >= 0;
+    }
+
+    protected function getList(string $name): array
+    {
+        $items = $this->cache->smembers($name);
+
+        return array_values(array_filter($items, is_string(...)));
+    }
+
+    protected function removeList(string $name): bool
+    {
+        $deleted = $this->cache->del($name);
+
+        return $deleted >= 0;
+    }
+
+    protected function removeListItem(string $name, string $key): bool
+    {
+        $removed = $this->cache->srem($name, $key);
+
+        return $removed >= 0;
     }
 
     /**
-     * {@inheritdoc}
+     * @return array{true, mixed, array<string, string>, int|null}|null
      */
-    protected function getList($name)
+    private function decodeCacheItem(mixed $payload): ?array
     {
-        return $this->cache->lrange($name, 0, -1);
+        if (!is_string($payload)) {
+            return null;
+        }
+
+        try {
+            $cacheItem = @unserialize($payload);
+        } catch (\Throwable) {
+            return null;
+        }
+        if (!is_array($cacheItem) || !array_is_list($cacheItem) || 4 !== count($cacheItem)) {
+            return null;
+        }
+
+        [$hit, $value, $tags, $expirationTimestamp] = $cacheItem;
+        if (true !== $hit || !is_array($tags)) {
+            return null;
+        }
+
+        $validTags = [];
+        foreach ($tags as $tag) {
+            if (!is_string($tag)) {
+                return null;
+            }
+
+            $validTags[$tag] = $tag;
+        }
+
+        if (null !== $expirationTimestamp && !is_int($expirationTimestamp)) {
+            return null;
+        }
+
+        return [true, $value, $validTags, $expirationTimestamp];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function removeList($name)
+    private function isOkResponse(mixed $response): bool
     {
-        return $this->cache->del($name);
-    }
+        if ($response instanceof Status) {
+            return 'OK' === $response->getPayload();
+        }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function removeListItem($name, $key)
-    {
-        return $this->cache->lrem($name, 0, $key);
+        return 'OK' === $response;
     }
 }

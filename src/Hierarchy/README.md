@@ -1,35 +1,27 @@
-# Hierarchical PSR-6 cache pool 
-[![Gitter](https://badges.gitter.im/php-cache/cache.svg)](https://gitter.im/php-cache/cache?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+# Hierarchical PSR-6 cache pools
+
 [![Latest Stable Version](https://poser.pugx.org/cache/hierarchical-cache/v/stable)](https://packagist.org/packages/cache/hierarchical-cache)
-[![codecov.io](https://codecov.io/github/php-cache/hierarchical-cache/coverage.svg?branch=master)](https://codecov.io/github/php-cache/hierarchical-cache?branch=master)
-[![Total Downloads](https://poser.pugx.org/cache/hierarchical-cache/downloads)](https://packagist.org/packages/cache/hierarchical-cache)
-[![Monthly Downloads](https://poser.pugx.org/cache/hierarchical-cache/d/monthly.png)](https://packagist.org/packages/cache/hierarchical-cache)
+[![Coverage](https://codecov.io/gh/php-cache/hierarchical-cache/branch/master/graph/badge.svg)](https://codecov.io/gh/php-cache/hierarchical-cache)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
-This is an implementation for the PSR-6 for an hierarchical cache architecture. 
+This package defines hierarchical PSR-6 pools. A hierarchical pool can invalidate a branch without enumerating every child key.
 
-If you have a cache key like `|users|:uid|followers|:fid|likes` where `:uid` and `:fid` are arbitrary integers. You
- may flush all followers by flushing `|users|:uid|followers`.
-  
-It is a part of the PHP Cache organisation. To read about features like tagging and hierarchy support please read 
-the shared documentation at [www.php-cache.com](http://www.php-cache.com). 
+For example, deleting `|users|42|followers` also invalidates keys below that path.
 
-### Install
+## Installation
 
 ```bash
-composer require cache/hierarchical-cache
+composer require cache/hierarchical-cache:^2.0
 ```
- 
-### Use
 
-Read the [documentation on usage](http://www.php-cache.com/en/latest/hierarchy/).
+## Usage
 
-### Implement
+Read the [hierarchical cache guide](https://www.php-cache.com/en/latest/hierarchy/) for key syntax and invalidation behavior.
 
-Read the [documentation on implementation](http://www.php-cache.com/en/latest/implementing-cache-pools/hierarchy/).
+## Implementing a pool
 
-### Contribute
+Adapter authors can use `HierarchicalCachePoolTrait`. Read the [implementation guide](https://www.php-cache.com/en/latest/implementing-cache-pools/hierarchy/) before storing or deleting hierarchical keys.
 
-Contributions are very welcome! Send a pull request to the [main repository](https://github.com/php-cache/cache) or 
-report any issues you find on the [issue tracker](http://issues.php-cache.com).
+## Contributing
 
+Send pull requests to the [main repository](https://github.com/php-cache/cache). Report issues on the [GitHub issue tracker](https://github.com/php-cache/cache/issues).

@@ -1,68 +1,39 @@
-# Contribute to PHP-Cache*
+# Contributing to PHP Cache
 
-Thank you for contributing to PHP-Cache!
+Open pull requests against `master`. Keep each change focused, and add tests for changed behavior.
 
-Before we can merge your Pull-Request here are some guidelines that you need to follow.
-These guidelines exist not to annoy you, but to keep the code base clean,
-unified and future proof.
+## Set up the repository
 
-## We only accept PRs  to "master"
+PHP Cache requires PHP 8.2 or later and Composer 2.
 
-Our branching strategy is "everything to master first", even
-bugfixes and we then merge them into the stable branches. You should only 
-open pull requests against the master branch. Otherwise we cannot accept the PR.
-
-There is one exception to the rule, when we merged a bug into some stable branches
-we do occasionally accept pull requests that merge the same bug fix into earlier
-branches.
-
-## Coding Standard
-
-We use PSR-1 and PSR-2:
-
-* https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-1-basic-coding-standard.md
-* https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-2-coding-style-guide.md
-
-with some exceptions/differences:
-
-* Keep the nesting of control structures per method as small as possible
-* Align equals (=) signs
-* Prefer early exit over nesting conditions
-
-All pull requests will end up getting run through Style CI, which is required to pass.
-
-## Unit-Tests
-
-Please try to add a test for your pull-request.
-
-* If your test is specific for an adapter/library, put it in the library tests.
-* If it is adapter agnostic, put it in the src/IntegrationTests directory
-
-You can run the unit-tests by calling `composer test` from the root of the project.
-It will run all the tests for each library.
-
-In order to do that, you will need a fresh copy of php-cache/cache, and you
-will have to run a composer installation in the project:
-
-```sh
+```bash
 git clone git@github.com:php-cache/cache.git
 cd cache
-curl -sS https://getcomposer.org/installer | php --
-./composer.phar install
+composer install
 ```
 
-## Travis
+Some adapter tests need APCu, Memcache, Memcached, MongoDB, or Redis. Tests skip when their required extension or service is unavailable.
 
-We automatically run your pull request through [Travis CI](http://www.travis-ci.org)
-against on all of the adapters. If you break the tests, we cannot merge your code,
-so please make sure that your code is working before opening up a Pull-Request.
+## Run the checks
 
-## Getting merged
+Run the complete local check set before you open a pull request:
 
-Please allow us time to review your pull requests. We will give our best to review
-everything as fast as possible, but cannot always live up to our own expectations.
+```bash
+composer quality
+```
 
-Thank you very much again for your contribution!
+You can also run each check on its own:
 
-\* Any similarities to the Doctrine contributing file is NOT coincidence. We've used their CONTRIBUTING.md file as a basis for ours :)
+```bash
+composer cs:check
+composer phpstan
+composer test
+```
 
+Run `composer cs:fix` to apply the Symfony coding standard with PHP-CS-Fixer. PHPStan runs at level 9. PHPUnit runs the unit and integration test suites.
+
+## Add tests
+
+Put package-specific tests in that package's `Tests` directory. Add backend-independent PSR behavior to [`cache/integration-tests`](https://github.com/php-cache/integration-tests).
+
+Report project issues on the [GitHub issue tracker](https://github.com/php-cache/cache/issues).

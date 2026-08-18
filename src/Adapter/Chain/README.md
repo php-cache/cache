@@ -1,31 +1,72 @@
-# PSR-6 Cache pool chain 
-[![Gitter](https://badges.gitter.im/php-cache/cache.svg)](https://gitter.im/php-cache/cache?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+# PSR-6 and PSR-16 cache pool chain
+
 [![Latest Stable Version](https://poser.pugx.org/cache/chain-adapter/v/stable)](https://packagist.org/packages/cache/chain-adapter)
-[![codecov.io](https://codecov.io/github/php-cache/chain-adapter/coverage.svg?branch=master)](https://codecov.io/github/php-cache/chain-adapter?branch=master)
-[![Total Downloads](https://poser.pugx.org/cache/chain-adapter/downloads)](https://packagist.org/packages/cache/chain-adapter)
-[![Monthly Downloads](https://poser.pugx.org/cache/chain-adapter/d/monthly.png)](https://packagist.org/packages/cache/chain-adapter)
+[![Coverage](https://codecov.io/gh/php-cache/chain-adapter/branch/master/graph/badge.svg)](https://codecov.io/gh/php-cache/chain-adapter)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
-This is a PSR-6 cache implementation using a chain of other PSR-6 cache pools. It is a part of the PHP Cache organisation. To read about 
-features like tagging and hierarchy support please read the shared documentation at [www.php-cache.com](http://www.php-cache.com). 
+This package combines multiple PHP Cache pools into one pool. `CachePoolChain` implements PSR-6 and PSR-16.
 
-### Install
+Reads use the first available value. Writes update each configured pool.
+
+## Installation
 
 ```bash
-composer require cache/chain-adapter
+composer require cache/chain-adapter:^2.0
 ```
 
-### Use
-
-You do not need to do any configuration to use the `CachePoolChain`.
+## Usage
 
 ```php
-$redisPool = new RedisCachePool($redisClient);
-$apcPool = new ApcCachePool();
-$pool = new CachePoolChain([$apcPool, $redisPool]);
+use Cache\Adapter\Apcu\ApcuCachePool;
+use Cache\Adapter\Chain\CachePoolChain;
+use Cache\Adapter\Redis\RedisCachePool;
+
+$redis = new Redis();
+$redis->connect('127.0.0.1', 6379);
+
+$pool = new CachePoolChain([
+    new ApcuCachePool(),
+    new RedisCachePool($redis),
+]);
+
+$pool->set('key', 'value', 60);
+$value = $pool->get('key');
 ```
 
-### Contribute
+Each pool in the chain must implement `Cache\Adapter\Common\PhpCachePool`. This keeps cache items transferable while the chain backfills earlier pools. Wrap the completed chain with other PSR-6 decorators instead of adding generic or decorated pools as chain members.
 
-Contributions are very welcome! Send a pull request to the [main repository](https://github.com/php-cache/cache) or 
-report any issues you find on the [issue tracker](http://issues.php-cache.com).
+Backfills preserve the cached value, expiration, and stored tags. Tag invalidation therefore removes copies from every tier.
+
+## Fallback behavior
+
+By default, the chain throws exceptions from a pool. Set `skip_on_failure` to remove the failed pool and continue the operation.
+
+Install the optional no-op pool when failures must become cache misses:
+
+```bash
+composer require cache/void-adapter:^2.0
+```
+
+```php
+use Cache\Adapter\Chain\CachePoolChain;
+use Cache\Adapter\Void\VoidCachePool;
+
+$pool = new CachePoolChain(
+    [$redisPool, new VoidCachePool()],
+    ['skip_on_failure' => true],
+);
+```
+
+The chain removes the failed pool for the life of that `CachePoolChain` instance. A configured logger receives a warning with the exception.
+
+Raw exceptions from backend operations use the same fallback. Invalid cache keys always throw and never remove a pool.
+
+If every member throws before one completes the operation, the chain throws `NoPoolAvailableException`. `skip_on_failure` does not convert a fully unavailable chain into a miss or `false` result.
+
+Add `VoidCachePool` last when cache failures must become misses. Writes still run against every active pool, including `VoidCachePool`.
+
+The chain cannot catch an exception thrown before the pool reaches the chain constructor. Delay backend connections until a cache operation when possible.
+
+## Contributing
+
+Send pull requests to the [main repository](https://github.com/php-cache/cache). Report issues on the [GitHub issue tracker](https://github.com/php-cache/cache/issues).

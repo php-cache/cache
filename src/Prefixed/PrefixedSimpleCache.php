@@ -11,6 +11,7 @@
 
 namespace Cache\Prefixed;
 
+use Cache\Prefixed\Exception\InvalidArgumentException;
 use Psr\SimpleCache\CacheInterface;
 
 /**
@@ -24,33 +25,20 @@ class PrefixedSimpleCache implements CacheInterface
 {
     use PrefixedUtilityTrait;
 
-    /**
-     * @type CacheInterface
-     */
-    private $cache;
+    private CacheInterface $cache;
 
-    /**
-     * @param CacheInterface $simpleCache
-     * @param string         $prefix
-     */
-    public function __construct(CacheInterface $simpleCache, $prefix)
+    public function __construct(CacheInterface $simpleCache, string $prefix)
     {
-        $this->cache  = $simpleCache;
-        $this->prefix = $prefix;
+        $this->cache = $simpleCache;
+        $this->prefix = $this->encodePrefix($prefix);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function clear()
+    public function clear(): bool
     {
         return $this->cache->clear();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function delete($key)
+    public function delete(string $key): bool
     {
         $this->prefixValue($key);
 
@@ -58,19 +46,20 @@ class PrefixedSimpleCache implements CacheInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @param iterable<string> $keys
      */
-    public function deleteMultiple($keys)
+    public function deleteMultiple(iterable $keys): bool
     {
-        $this->prefixValues($keys);
+        if ($keys instanceof \Traversable) {
+            $keys = iterator_to_array($keys, false);
+        }
+
+        $keys = $this->prefixValues($keys);
 
         return $this->cache->deleteMultiple($keys);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function get($key, $default = null)
+    public function get(string $key, mixed $default = null): mixed
     {
         $this->prefixValue($key);
 
@@ -78,39 +67,52 @@ class PrefixedSimpleCache implements CacheInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @param iterable<string> $keys
      */
-    public function getMultiple($keys, $default = null)
+    public function getMultiple(iterable $keys, mixed $default = null): iterable
     {
+        if ($keys instanceof \Traversable) {
+            $keys = iterator_to_array($keys, false);
+        }
+
         $oldKeys = $keys;
-        $this->prefixValues($keys);
-        $keysMap = array_combine($keys, $oldKeys);
+        $keys = $this->prefixValues($keys);
+        $keysMap = [];
+        foreach ($keys as $index => $key) {
+            $keysMap["\0".$key] = $oldKeys[$index];
+        }
 
         $data = $this->cache->getMultiple($keys, $default);
 
-        // As ordering is configuration dependent, remap the results.
-        $result = [];
-        foreach ($data as $key => $value) {
-            $result[$keysMap[$key]] = $value;
-        }
-
-        return $result;
+        return $this->mapValues($data, $keysMap);
     }
 
     /**
-     * {@inheritdoc}
+     * @param iterable<array-key, mixed> $data
+     * @param array<string, string>      $keysMap
+     *
+     * @return \Generator<string, mixed>
      */
-    public function has($key)
+    private function mapValues(iterable $data, array $keysMap): \Generator
+    {
+        foreach ($data as $key => $value) {
+            $mappedKey = "\0".(string) $key;
+            if (!array_key_exists($mappedKey, $keysMap)) {
+                continue;
+            }
+
+            yield $keysMap[$mappedKey] => $value;
+        }
+    }
+
+    public function has(string $key): bool
     {
         $this->prefixValue($key);
 
         return $this->cache->has($key);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function set($key, $value, $ttl = null)
+    public function set(string $key, mixed $value, int|\DateInterval|null $ttl = null): bool
     {
         $this->prefixValue($key);
 
@@ -118,15 +120,33 @@ class PrefixedSimpleCache implements CacheInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @param iterable<mixed, mixed> $values
      */
-    public function setMultiple($values, $ttl = null)
+    public function setMultiple(iterable $values, int|\DateInterval|null $ttl = null): bool
     {
-        $keys = array_keys($values);
-        $this->prefixValues($keys);
+        $prefixedValues = [];
+        foreach ($values as $key => $value) {
+            if (!is_string($key) && !is_int($key)) {
+                throw new InvalidArgumentException(sprintf('Cache key must be string or integer, "%s" given', get_debug_type($key)));
+            }
 
-        $values = array_combine($keys, array_values($values));
+            $key = (string) $key;
+            $this->prefixValue($key);
+            $prefixedValues[] = [$key, $value];
+        }
 
-        return $this->cache->setMultiple($values, $ttl);
+        return $this->cache->setMultiple($this->generateValues($prefixedValues), $ttl);
+    }
+
+    /**
+     * @param list<array{string, mixed}> $values
+     *
+     * @return \Generator<string, mixed>
+     */
+    private function generateValues(array $values): \Generator
+    {
+        foreach ($values as [$key, $value]) {
+            yield $key => $value;
+        }
     }
 }

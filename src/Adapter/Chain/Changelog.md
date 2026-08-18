@@ -1,8 +1,27 @@
-# Change Log
+# Changelog
 
-The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
+Each release groups changes under Added, Removed, Changed, or Fixed headings.
 
-## UNRELEASED
+## 2.0.0
+
+### Changed
+
+* Require PHP 8.2 or later.
+* Require `psr/cache` 3 and `psr/simple-cache` 3.
+* Require `cache/simple-cache-bridge` 4.
+* Add native parameter and return types required by the PSR interfaces.
+* Implement PSR-16 directly through the PSR-6 bridge.
+* Require every chain member to implement `Cache\Adapter\Common\PhpCachePool`.
+* Preserve numeric-string keys returned by `getItems()`.
+
+### Fixed
+
+* Preserve stored tags and expiration during a backfill to earlier pools.
+* Keep the highest-priority result when `getItems()` receives duplicate keys.
+* Apply `skip_on_failure` consistently to eager and lazy read and backfill failures.
+* Apply `skip_on_failure` to raw backend exceptions without hiding invalid cache keys.
+* Throw `NoPoolAvailableException` when no chain member completes an operation.
+* Reject non-transferable items before writing to any chain member.
 
 ## 1.2.0
 

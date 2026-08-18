@@ -20,61 +20,48 @@ trait TagSupportWithArray
 {
     /**
      * Get a value from the storage.
-     *
-     * @param string $name
-     *
-     * @return mixed
      */
-    abstract public function getDirectValue($name);
+    abstract public function getDirectValue(string $name): mixed;
 
-    /**
-     * Set a value to the storage.
-     *
-     * @param string $name
-     * @param mixed  $value
-     */
-    abstract public function setDirectValue($name, $value);
+    abstract public function setDirectValue(string $name, mixed $value): bool;
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function appendListItem($name, $value)
+    protected function appendListItem(string $name, string $value): bool
     {
         $data = $this->getDirectValue($name);
         if (!is_array($data)) {
             $data = [];
         }
         $data[] = $value;
-        $this->setDirectValue($name, $data);
+
+        return $this->setDirectValue($name, $data);
     }
 
     /**
-     * {@inheritdoc}
+     * @return list<string>
      */
-    protected function getList($name)
+    protected function getList(string $name): array
     {
         $data = $this->getDirectValue($name);
         if (!is_array($data)) {
-            $data = [];
+            return [];
         }
 
-        return $data;
+        $values = [];
+        foreach ($data as $value) {
+            if (is_string($value)) {
+                $values[] = $value;
+            }
+        }
+
+        return $values;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function removeList($name)
+    protected function removeList(string $name): bool
     {
-        $this->setDirectValue($name, []);
-
-        return true;
+        return $this->setDirectValue($name, []);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function removeListItem($name, $key)
+    protected function removeListItem(string $name, string $key): bool
     {
         $data = $this->getList($name);
         foreach ($data as $i => $value) {

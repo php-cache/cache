@@ -26,7 +26,12 @@ interface PhpCacheItem extends HasExpirationTimestampInterface, TaggableCacheIte
      * WARNING: This is generally not the function you want to use. Please see
      * `getPreviousTags`.
      *
-     * @return array
+     * @return array<string, string>
      */
-    public function getTags();
+    public function getTags(): array;
+
+    /**
+     * Move newly assigned tags to the set loaded from storage.
+     */
+    public function moveTagsToPrevious(): void;
 }

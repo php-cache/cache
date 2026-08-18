@@ -22,60 +22,60 @@ class ApcuCachePool extends AbstractCachePool
 {
     use TagSupportWithArray;
 
-    /**
-     * @type bool
-     */
-    private $skipOnCli;
+    private bool $skipOnCli;
 
-    /**
-     * @param bool $skipOnCli
-     */
-    public function __construct($skipOnCli = false)
+    public function __construct(bool $skipOnCli = false)
     {
         $this->skipOnCli = $skipOnCli;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function fetchObjectFromCache($key)
+    protected function fetchObjectFromCache(string $key): array
     {
         if ($this->skipIfCli()) {
             return [false, null, [], null];
         }
 
-        $success   = false;
-        $cacheData = apcu_fetch($key, $success);
-        if (!$success) {
+        $success = false;
+        $record = apcu_fetch($key, $success);
+        if (!$success || !is_array($record) || !array_is_list($record) || 3 !== count($record)) {
             return [false, null, [], null];
         }
-        list($data, $tags, $timestamp) = unserialize($cacheData);
 
-        return [$success, $data, $tags, $timestamp];
+        $tags = $record[1];
+        if (!is_array($tags)) {
+            return [false, null, [], null];
+        }
+
+        $decodedTags = [];
+        foreach ($tags as $tag) {
+            if (!is_string($tag)) {
+                return [false, null, [], null];
+            }
+
+            $decodedTags[$tag] = $tag;
+        }
+
+        $expiration = $record[2];
+        if (!is_int($expiration) && null !== $expiration) {
+            return [false, null, [], null];
+        }
+
+        return [true, $record[0], $decodedTags, $expiration];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function clearAllObjectsFromCache()
+    protected function clearAllObjectsFromCache(): bool
     {
         return apcu_clear_cache();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function clearOneObjectFromCache($key)
+    protected function clearOneObjectFromCache(string $key): bool
     {
         apcu_delete($key);
 
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function storeItemInCache(PhpCacheItem $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, ?int $ttl): bool
     {
         if ($this->skipIfCli()) {
             return false;
@@ -85,36 +85,28 @@ class ApcuCachePool extends AbstractCachePool
             return false;
         }
 
-        if ($ttl === null) {
+        if (null === $ttl) {
             $ttl = 0;
         }
 
-        return apcu_store($item->getKey(), serialize([$item->get(), $item->getTags(), $item->getExpirationTimestamp()]), $ttl);
+        return apcu_store($item->getKey(), [$item->get(), $item->getTags(), $item->getExpirationTimestamp()], $ttl);
     }
 
     /**
      * Returns true if CLI and if it should skip on cli.
-     *
-     * @return bool
      */
-    private function skipIfCli()
+    private function skipIfCli(): bool
     {
-        return $this->skipOnCli && php_sapi_name() === 'cli';
+        return $this->skipOnCli && 'cli' === php_sapi_name();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getDirectValue($name)
+    public function getDirectValue(string $name): mixed
     {
         return apcu_fetch($name);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setDirectValue($name, $value)
+    public function setDirectValue(string $name, mixed $value): bool
     {
-        apcu_store($name, $value);
+        return apcu_store($name, $value);
     }
 }

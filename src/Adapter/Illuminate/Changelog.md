@@ -2,6 +2,15 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 1.0.0
+
+### Changed
+
+* Require PHP 8.2 or later.
+* Support Illuminate Cache 11 through 13.
+* Require `psr/cache` 3 and `psr/simple-cache` 3.
+* Add native parameter and return types required by the PSR interfaces.
+
 ## 0.4.0
 
 * Support for PHP 8.1

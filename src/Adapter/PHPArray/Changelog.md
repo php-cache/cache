@@ -2,6 +2,14 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 2.0.0
+
+### Changed
+
+* Require PHP 8.2 or later.
+* Require `psr/cache` 3 and `psr/simple-cache` 3.
+* Add native parameter and return types required by the PSR interfaces.
+
 ## 1.2.0
 
 * Support for PHP 8.1

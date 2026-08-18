@@ -12,7 +12,6 @@
 namespace Cache\Adapter\PHPArray;
 
 use Cache\Adapter\Common\AbstractCachePool;
-use Cache\Adapter\Common\CacheItem;
 use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
@@ -26,43 +25,29 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
 {
     use HierarchicalCachePoolTrait;
 
-    /**
-     * @type PhpCacheItem[]
-     */
-    private $cache;
+    /** @var array<array-key, mixed> */
+    private array $cache;
+
+    /** @var array<int, list<string>> */
+    private array $keyMap = [];
+
+    private ?int $limit;
+
+    private int $currentPosition = 0;
 
     /**
-     * @type array A map to hold keys
+     * @param array<array-key, mixed> $cache
      */
-    private $keyMap = [];
-
-    /**
-     * @type int The maximum number of keys in the map
-     */
-    private $limit;
-
-    /**
-     * @type int The next key that we should remove from the cache
-     */
-    private $currentPosition = 0;
-
-    /**
-     * @param int   $limit the amount if items stored in the cache. Using a limit will reduce memory leaks.
-     * @param array $cache
-     */
-    public function __construct($limit = null, array &$cache = [])
+    public function __construct(?int $limit = null, array &$cache = [])
     {
         $this->cache = &$cache;
         $this->limit = $limit;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getItemWithoutGenerateCacheKey($key)
+    /** @return PhpCacheItem|array{bool, mixed, array<string, string>, int|null} */
+    protected function getItemWithoutGenerateCacheKey(string $key): PhpCacheItem|array
     {
         if (isset($this->deferred[$key])) {
-            /** @type CacheItem $item */
             $item = clone $this->deferred[$key];
             $item->moveTagsToPrevious();
 
@@ -72,10 +57,8 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         return $this->fetchObjectFromCache($key);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function fetchObjectFromCache($key)
+    /** @return array{bool, mixed, array<string, string>, int|null} */
+    protected function fetchObjectFromCache(string $key): array
     {
         $keys = $this->getHierarchyKey($key);
 
@@ -83,8 +66,12 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
             return [false, null, [], null];
         }
 
-        $element                       = $this->cacheToolkit($keys);
-        list($data, $tags, $timestamp) = $element;
+        $element = $this->decodeCacheElement($this->cacheToolkit($keys));
+        if (null === $element) {
+            return [false, null, [], null];
+        }
+
+        [$data, $tags, $timestamp] = $element;
 
         if (is_object($data)) {
             $data = clone $data;
@@ -93,132 +80,139 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         return [true, $data, $tags, $timestamp];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function clearAllObjectsFromCache()
+    protected function clearAllObjectsFromCache(): bool
     {
         $this->cache = [];
+        $this->keyMap = [];
+        $this->currentPosition = 0;
+        $this->clearHierarchyKeyCache();
 
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function clearOneObjectFromCache($key)
+    protected function clearOneObjectFromCache(string $key): bool
     {
         $this->commit();
         $keys = $this->getHierarchyKey($key);
 
         $this->clearHierarchyKeyCache();
         $this->cacheToolkit($keys, null, true);
+        foreach ($this->keyMap as $position => $trackedKeys) {
+            if ($trackedKeys === $keys) {
+                unset($this->keyMap[$position]);
+            }
+        }
 
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function storeItemInCache(PhpCacheItem $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, ?int $ttl): bool
     {
-        $keys   = $this->getHierarchyKey($item->getKey());
-        $value  = $item->get();
+        $keys = $this->getHierarchyKey($item->getKey());
+        $value = $item->get();
         if (is_object($value)) {
             $value = clone $value;
         }
-        $this->cacheToolkit($keys, [$value, $item->getTags(), $item->getExpirationTimestamp()]);
-
-        if ($this->limit !== null) {
-            // Remove the oldest value
-            if (isset($this->keyMap[$this->currentPosition])) {
-                unset($this->cache[$this->keyMap[$this->currentPosition]]);
+        if (null !== $this->limit) {
+            $tracked = false;
+            foreach ($this->keyMap as $trackedKeys) {
+                if ($trackedKeys === $keys) {
+                    $tracked = true;
+                    break;
+                }
             }
 
-            // Add the new key to the current position
-            $this->keyMap[$this->currentPosition] = implode(HierarchicalPoolInterface::HIERARCHY_SEPARATOR, $keys);
+            if (!$tracked) {
+                if (isset($this->keyMap[$this->currentPosition])) {
+                    $this->cacheToolkit($this->keyMap[$this->currentPosition], null, true);
+                }
 
-            // Increase the current position
-            $this->currentPosition = ($this->currentPosition + 1) % $this->limit;
+                $this->keyMap[$this->currentPosition] = $keys;
+                $this->currentPosition = ($this->currentPosition + 1) % $this->limit;
+            }
         }
+
+        $this->cacheToolkit($keys, [$value, $item->getTags(), $item->getExpirationTimestamp()]);
 
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getDirectValue($key)
+    public function getDirectValue(string $key): mixed
     {
-        if (isset($this->cache[$key])) {
-            return $this->cache[$key];
-        }
+        return $this->cache[$key] ?? null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getList($name)
+    /** @return list<string> */
+    protected function getList(string $name): array
     {
-        if (!isset($this->cache[$name])) {
-            $this->cache[$name] = [];
+        $data = $this->cache[$name] ?? [];
+        if (!is_array($data)) {
+            return [];
         }
 
-        return $this->cache[$name];
+        $list = [];
+        foreach ($data as $value) {
+            if (!is_string($value)) {
+                return [];
+            }
+
+            $list[] = $value;
+        }
+
+        return $list;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function removeList($name)
+    protected function removeList(string $name): bool
     {
         unset($this->cache[$name]);
 
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function appendListItem($name, $key)
+    protected function appendListItem(string $name, string $key): bool
     {
-        $this->cache[$name][] = $key;
+        $list = $this->getList($name);
+        $list[] = $key;
+        $this->cache[$name] = $list;
+
+        return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function removeListItem($name, $key)
+    protected function removeListItem(string $name, string $key): bool
     {
-        if (isset($this->cache[$name])) {
-            foreach ($this->cache[$name] as $i => $item) {
-                if ($item === $key) {
-                    unset($this->cache[$name][$i]);
-                }
+        $list = $this->getList($name);
+        foreach ($list as $i => $item) {
+            if ($item === $key) {
+                unset($list[$i]);
             }
         }
+
+        $this->cache[$name] = array_values($list);
+
+        return true;
     }
 
     /**
      * Used to manipulate cached data by extracting, inserting or deleting value.
      *
-     * @param array      $keys
-     * @param null|mixed $value
-     * @param bool       $unset
-     *
-     * @return mixed
+     * @param list<string> $keys
      */
-    private function cacheToolkit($keys, $value = null, $unset = false)
+    private function cacheToolkit(array $keys, mixed $value = null, bool $unset = false): mixed
     {
         $element = &$this->cache;
 
-        while ($keys && ($key = array_shift($keys))) {
+        while ([] !== $keys) {
+            $key = array_shift($keys);
+            if (!is_array($element)) {
+                $element = [];
+            }
+
             if (!$keys && is_null($value) && $unset) {
                 unset($element[$key]);
                 unset($element);
                 $element = null;
             } else {
-                $element =&$element[$key];
+                $element = &$element[$key];
             }
         }
 
@@ -232,26 +226,21 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     /**
      * Checking if given keys exists and is valid.
      *
-     * @param array $keys
-     *
-     * @return bool
+     * @param list<string> $keys
      */
-    private function cacheIsset($keys)
+    private function cacheIsset(array $keys): bool
     {
-        $has   = false;
-        $array = $this->cache;
+        $data = $this->cache;
 
         foreach ($keys as $key) {
-            if ($has = array_key_exists($key, $array)) {
-                $array = $array[$key];
+            if (!is_array($data) || !array_key_exists($key, $data)) {
+                return false;
             }
+
+            $data = $data[$key];
         }
 
-        if (is_array($array)) {
-            $has = $has && array_key_exists(0, $array);
-        }
-
-        return $has;
+        return is_array($data) && array_key_exists(0, $data);
     }
 
     /**
@@ -261,14 +250,39 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      *
      * @param string $key The original key
      *
-     * @return array
+     * @return list<string>
      */
-    protected function getHierarchyKey($key)
+    protected function getHierarchyKey(string $key, ?string &$pathKey = null): array
     {
         if (!$this->isHierarchyKey($key)) {
             return [$key];
         }
 
         return $this->explodeKey($key);
+    }
+
+    /** @return array{mixed, array<string, string>, int|null}|null */
+    private function decodeCacheElement(mixed $element): ?array
+    {
+        if (!is_array($element)
+            || !array_key_exists(0, $element)
+            || !array_key_exists(1, $element)
+            || !array_key_exists(2, $element)
+            || !is_array($element[1])
+            || (!is_int($element[2]) && null !== $element[2])
+        ) {
+            return null;
+        }
+
+        $tags = [];
+        foreach ($element[1] as $tag) {
+            if (!is_string($tag)) {
+                return null;
+            }
+
+            $tags[$tag] = $tag;
+        }
+
+        return [$element[0], $tags, $element[2]];
     }
 }

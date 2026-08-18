@@ -18,156 +18,171 @@ namespace Cache\SessionHandler;
  */
 abstract class AbstractSessionHandler implements \SessionHandlerInterface, \SessionUpdateTimestampHandlerInterface
 {
-    /**
-     * @type string|null
-     */
-    private $sessionName;
+    private ?string $lockedSessionId = null;
 
-    /**
-     * @type string|null
-     */
-    private $prefetchId;
+    private ?string $prefetchId = null;
 
-    /**
-     * @type string|null
-     */
-    private $prefetchData;
+    private ?string $prefetchData = null;
 
-    /**
-     * @type string|null
-     */
-    private $newSessionId;
+    private ?string $newSessionId = null;
 
-    /**
-     * @type string|null
-     */
-    private $igbinaryEmptyData;
+    private ?string $igbinaryEmptyData = null;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function open($savePath, $sessionName)
+    public function __construct(private SessionLockInterface $lock)
     {
-        $this->sessionName = $sessionName;
+    }
 
+    public function open(string $savePath, string $sessionName): bool
+    {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function validateId($sessionId)
+    public function validateId(string $sessionId): bool
     {
-        $this->prefetchData = $this->read($sessionId);
-        $this->prefetchId   = $sessionId;
+        $data = $this->read($sessionId);
 
-        return $this->prefetchData !== '';
+        if (false === $data) {
+            return false;
+        }
+
+        $this->prefetchData = $data;
+        $this->prefetchId = $sessionId;
+
+        return '' !== $this->prefetchData;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function read($sessionId)
+    public function read(string $sessionId): string|false
     {
-        if ($this->prefetchId !== null) {
-            $prefetchId   = $this->prefetchId;
-            $prefetchData = $this->prefetchData;
+        if (!$this->acquireSessionLock($sessionId)) {
+            return false;
+        }
 
-            $this->prefetchId = $this->prefetchData = null;
+        try {
+            if (null !== $this->prefetchId) {
+                $prefetchId = $this->prefetchId;
+                $prefetchData = $this->prefetchData ?? '';
 
-            if ($prefetchId === $sessionId || '' === $prefetchData) {
-                $this->newSessionId = '' === $prefetchData ? $sessionId : null;
+                $this->prefetchId = $this->prefetchData = null;
 
-                return $prefetchData;
+                if ($prefetchId === $sessionId || '' === $prefetchData) {
+                    $this->newSessionId = '' === $prefetchData ? $sessionId : null;
+
+                    return $prefetchData;
+                }
             }
+
+            $data = $this->doRead($sessionId);
+            $this->newSessionId = '' === $data ? $sessionId : null;
+
+            return $data;
+        } catch (\Throwable $exception) {
+            $this->releaseSessionLock();
+
+            throw $exception;
         }
-
-        $data               = $this->doRead($sessionId);
-        $this->newSessionId = '' === $data ? $sessionId : null;
-
-        if (\PHP_VERSION_ID < 70000) {
-            $this->prefetchData = $data;
-        }
-
-        return $data;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function write($sessionId, $data)
+    public function write(string $sessionId, string $data): bool
     {
-        if (\PHP_VERSION_ID < 70000 && $this->prefetchData) {
-            $readData           = $this->prefetchData;
-            $this->prefetchData = null;
+        if (!$this->acquireSessionLock($sessionId)) {
+            return false;
+        }
 
-            if ($readData === $data) {
-                return $this->updateTimestamp($sessionId, $data);
+        try {
+            if (null === $this->igbinaryEmptyData) {
+                // see igbinary/igbinary/issues/146
+                $this->igbinaryEmptyData = \function_exists('igbinary_serialize') ? (string) igbinary_serialize([]) : '';
             }
+
+            if ('' === $data || $this->igbinaryEmptyData === $data) {
+                return $this->destroy($sessionId);
+            }
+
+            $this->newSessionId = null;
+
+            return $this->doWrite($sessionId, $data);
+        } catch (\Throwable $exception) {
+            $this->releaseSessionLock();
+
+            throw $exception;
         }
-
-        if ($this->igbinaryEmptyData === null) {
-            // see igbinary/igbinary/issues/146
-            $this->igbinaryEmptyData = \function_exists('igbinary_serialize') ? igbinary_serialize([]) : '';
-        }
-
-        if ($data === '' || $this->igbinaryEmptyData === $data) {
-            return $this->destroy($sessionId);
-        }
-
-        $this->newSessionId = null;
-
-        return $this->doWrite($sessionId, $data);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function destroy($sessionId)
+    public function destroy(string $sessionId): bool
     {
-        if (\PHP_VERSION_ID < 70000) {
-            $this->prefetchData = null;
+        if (!$this->acquireSessionLock($sessionId)) {
+            return false;
         }
 
-        return $this->newSessionId === $sessionId || $this->doDestroy($sessionId);
+        try {
+            return $this->newSessionId === $sessionId || $this->doDestroy($sessionId);
+        } finally {
+            $this->releaseSessionLock();
+        }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function close()
+    public function close(): bool
     {
+        $this->releaseSessionLock();
+
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function gc($lifetime)
+    public function gc(int $lifetime): int|false
     {
-        // not required here because cache will auto expire the records anyhow.
+        return 0;
+    }
+
+    public function updateTimestamp(string $sessionId, string $data): bool
+    {
+        if (!$this->acquireSessionLock($sessionId)) {
+            return false;
+        }
+
+        try {
+            return $this->doUpdateTimestamp($sessionId, $data);
+        } catch (\Throwable $exception) {
+            $this->releaseSessionLock();
+
+            throw $exception;
+        }
+    }
+
+    private function acquireSessionLock(string $sessionId): bool
+    {
+        if ($sessionId === $this->lockedSessionId) {
+            return true;
+        }
+
+        $this->releaseSessionLock();
+
+        if (!$this->lock->acquire($sessionId)) {
+            return false;
+        }
+
+        $this->lockedSessionId = $sessionId;
+
         return true;
     }
 
-    /**
-     * @param string $sessionId
-     *
-     * @return string
-     */
-    abstract protected function doRead($sessionId);
+    private function releaseSessionLock(): void
+    {
+        $this->prefetchId = $this->prefetchData = null;
 
-    /**
-     * @param string $sessionId
-     * @param string $data
-     *
-     * @return bool
-     */
-    abstract protected function doWrite($sessionId, $data);
+        if (null === $this->lockedSessionId) {
+            return;
+        }
 
-    /**
-     * @param string $sessionId
-     *
-     * @return bool
-     */
-    abstract protected function doDestroy($sessionId);
+        $sessionId = $this->lockedSessionId;
+        $this->lock->release($sessionId);
+        $this->lockedSessionId = null;
+    }
+
+    abstract protected function doRead(string $sessionId): string;
+
+    abstract protected function doWrite(string $sessionId, string $data): bool;
+
+    abstract protected function doDestroy(string $sessionId): bool;
+
+    abstract protected function doUpdateTimestamp(string $sessionId, string $data): bool;
 }

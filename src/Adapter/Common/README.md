@@ -1,15 +1,25 @@
-# Common PSR-6 Cache pool 
-[![Gitter](https://badges.gitter.im/php-cache/cache.svg)](https://gitter.im/php-cache/cache?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+# Common cache adapter components
+
 [![Latest Stable Version](https://poser.pugx.org/cache/adapter-common/v/stable)](https://packagist.org/packages/cache/adapter-common)
-[![codecov.io](https://codecov.io/github/php-cache/adapter-common/coverage.svg?branch=master)](https://codecov.io/github/php-cache/adapter-common?branch=master)
-[![Total Downloads](https://poser.pugx.org/cache/adapter-common/downloads)](https://packagist.org/packages/cache/adapter-common)
-[![Monthly Downloads](https://poser.pugx.org/cache/adapter-common/d/monthly.png)](https://packagist.org/packages/cache/adapter-common)
+[![Coverage](https://codecov.io/gh/php-cache/adapter-common/branch/master/graph/badge.svg)](https://codecov.io/gh/php-cache/adapter-common)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
-This repository contains shared classes and interfaces used by the PHP Cache organisation. To read about 
-features like tagging and hierarchy support please read the shared documentation at [www.php-cache.com](http://www.php-cache.com). 
+This package provides the shared PSR-6 and PSR-16 implementation used by PHP Cache adapters. It also provides reusable tag support.
 
-### Contribute
+Application code should install a concrete adapter instead. Adapter authors can install these components directly.
 
-Contributions are very welcome! Send a pull request to the [main repository](https://github.com/php-cache/cache) or 
-report any issues you find on the [issue tracker](http://issues.php-cache.com).
+## Installation
+
+```bash
+composer require cache/adapter-common:^2.0
+```
+
+Version 2 requires PHP 8.2, `psr/cache` 3, and `psr/simple-cache` 3.
+
+## Documentation
+
+Read the [PHP Cache documentation](https://www.php-cache.com/) to learn about adapters, tags, and hierarchical keys.
+
+## Contributing
+
+Send pull requests to the [main repository](https://github.com/php-cache/cache). Report issues on the [GitHub issue tracker](https://github.com/php-cache/cache/issues).

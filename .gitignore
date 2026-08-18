@@ -1,3 +1,7 @@
 /vendor/
+.php-cs-fixer.cache
+.phpunit.cache/
+.phpunit.result.cache
 composer.lock
+coverage.xml
 phpunit.xml

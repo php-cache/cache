@@ -9,19 +9,18 @@
  * with this source code in the file LICENSE.
  */
 
-namespace Cache\Adapter\Apc\Tests;
+namespace Cache\Adapter\Chain\Tests;
 
-use Cache\Adapter\Apc\ApcCachePool;
+use Cache\Adapter\Chain\CachePoolChain;
 use Cache\IntegrationTests\SimpleCacheTest as BaseTest;
+use Psr\SimpleCache\CacheInterface;
 
 class IntegrationSimpleCacheTest extends BaseTest
 {
-    public function createSimpleCache()
-    {
-        if (defined('HHVM_VERSION') || !function_exists('apc_store')) {
-            $this->markTestSkipped();
-        }
+    use CreatePoolTrait;
 
-        return new ApcCachePool();
+    public function createSimpleCache(): CacheInterface
+    {
+        return new CachePoolChain($this->getAdapters());
     }
 }

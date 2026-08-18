@@ -1,31 +1,34 @@
-# Encryption PSR-6 Cache pool
-[![Gitter](https://badges.gitter.im/php-cache/cache.svg)](https://gitter.im/php-cache/cache?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+# Encrypted PSR-6 cache pool
+
 [![Latest Stable Version](https://poser.pugx.org/cache/encryption-cache/v/stable)](https://packagist.org/packages/cache/encryption-cache)
-[![codecov.io](https://codecov.io/github/php-cache/encryption-cache/coverage.svg?branch=master)](https://codecov.io/github/php-cache/encryption-cache?branch=master)
-[![Total Downloads](https://poser.pugx.org/cache/encryption-cache/downloads)](https://packagist.org/packages/cache/encryption-cache)
-[![Monthly Downloads](https://poser.pugx.org/cache/encryption-cache/d/monthly.png)](https://packagist.org/packages/cache/encryption-cache)
+[![Coverage](https://codecov.io/gh/php-cache/encryption-cache/branch/master/graph/badge.svg)](https://codecov.io/gh/php-cache/encryption-cache)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
-This repository has a encryption wrapper that makes the PSR-6 cache implementation encrypted.
+This package encrypts values stored through a taggable PSR-6 cache pool. Encryption adds CPU and storage overhead, so use it only when cached values need protection at rest.
 
-Encryption and decryption are both expensive operations, and frequent reads from an encrypted data store can quickly become a bottleneck in otherwise performant applications. Use encrypted caches sparingly.
-
-
-### Install
+## Installation
 
 ```bash
-composer require cache/encryption-cache
+composer require cache/encryption-cache:^2.0
 ```
 
-### Use
+## Usage
 
-Read the [documentation on usage](http://www.php-cache.com/en/latest/encryption/).
+```php
+use Cache\Adapter\PHPArray\ArrayCachePool;
+use Cache\Encryption\EncryptedCachePool;
+use Defuse\Crypto\Key;
 
-### Implement
+$key = Key::createNewRandomKey();
+$pool = new EncryptedCachePool(new ArrayCachePool(), $key);
 
-Read the [documentation on implementation](http://www.php-cache.com/en/latest/implementing-cache-pools/encryption/).
+$item = $pool->getItem('account.42');
+$item->set(['email' => 'user@example.com']);
+$pool->save($item);
+```
 
-### Contribute
+The wrapped pool must implement `TaggableCacheItemPoolInterface`. Persist the encryption key outside the cache and load the same key for every request.
 
-Contributions are very welcome! Send a pull request to the [main repository](https://github.com/php-cache/cache) or
-report any issues you find on the [issue tracker](http://issues.php-cache.com).
+## Contributing
+
+Send pull requests to the [main repository](https://github.com/php-cache/cache). Report issues on the [GitHub issue tracker](https://github.com/php-cache/cache/issues).

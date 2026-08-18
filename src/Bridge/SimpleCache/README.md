@@ -1,30 +1,29 @@
-# PSR-6 to PSR-16 Bridge (Simple cache)
-[![Gitter](https://badges.gitter.im/php-cache/cache.svg)](https://gitter.im/php-cache/cache?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+# PSR-6 to PSR-16 bridge
+
 [![Latest Stable Version](https://poser.pugx.org/cache/simple-cache-bridge/v/stable)](https://packagist.org/packages/cache/simple-cache-bridge)
-[![codecov.io](https://codecov.io/github/php-cache/simple-cache-bridge/coverage.svg?branch=master)](https://codecov.io/github/array-cache/apc-adapter?branch=master)
-[![Total Downloads](https://poser.pugx.org/cache/simple-cache-bridge/downloads)](https://packagist.org/packages/cache/simple-cache-bridge)
-[![Monthly Downloads](https://poser.pugx.org/cache/simple-cache-bridge/d/monthly.png)](https://packagist.org/packages/cache/simple-cache-bridge)
+[![Coverage](https://codecov.io/gh/php-cache/simple-cache-bridge/branch/master/graph/badge.svg)](https://codecov.io/gh/php-cache/simple-cache-bridge)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
-This is a bridge that converts a PSR-6 cache implementation to PSR-16 (SimpleCache). It is a part of the PHP Cache organisation. To read about 
-features like tagging and hierarchy support please read the shared documentation at [www.php-cache.com](https://www.php-cache.com). 
+This package exposes an existing PSR-6 pool through the PSR-16 `CacheInterface`.
 
-### Install
+## Installation
 
 ```bash
-composer require cache/simple-cache-bridge
+composer require cache/simple-cache-bridge:^2.0
 ```
 
-### Use
-
-You need an existing PSR-6 pool as a constructor argument to the bridge. 
+## Usage
 
 ```php
-$psr6pool = new ArrayCachePool();
-$simpleCache = new SimpleCacheBridge($psr6pool);
+use Cache\Adapter\PHPArray\ArrayCachePool;
+use Cache\Bridge\SimpleCache\SimpleCacheBridge;
+
+$pool = new ArrayCachePool();
+$cache = new SimpleCacheBridge($pool);
 ```
 
-### Contribute
+Version 2 implements `psr/cache` 3 and `psr/simple-cache` 3.
 
-Contributions are very welcome! Send a pull request to the [main repository](https://github.com/php-cache/cache) or 
-report any issues you find on the [issue tracker](http://issues.php-cache.com).
+## Contributing
+
+Send pull requests to the [main repository](https://github.com/php-cache/cache). Report issues on the [GitHub issue tracker](https://github.com/php-cache/cache/issues).

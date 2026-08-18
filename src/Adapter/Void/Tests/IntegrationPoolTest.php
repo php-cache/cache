@@ -16,38 +16,39 @@ use Cache\IntegrationTests\CachePoolTest as BaseTest;
 
 class IntegrationPoolTest extends BaseTest
 {
-    protected $skippedTests = [
-        'testBasicUsage'                     => 'Void adapter does not save,',
-        'testGetItem'                        => 'Void adapter does not save,',
-        'testGetItems'                       => 'Void adapter does not save,',
-        'testHasItem'                        => 'Void adapter does not save,',
-        'testDeleteItems'                    => 'Void adapter does not save,',
-        'testSave'                           => 'Void adapter does not save,',
-        'testSaveWithoutExpire'              => 'Void adapter does not save,',
-        'testDataTypeFloat'                  => 'Void adapter only outputs boolean,',
-        'testDataTypeBoolean'                => 'Void adapter only outputs boolean,',
-        'testDataTypeArray'                  => 'Void adapter only outputs boolean,',
-        'testDataTypeObject'                 => 'Void adapter only outputs boolean,',
-        'testBinaryData'                     => 'Void adapter only outputs boolean,',
-        'testDeferredSave'                   => 'Void adapter does not save,',
-        'testDeferredSaveWithoutCommit'      => 'Void adapter does not save,',
-        'testCommit'                         => 'Void adapter does not save,',
-        'testExpiresAt'                      => 'Void adapter does not save,',
-        'testExpiresAtWithNull'              => 'Void adapter does not save,',
-        'testExpiresAfterWithNull'           => 'Void adapter does not save,',
-        'testKeyLength'                      => 'Void adapter does not save,',
-        'testDataTypeString'                 => 'Void adapter does not save,',
-        'testDataTypeInteger'                => 'Void adapter does not save,',
-        'testDataTypeNull'                   => 'Void adapter does not save,',
-        'testIsHit'                          => 'Void adapter does not save,',
-        'testIsHitDeferred'                  => 'Void adapter does not save,',
+    protected array $skippedTests = [
+        'testBasicUsage' => 'Void adapter does not save,',
+        'testGetItem' => 'Void adapter does not save,',
+        'testGetItems' => 'Void adapter does not save,',
+        'testHasItem' => 'Void adapter does not save,',
+        'testDeleteItems' => 'Void adapter does not save,',
+        'testSave' => 'Void adapter does not save,',
+        'testSaveWithoutExpire' => 'Void adapter does not save,',
+        'testDataTypeFloat' => 'Void adapter only outputs boolean,',
+        'testDataTypeBoolean' => 'Void adapter only outputs boolean,',
+        'testDataTypeArray' => 'Void adapter only outputs boolean,',
+        'testDataTypeObject' => 'Void adapter only outputs boolean,',
+        'testBinaryData' => 'Void adapter only outputs boolean,',
+        'testDeferredSave' => 'Void adapter does not save,',
+        'testDeferredSaveWithoutCommit' => 'Void adapter does not save,',
+        'testCommit' => 'Void adapter does not save,',
+        'testExpiresAt' => 'Void adapter does not save,',
+        'testExpiresAtWithNull' => 'Void adapter does not save,',
+        'testExpiresAfterWithNull' => 'Void adapter does not save,',
+        'testKeyLength' => 'Void adapter does not save,',
+        'testDataTypeString' => 'Void adapter does not save,',
+        'testDataTypeInteger' => 'Void adapter does not save,',
+        'testDataTypeNull' => 'Void adapter does not save,',
+        'testIsHit' => 'Void adapter does not save,',
+        'testIsHitDeferred' => 'Void adapter does not save,',
         'testSaveDeferredWhenChangingValues' => 'Void adapter does not save,',
-        'testSavingObject'                   => 'Void adapter does not save,',
-        'testSaveDeferredOverwrite'          => 'Void adapter does not save,',
-        'testBasicUsageWithLongKey'          => 'Void adapter does not save.',
+        'testSavingObject' => 'Void adapter does not save,',
+        'testSaveDeferredOverwrite' => 'Void adapter does not save,',
+        'testSaveOverridesDeferredItem' => 'Void adapter does not save,',
+        'testBasicUsageWithLongKey' => 'Void adapter does not save.',
     ];
 
-    public function createCachePool()
+    public function createCachePool(): VoidCachePool
     {
         return new VoidCachePool();
     }

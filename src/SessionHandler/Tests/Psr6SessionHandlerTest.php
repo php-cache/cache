@@ -11,8 +11,9 @@
 
 namespace Cache\SessionHandler\Tests;
 
-use Cache\Adapter\PHPArray\ArrayCachePool;
 use Cache\SessionHandler\Psr6SessionHandler;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
@@ -21,21 +22,19 @@ use Psr\Cache\CacheItemPoolInterface;
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  * @author Daniel Bannert <d.bannert@anolilab.de>s
  */
-class Psr6SessionHandlerTest extends AbstractSessionHandlerTest
+class Psr6SessionHandlerTest extends SessionHandlerTestCase
 {
-    /**
-     * @type \PHPUnit_Framework_MockObject_MockObject|CacheItemPoolInterface
-     */
-    private $psr6;
+    private CacheItemPoolInterface&MockObject $psr6;
+
+    private RecordingSessionLock $lock;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->psr6 = $this->getMockBuilder(ArrayCachePool::class)
-            ->setMethods(['getItem', 'deleteItem', 'save'])
-            ->getMock();
-        $this->handler = new Psr6SessionHandler($this->psr6, ['prefix' => self::PREFIX, 'ttl' => self::TTL]);
+        $this->psr6 = $this->createMock(CacheItemPoolInterface::class);
+        $this->lock = new RecordingSessionLock();
+        $this->handler = new Psr6SessionHandler($this->psr6, $this->lock, ['prefix' => self::PREFIX, 'ttl' => self::TTL]);
     }
 
     public function testReadMiss()
@@ -49,6 +48,24 @@ class Psr6SessionHandlerTest extends AbstractSessionHandlerTest
             ->willReturn($item);
 
         $this->assertEquals('', $this->handler->read('foo'));
+    }
+
+    public function testReadReturnsFalseWithoutReadingWhenLockCannotBeAcquired(): void
+    {
+        $lock = new RecordingSessionLock(false);
+        $this->psr6->expects($this->never())
+            ->method('getItem');
+
+        $handler = new Psr6SessionHandler(
+            $this->psr6,
+            $lock,
+            ['prefix' => self::PREFIX, 'ttl' => self::TTL]
+        );
+
+        $this->assertFalse($handler->read('foo'));
+        $this->assertSame(1, $lock->acquireCalls);
+        $this->assertSame('foo', $lock->acquiredSessionId);
+        $this->assertSame(0, $lock->releaseCalls);
     }
 
     public function testReadHit()
@@ -65,6 +82,59 @@ class Psr6SessionHandlerTest extends AbstractSessionHandlerTest
             ->willReturn($item);
 
         $this->assertEquals('bar', $this->handler->read('foo'));
+    }
+
+    public function testReadTreatsNonStringValuesAsMisses(): void
+    {
+        $item = $this->getItemMock();
+        $item->expects($this->once())
+            ->method('isHit')
+            ->willReturn(true);
+        $item->expects($this->once())
+            ->method('get')
+            ->willReturn(['not session data']);
+        $this->psr6->expects($this->once())
+            ->method('getItem')
+            ->willReturn($item);
+
+        $this->assertSame('', $this->handler->read('foo'));
+    }
+
+    public function testValidateAndReadShareTheLockUntilClose(): void
+    {
+        $item = $this->getItemMock();
+        $item->expects($this->once())
+            ->method('isHit')
+            ->willReturn(true);
+        $item->expects($this->once())
+            ->method('get')
+            ->willReturn('bar');
+        $this->psr6->expects($this->once())
+            ->method('getItem')
+            ->willReturn($item);
+
+        $this->assertTrue($this->handler->validateId('foo'));
+        $this->assertSame('bar', $this->handler->read('foo'));
+        $this->assertSame("acquire foo\n", $this->lock->events);
+        $this->assertTrue($this->handler->close());
+        $this->assertSame("acquire foo\nrelease foo\n", $this->lock->events);
+    }
+
+    public function testReadReleasesTheLockWhenStorageThrows(): void
+    {
+        $exception = new \RuntimeException('read failed');
+        $this->psr6->expects($this->once())
+            ->method('getItem')
+            ->willThrowException($exception);
+
+        try {
+            $this->handler->read('foo');
+            $this->fail('The storage exception was not thrown.');
+        } catch (\RuntimeException $caught) {
+            $this->assertSame($exception, $caught);
+        }
+
+        $this->assertSame("acquire foo\nrelease foo\n", $this->lock->events);
     }
 
     public function testWrite()
@@ -99,13 +169,11 @@ class Psr6SessionHandlerTest extends AbstractSessionHandlerTest
         $this->assertTrue($this->handler->destroy('foo'));
     }
 
-    /**
-     * @dataProvider getOptionFixtures
-     */
-    public function testSupportedOptions($options, $supported)
+    #[DataProvider('getOptionFixtures')]
+    public function testSupportedOptions(array $options, bool $supported): void
     {
         try {
-            new Psr6SessionHandler($this->psr6, $options);
+            new Psr6SessionHandler($this->psr6, new RecordingSessionLock(), $options);
 
             $this->assertTrue($supported);
         } catch (\InvalidArgumentException $e) {
@@ -113,7 +181,7 @@ class Psr6SessionHandlerTest extends AbstractSessionHandlerTest
         }
     }
 
-    public function getOptionFixtures()
+    public static function getOptionFixtures(): array
     {
         return [
             [['prefix' => 'session'], true],
@@ -127,16 +195,15 @@ class Psr6SessionHandlerTest extends AbstractSessionHandlerTest
     {
         $item = $this->getItemMock();
         $item->expects($this->once())
+            ->method('isHit')
+            ->willReturn(true);
+        $item->expects($this->once())
             ->method('set')
             ->with('session value')
             ->willReturnSelf();
-        $item->expects($this->once())
+        $item->expects($this->exactly(2))
             ->method('expiresAfter')
             ->with(self::TTL)
-            ->willReturnSelf();
-        $item->expects($this->once())
-            ->method('expiresAt')
-            ->with(\DateTime::createFromFormat('U', \time() + self::TTL))
             ->willReturnSelf();
         $this->psr6->expects($this->exactly(2))
             ->method('getItem')
@@ -150,6 +217,22 @@ class Psr6SessionHandlerTest extends AbstractSessionHandlerTest
         $this->handler->write('foo', 'session value');
 
         $this->assertTrue($this->handler->updateTimestamp('foo', 'session value'));
+    }
+
+    public function testUpdateTimestampDoesNotCreateAMissingSession(): void
+    {
+        $item = $this->getItemMock();
+        $item->expects($this->once())
+            ->method('isHit')
+            ->willReturn(false);
+        $item->expects($this->never())->method('expiresAfter');
+        $this->psr6->expects($this->once())
+            ->method('getItem')
+            ->with(self::PREFIX.'missing')
+            ->willReturn($item);
+        $this->psr6->expects($this->never())->method('save');
+
+        $this->assertFalse($this->handler->updateTimestamp('missing', 'session value'));
     }
 
     public function testValidateId()
@@ -168,13 +251,8 @@ class Psr6SessionHandlerTest extends AbstractSessionHandlerTest
         $this->assertTrue($this->handler->validateId('foo'));
     }
 
-    /**
-     * @return \PHPUnit_Framework_MockObject_MockObject
-     */
-    private function getItemMock()
+    private function getItemMock(): CacheItemInterface&MockObject
     {
-        return $this->getMockBuilder(CacheItemInterface::class)
-            ->setMethods(['isHit', 'getKey', 'get', 'set', 'expiresAt', 'expiresAfter'])
-            ->getMock();
+        return $this->createMock(CacheItemInterface::class);
     }
 }

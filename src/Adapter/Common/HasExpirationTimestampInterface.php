@@ -19,8 +19,6 @@ interface HasExpirationTimestampInterface
 {
     /**
      * The timestamp when the object expires.
-     *
-     * @return int|null
      */
-    public function getExpirationTimestamp();
+    public function getExpirationTimestamp(): ?int;
 }

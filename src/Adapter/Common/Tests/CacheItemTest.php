@@ -35,11 +35,9 @@ class CacheItemTest extends TestCase
     {
         $item = new CacheItem('test_key');
 
-        $ref       = new \ReflectionObject($item);
+        $ref = new \ReflectionObject($item);
         $valueProp = $ref->getProperty('value');
-        $valueProp->setAccessible(true);
         $hasValueProp = $ref->getProperty('hasValue');
-        $hasValueProp->setAccessible(true);
 
         $this->assertEquals(null, $valueProp->getValue($item));
         $this->assertFalse($hasValueProp->getValue($item));
@@ -88,9 +86,8 @@ class CacheItemTest extends TestCase
 
         $timestamp = time();
 
-        $ref  = new \ReflectionObject($item);
+        $ref = new \ReflectionObject($item);
         $prop = $ref->getProperty('expirationTimestamp');
-        $prop->setAccessible(true);
         $prop->setValue($item, $timestamp);
 
         $this->assertEquals($timestamp, $item->getExpirationTimestamp());
@@ -103,7 +100,7 @@ class CacheItemTest extends TestCase
         $this->assertNull($item->getExpirationTimestamp());
 
         $time = time() + 1;
-        $item->expiresAt($time);
+        $item->expiresAt(new \DateTimeImmutable('@'.$time));
 
         $this->assertEquals($time, $item->getExpirationTimestamp());
     }
@@ -115,7 +112,7 @@ class CacheItemTest extends TestCase
         $this->assertNull($item->getExpirationTimestamp());
 
         $item->expiresAfter(null);
-        $this->assertNull($this->getExpectedException());
+        $this->assertNull($item->getExpirationTimestamp());
 
         $item->expiresAfter(new \DateInterval('PT1S'));
         $this->assertEquals((new \DateTime('+1 second'))->getTimestamp(), $item->getExpirationTimestamp());

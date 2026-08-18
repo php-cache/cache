@@ -24,35 +24,53 @@ use Doctrine\Common\Cache\FlushableCache;
  */
 class DoctrineCachePool extends AbstractCachePool
 {
-    /**
-     * @type Cache
-     */
-    protected $cache;
+    protected Cache $cache;
 
-    /**
-     * @param Cache $cache
-     */
     public function __construct(Cache $cache)
     {
         $this->cache = $cache;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function fetchObjectFromCache($key)
+    protected function fetchObjectFromCache(string $key): array
     {
-        if (false === $data = $this->cache->fetch($key)) {
+        $payload = $this->cache->fetch($key);
+        if (!is_string($payload)) {
             return [false, null, [], null];
         }
 
-        return unserialize($data);
+        try {
+            $record = @unserialize($payload);
+        } catch (\Throwable) {
+            return [false, null, [], null];
+        }
+
+        if (!is_array($record) || !array_is_list($record) || 4 !== count($record) || true !== $record[0]) {
+            return [false, null, [], null];
+        }
+
+        $tags = $record[2];
+        if (!is_array($tags)) {
+            return [false, null, [], null];
+        }
+
+        $decodedTags = [];
+        foreach ($tags as $tag) {
+            if (!is_string($tag)) {
+                return [false, null, [], null];
+            }
+
+            $decodedTags[$tag] = $tag;
+        }
+
+        $expiration = $record[3];
+        if (!is_int($expiration) && null !== $expiration) {
+            return [false, null, [], null];
+        }
+
+        return [true, $record[1], $decodedTags, $expiration];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function clearAllObjectsFromCache()
+    protected function clearAllObjectsFromCache(): bool
     {
         if ($this->cache instanceof FlushableCache) {
             return $this->cache->flushAll();
@@ -61,20 +79,14 @@ class DoctrineCachePool extends AbstractCachePool
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function clearOneObjectFromCache($key)
+    protected function clearOneObjectFromCache(string $key): bool
     {
-        return $this->cache->delete($key);
+        return $this->cache->delete($key) || !$this->cache->contains($key);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function storeItemInCache(PhpCacheItem $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, ?int $ttl): bool
     {
-        if ($ttl === null) {
+        if (null === $ttl) {
             $ttl = 0;
         }
 
@@ -83,48 +95,44 @@ class DoctrineCachePool extends AbstractCachePool
         return $this->cache->save($item->getKey(), $data, $ttl);
     }
 
-    /**
-     * @return Cache
-     */
-    public function getCache()
+    public function getCache(): Cache
     {
         return $this->cache;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getList($name)
+    protected function getList(string $name): array
     {
-        if (false === $list = $this->cache->fetch($name)) {
+        $storedList = $this->cache->fetch($name);
+        if (!is_array($storedList)) {
             return [];
+        }
+
+        $list = [];
+        foreach ($storedList as $item) {
+            if (!is_string($item)) {
+                return [];
+            }
+
+            $list[] = $item;
         }
 
         return $list;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function removeList($name)
+    protected function removeList(string $name): bool
     {
-        return $this->cache->delete($name);
+        return $this->cache->delete($name) || !$this->cache->contains($name);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function appendListItem($name, $key)
+    protected function appendListItem(string $name, string $key): bool
     {
-        $list   = $this->getList($name);
+        $list = $this->getList($name);
         $list[] = $key;
-        $this->cache->save($name, $list);
+
+        return $this->cache->save($name, $list);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function removeListItem($name, $key)
+    protected function removeListItem(string $name, string $key): bool
     {
         $list = $this->getList($name);
         foreach ($list as $i => $item) {
@@ -132,6 +140,7 @@ class DoctrineCachePool extends AbstractCachePool
                 unset($list[$i]);
             }
         }
-        $this->cache->save($name, $list);
+
+        return $this->cache->save($name, $list);
     }
 }

@@ -17,7 +17,7 @@ class IntegrationSimpleCacheTest extends BaseTest
 {
     use CreatePoolTrait;
 
-    protected $skippedTests = [
+    protected array $skippedTests = [
         'testBasicUsageWithLongKey' => 'Long keys are not supported.',
     ];
 }

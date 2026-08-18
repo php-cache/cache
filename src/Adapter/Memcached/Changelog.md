@@ -1,8 +1,22 @@
-# Change Log
+# Changelog
 
-The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
+Each release groups changes under Added, Removed, Changed, or Fixed headings.
 
-## UNRELEASED
+## 2.0.0
+
+### Added
+
+* Use native Memcached bulk commands for PSR-16 bulk reads, writes, and deletes.
+
+### Changed
+
+* Require PHP 8.2 or later.
+* Require `psr/cache` 3 and `psr/simple-cache` 3.
+* Add native parameter and return types required by the PSR interfaces.
+
+### Fixed
+
+* Throw `CachePoolException` when Memcached reports a failed `getMulti()` call.
 
 ## 1.2.0
 
@@ -31,7 +45,7 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ### Changed
 
-* The behavior of `CacheItem::getTags()` has changed. It will not return the tags stored in the cache storage.
+* The behavior of `CacheItem::getTags()` has changed. It does not return tags stored in the cache storage.
 
 ### Removed
 
@@ -43,7 +57,7 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ### Fixed
 
-* Issue when ttl is larger than 30 days.
+* Issue when TTL is larger than 30 days.
 
 ## 0.3.2
 

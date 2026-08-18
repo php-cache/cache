@@ -18,7 +18,7 @@ class IntegrationPoolTest extends CachePoolTest
 {
     use CreateServerTrait;
 
-    public function createCachePool()
+    public function createCachePool(): MongoDBCachePool
     {
         return new MongoDBCachePool($this->getCollection());
     }

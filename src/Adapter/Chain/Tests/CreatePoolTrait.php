@@ -11,27 +11,23 @@
 
 namespace Cache\Adapter\Chain\Tests;
 
-use Cache\Adapter\Filesystem\FilesystemCachePool;
 use Cache\Adapter\PHPArray\ArrayCachePool;
-use League\Flysystem\Adapter\Local;
-use League\Flysystem\Filesystem;
 
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
 trait CreatePoolTrait
 {
-    private $adapters;
+    /** @var array{ArrayCachePool, ArrayCachePool}|null */
+    private ?array $adapters = null;
 
     /**
-     * @return mixed
+     * @return array{ArrayCachePool, ArrayCachePool}
      */
-    public function getAdapters()
+    public function getAdapters(): array
     {
-        if ($this->adapters === null) {
-            $filesystemAdapter = new Local(sys_get_temp_dir().'/cache_'.rand(1, 1000));
-            $filesystem        = new Filesystem($filesystemAdapter);
-            $this->adapters    = [new FilesystemCachePool($filesystem), new ArrayCachePool()];
+        if (null === $this->adapters) {
+            $this->adapters = [new ArrayCachePool(), new ArrayCachePool()];
         }
 
         return $this->adapters;

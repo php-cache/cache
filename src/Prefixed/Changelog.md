@@ -2,7 +2,22 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
-## UNRELEASED
+## 2.0.0
+
+### Changed
+
+* Require PHP 8.2 or later.
+* Require `psr/cache` 3 and `psr/simple-cache` 3.
+* Add native parameter and return types required by the PSR interfaces.
+* Remove the unused `cache/hierarchical-cache` dependency.
+
+### Added
+
+* Add `PrefixedCachePool::create()`. It preserves native tag support when the wrapped pool is taggable.
+
+### Fixed
+
+* Encode every non-portable prefix byte and literal encoding marker with a reversible format that uses only the PSR key alphabet. Prefixes that contain transformed bytes require a cache clear when upgrading or rolling back.
 
 ## 1.2.0
 
@@ -34,5 +49,3 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 ### Fixed
 
 * Typos, documentation and general package improvements.
-
-

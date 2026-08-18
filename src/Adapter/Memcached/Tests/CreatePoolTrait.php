@@ -15,21 +15,25 @@ use Cache\Adapter\Memcached\MemcachedCachePool;
 
 trait CreatePoolTrait
 {
-    private $client = null;
+    private ?\Memcached $client = null;
 
-    public function createCachePool()
+    public function createCachePool(): MemcachedCachePool
     {
         return new MemcachedCachePool($this->getClient());
     }
 
-    public function createSimpleCache()
+    public function createSimpleCache(): MemcachedCachePool
     {
         return $this->createCachePool();
     }
 
-    private function getClient()
+    private function getClient(): \Memcached
     {
-        if ($this->client === null) {
+        if (!class_exists(\Memcached::class)) {
+            $this->markTestSkipped('The Memcached extension is not installed.');
+        }
+
+        if (null === $this->client) {
             $this->client = new \Memcached();
             $this->client->addServer('localhost', 11211);
         }

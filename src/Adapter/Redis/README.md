@@ -1,49 +1,51 @@
-# Redis PSR-6 Cache pool 
-[![Gitter](https://badges.gitter.im/php-cache/cache.svg)](https://gitter.im/php-cache/cache?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+# Redis PSR-6 cache pool
+
 [![Latest Stable Version](https://poser.pugx.org/cache/redis-adapter/v/stable)](https://packagist.org/packages/cache/redis-adapter)
-[![codecov.io](https://codecov.io/github/php-cache/redis-adapter/coverage.svg?branch=master)](https://codecov.io/github/php-cache/redis-adapter?branch=master)
-[![Total Downloads](https://poser.pugx.org/cache/redis-adapter/downloads)](https://packagist.org/packages/cache/redis-adapter)
-[![Monthly Downloads](https://poser.pugx.org/cache/redis-adapter/d/monthly.png)](https://packagist.org/packages/cache/redis-adapter)
+[![Coverage](https://codecov.io/gh/php-cache/redis-adapter/branch/master/graph/badge.svg)](https://codecov.io/gh/php-cache/redis-adapter)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
-This is a PSR-6 cache implementation using Redis. It is a part of the PHP Cache organisation. To read about 
-features like tagging and hierarchy support please read the shared documentation at [www.php-cache.com](http://www.php-cache.com). 
+This package provides a PSR-6 cache pool for `Redis`, `RedisArray`, and `RedisCluster` clients from [PhpRedis](https://github.com/phpredis/phpredis).
 
-This implementation is using [PhpRedis](https://github.com/phpredis/phpredis). If you want an adapter with 
-[Predis](https://github.com/nrk/predis) you should look at our [Predis adapter](https://github.com/php-cache/predis-adapter). 
+Use the [Predis adapter](https://github.com/php-cache/predis-adapter) when your application uses Predis.
 
-### Install
+## Installation
+
+Install the package and enable the Redis extension:
 
 ```bash
-composer require cache/redis-adapter
+composer require cache/redis-adapter:^2.0
 ```
 
-### Use
+## Usage
 
-To create an instance of `RedisCachePool` you need to configure a `\Redis`, `\RedisArray` or `\RedisCluster` client. 
-
-\Redis
 ```php
-$client = new \Redis();
+use Cache\Adapter\Redis\RedisCachePool;
+
+$client = new Redis();
 $client->connect('127.0.0.1', 6379);
 $pool = new RedisCachePool($client);
 ```
 
-\RedisArray
+The pool also accepts `RedisArray` and `RedisCluster` clients:
+
 ```php
-$client = new \RedisArray(['127.0.0.1:6379', '127.0.0.2:6379']);
-$pool = new RedisCachePool($client);
+$array = new RedisArray(['127.0.0.1:6379', '127.0.0.2:6379']);
+$arrayPool = new RedisCachePool($array);
+
+$cluster = new RedisCluster(null, [
+    '127.0.0.1:7000',
+    '127.0.0.1:7001',
+    '127.0.0.1:7002',
+]);
+$clusterPool = new RedisCachePool($cluster);
 ```
 
-\RedisCluster
-```php
-$client = new \RedisCluster(null, ['127.0.0.1:7000', '127.0.0.2:7001', '127.0.0.2:7002',]);
-$pool = new RedisCachePool($client);
-```
+## Upgrading to version 2
 
-_See [PhpRedis](https://github.com/phpredis/phpredis) for more connection options_
+Version 2 stores tag indexes as Redis sets. Older releases use Redis lists for the same keys.
 
-### Contribute
+Stop all workers, clear the Redis cache, and then deploy version 2. Follow the same sequence before a rollback.
 
-Contributions are very welcome! Send a pull request to the [main repository](https://github.com/php-cache/cache) or 
-report any issues you find on the [issue tracker](http://issues.php-cache.com).
+## Contributing
+
+Send pull requests to the [main repository](https://github.com/php-cache/cache). Report issues on the [GitHub issue tracker](https://github.com/php-cache/cache/issues).

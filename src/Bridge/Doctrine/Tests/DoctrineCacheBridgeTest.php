@@ -12,7 +12,10 @@
 namespace Cache\Bridge\Doctrine\Tests;
 
 use Cache\Bridge\Doctrine\DoctrineCacheBridge;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mockery as m;
+use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
@@ -22,20 +25,13 @@ use Psr\Cache\CacheItemPoolInterface;
  */
 class DoctrineCacheBridgeTest extends TestCase
 {
-    /**
-     * @type DoctrineCacheBridge
-     */
-    private $bridge;
+    use MockeryPHPUnitIntegration;
 
-    /**
-     * @type m\MockInterface|CacheItemPoolInterface
-     */
-    private $mock;
+    private DoctrineCacheBridge $bridge;
 
-    /**
-     * @type m\MockInterface|CacheItemInterface
-     */
-    private $itemMock;
+    private MockInterface&CacheItemPoolInterface $mock;
+
+    private MockInterface&CacheItemInterface $itemMock;
 
     protected function setUp(): void
     {
@@ -52,12 +48,12 @@ class DoctrineCacheBridgeTest extends TestCase
         $this->itemMock = m::mock(CacheItemInterface::class);
     }
 
-    public function testConstructor()
+    public function testConstructor(): void
     {
         $this->assertInstanceOf(DoctrineCacheBridge::class, $this->bridge);
     }
 
-    public function testFetch()
+    public function testFetch(): void
     {
         $this->itemMock->shouldReceive('isHit')->times(1)->andReturn(true);
         $this->itemMock->shouldReceive('get')->times(1)->andReturn('some_value');
@@ -67,7 +63,7 @@ class DoctrineCacheBridgeTest extends TestCase
         $this->assertEquals('some_value', $this->bridge->fetch('some_item'));
     }
 
-    public function testFetchMiss()
+    public function testFetchMiss(): void
     {
         $this->itemMock->shouldReceive('isHit')->times(1)->andReturn(false);
 
@@ -76,7 +72,7 @@ class DoctrineCacheBridgeTest extends TestCase
         $this->assertFalse($this->bridge->fetch('no_item'));
     }
 
-    public function testContains()
+    public function testContains(): void
     {
         $this->mock->shouldReceive('hasItem')->withArgs(['[no_item][1]'])->andReturn(false);
         $this->mock->shouldReceive('hasItem')->withArgs(['[some_item][1]'])->andReturn(true);
@@ -85,7 +81,7 @@ class DoctrineCacheBridgeTest extends TestCase
         $this->assertTrue($this->bridge->contains('some_item'));
     }
 
-    public function testSave()
+    public function testSave(): void
     {
         $this->itemMock->shouldReceive('set')->twice()->with('dummy_data');
         $this->itemMock->shouldReceive('expiresAfter')->once()->with(2);
@@ -96,28 +92,25 @@ class DoctrineCacheBridgeTest extends TestCase
         $this->assertTrue($this->bridge->save('some_item', 'dummy_data', 2));
     }
 
-    public function testDelete()
+    public function testDelete(): void
     {
         $this->mock->shouldReceive('deleteItem')->once()->with('[some_item][1]')->andReturn(true);
 
         $this->assertTrue($this->bridge->delete('some_item'));
     }
 
-    public function testGetCache()
+    public function testGetCache(): void
     {
         $this->assertInstanceOf(CacheItemPoolInterface::class, $this->bridge->getCachePool());
     }
 
-    public function testGetStats()
+    public function testGetStats(): void
     {
-        $this->assertEmpty($this->bridge->getStats());
+        $this->assertNull($this->bridge->getStats());
     }
 
-    /**
-     * @param string $key
-     * @dataProvider invalidKeys
-     */
-    public function testInvalidKeys($key, $normalizedKey)
+    #[DataProvider('invalidKeys')]
+    public function testInvalidKeys(string $key, string $normalizedKey): void
     {
         $normalizedKey = sprintf('[%s][1]', $normalizedKey);
         $this->itemMock->shouldReceive('isHit')->andReturn(false);
@@ -128,18 +121,16 @@ class DoctrineCacheBridgeTest extends TestCase
         $this->mock->shouldReceive('deleteItem')->withArgs([$normalizedKey]);
         $this->mock->shouldReceive('save');
 
-        $this->bridge->contains($key);
-        $this->bridge->save($key, 'foo');
-        $this->bridge->fetch($key);
-        $this->bridge->delete($key);
+        self::assertFalse($this->bridge->contains($key));
+        self::assertFalse($this->bridge->save($key, 'foo'));
+        self::assertFalse($this->bridge->fetch($key));
+        self::assertFalse($this->bridge->delete($key));
     }
 
     /**
-     * Data provider for invalid keys.
-     *
-     * @return array
+     * @return list<array{string, string}>
      */
-    public static function invalidKeys()
+    public static function invalidKeys(): array
     {
         return [
             ['{str', '_str'],

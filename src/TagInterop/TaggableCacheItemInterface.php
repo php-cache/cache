@@ -26,18 +26,16 @@ interface TaggableCacheItemInterface extends CacheItemInterface
      * Get all existing tags. These are the tags the item has when the item is
      * returned from the pool.
      *
-     * @return array
+     * @return array<string, string>
      */
-    public function getPreviousTags();
+    public function getPreviousTags(): array;
 
     /**
      * Overwrite all tags with a new set of tags.
      *
-     * @param string[] $tags An array of tags
+     * @param array<array-key, string> $tags An array of tags
      *
-     * @throws InvalidArgumentException When a tag is not valid.
-     *
-     * @return TaggableCacheItemInterface
+     * @throws InvalidArgumentException when a tag is not valid
      */
-    public function setTags(array $tags);
+    public function setTags(array $tags): static;
 }

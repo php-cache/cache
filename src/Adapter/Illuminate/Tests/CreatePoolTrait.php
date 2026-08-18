@@ -13,26 +13,28 @@ namespace Cache\Adapter\Illuminate\Tests;
 
 use Cache\Adapter\Illuminate\IlluminateCachePool;
 use Illuminate\Cache\ArrayStore;
+use Psr\Cache\CacheItemPoolInterface;
+use Psr\SimpleCache\CacheInterface;
 
 trait CreatePoolTrait
 {
-    private $illuminateStore = null;
+    private ?ArrayStore $illuminateStore = null;
 
-    public function createCachePool()
+    public function createCachePool(): CacheItemPoolInterface
     {
         return new IlluminateCachePool($this->getIlluminateStore());
     }
 
-    private function getIlluminateStore()
+    private function getIlluminateStore(): ArrayStore
     {
-        if ($this->illuminateStore === null) {
+        if (null === $this->illuminateStore) {
             $this->illuminateStore = new ArrayStore();
         }
 
         return $this->illuminateStore;
     }
 
-    public function createSimpleCache()
+    public function createSimpleCache(): CacheInterface
     {
         return $this->createCachePool();
     }

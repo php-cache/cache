@@ -26,108 +26,128 @@ class IlluminateCachePool extends AbstractCachePool implements HierarchicalPoolI
 {
     use HierarchicalCachePoolTrait;
 
-    /**
-     * @type Store
-     */
-    protected $store;
+    protected Store $store;
 
-    /**
-     * @param Store $store
-     */
     public function __construct(Store $store)
     {
         $this->store = $store;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function storeItemInCache(PhpCacheItem $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, ?int $ttl): bool
     {
-        $ttl = null === $ttl ? 0 : $ttl / 60;
-
         $data = serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]);
 
-        $this->store->put($this->getHierarchyKey($item->getKey()), $data, $ttl);
+        $key = $this->getHierarchyKey($item->getKey());
+        if (null === $ttl) {
+            return false !== $this->store->forever($key, $data);
+        }
 
-        return true;
+        return false !== $this->store->put($key, $data, $ttl);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function fetchObjectFromCache($key)
+    protected function fetchObjectFromCache(string $key): array
     {
-        if (null === $data = $this->store->get($this->getHierarchyKey($key))) {
+        $payload = $this->store->get($this->getHierarchyKey($key));
+        if (!is_string($payload)) {
             return [false, null, [], null];
         }
 
-        return unserialize($data);
+        try {
+            $record = @unserialize($payload);
+        } catch (\Throwable) {
+            return [false, null, [], null];
+        }
+
+        if (!is_array($record) || !array_is_list($record) || 4 !== count($record) || true !== $record[0]) {
+            return [false, null, [], null];
+        }
+
+        $tags = $record[2];
+        if (!is_array($tags)) {
+            return [false, null, [], null];
+        }
+
+        $decodedTags = [];
+        foreach ($tags as $tag) {
+            if (!is_string($tag)) {
+                return [false, null, [], null];
+            }
+
+            $decodedTags[$tag] = $tag;
+        }
+
+        $expiration = $record[3];
+        if (!is_int($expiration) && null !== $expiration) {
+            return [false, null, [], null];
+        }
+
+        return [true, $record[1], $decodedTags, $expiration];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function clearAllObjectsFromCache()
+    protected function clearAllObjectsFromCache(): bool
     {
         return $this->store->flush();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function clearOneObjectFromCache($key)
+    protected function clearOneObjectFromCache(string $key): bool
     {
-        $path      = null;
+        $path = null;
         $keyString = $this->getHierarchyKey($key, $path);
-        if ($path) {
-            if ($this->store->get($path) === null) {
-                $this->store->put($path, 0, 0);
+        $stored = $this->store->get($keyString);
+        $generationAdvanced = true;
+        if (null !== $path) {
+            if (null === $this->store->get($path)) {
+                $generationAdvanced = false !== $this->store->forever($path, 0);
             }
-            $this->store->increment($path);
+            $generationAdvanced = false !== $this->store->increment($path) && $generationAdvanced;
         }
         $this->clearHierarchyKeyCache();
 
-        return $this->store->forget($keyString);
+        if (null === $stored) {
+            return $generationAdvanced;
+        }
+
+        return $this->store->forget($keyString) && $generationAdvanced;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getList($name)
+    protected function getList(string $name): array
     {
-        $list = $this->store->get($name);
+        $storedList = $this->store->get($name);
 
-        if (!is_array($list)) {
+        if (!is_array($storedList)) {
             return [];
+        }
+
+        $list = [];
+        foreach ($storedList as $item) {
+            if (!is_string($item)) {
+                return [];
+            }
+
+            $list[] = $item;
         }
 
         return $list;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function removeList($name)
+    protected function removeList(string $name): bool
     {
+        if (null === $this->store->get($name)) {
+            return true;
+        }
+
         return $this->store->forget($name);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function appendListItem($name, $key)
+    protected function appendListItem(string $name, string $key): bool
     {
-        $list   = $this->getList($name);
+        $list = $this->getList($name);
         $list[] = $key;
 
-        $this->store->forever($name, $list);
+        return false !== $this->store->forever($name, $list);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function removeListItem($name, $key)
+    protected function removeListItem(string $name, string $key): bool
     {
         $list = $this->getList($name);
 
@@ -137,13 +157,10 @@ class IlluminateCachePool extends AbstractCachePool implements HierarchicalPoolI
             }
         }
 
-        $this->store->forever($name, $list);
+        return false !== $this->store->forever($name, $list);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getDirectValue($name)
+    public function getDirectValue(string $name): mixed
     {
         return $this->store->get($name);
     }

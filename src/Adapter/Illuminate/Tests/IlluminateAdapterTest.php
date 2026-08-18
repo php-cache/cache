@@ -11,41 +11,167 @@
 
 namespace Cache\Adapter\Illuminate\Tests;
 
-use Cache\Adapter\Common\CacheItem;
 use Cache\Adapter\Illuminate\IlluminateCachePool;
 use Illuminate\Contracts\Cache\Store;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mockery as m;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemPoolInterface;
 
 class IlluminateAdapterTest extends TestCase
 {
-    /**
-     * @type IlluminateCachePool
-     */
-    private $pool;
+    use MockeryPHPUnitIntegration;
 
-    /**
-     * @type MockInterface|CacheItem
-     */
-    private $mockItem;
+    private IlluminateCachePool $pool;
 
-    /**
-     * @type MockInterface|Store
-     */
-    private $mockStore;
+    private MockInterface&Store $mockStore;
 
     protected function setUp(): void
     {
-        $this->mockItem  = m::mock(CacheItem::class);
         $this->mockStore = m::mock(Store::class);
-        $this->pool      = new IlluminateCachePool($this->mockStore);
+        $this->pool = new IlluminateCachePool($this->mockStore);
     }
 
-    public function testConstructor()
+    public function testConstructor(): void
     {
         $this->assertInstanceOf(IlluminateCachePool::class, $this->pool);
         $this->assertInstanceOf(CacheItemPoolInterface::class, $this->pool);
+    }
+
+    #[DataProvider('invalidPayloads')]
+    public function testCorruptPayloadIsACacheMiss(mixed $payload): void
+    {
+        $this->mockStore->shouldReceive('get')->once()->with('corrupt')->andReturn($payload);
+
+        self::assertFalse($this->pool->getItem('corrupt')->isHit());
+    }
+
+    public static function invalidPayloads(): iterable
+    {
+        yield 'null' => [null];
+        yield 'false' => [false];
+        yield 'integer' => [42];
+        yield 'array' => [[]];
+        yield 'malformed serialization' => ['not serialized'];
+        yield 'invalid hit marker' => [serialize([false, 'value', [], null])];
+        yield 'invalid tags' => [serialize([true, 'value', [42], null])];
+        yield 'invalid expiration' => [serialize([true, 'value', [], 'tomorrow'])];
+    }
+
+    public function testTtlIsPassedToIlluminateInSeconds(): void
+    {
+        $this->mockStore->shouldReceive('get')->once()->with('ttl')->andReturn(null);
+        $this->mockStore
+            ->shouldReceive('put')
+            ->once()
+            ->with('ttl', m::type('string'), 120)
+            ->andReturn(true);
+
+        self::assertTrue($this->pool->set('ttl', 'value', 120));
+    }
+
+    public function testItemWithoutTtlUsesForeverStorage(): void
+    {
+        $this->mockStore->shouldReceive('get')->once()->with('forever')->andReturn(null);
+        $this->mockStore
+            ->shouldReceive('forever')
+            ->once()
+            ->with('forever', m::type('string'))
+            ->andReturn(true);
+
+        self::assertTrue($this->pool->set('forever', 'value'));
+    }
+
+    public function testFailedTtlWriteIsReported(): void
+    {
+        $this->mockStore->shouldReceive('get')->once()->with('ttl')->andReturn(null);
+        $this->mockStore->shouldReceive('put')->once()->andReturn(false);
+
+        self::assertFalse($this->pool->set('ttl', 'value', 120));
+    }
+
+    public function testFailedForeverWriteIsReported(): void
+    {
+        $this->mockStore->shouldReceive('get')->once()->with('forever')->andReturn(null);
+        $this->mockStore->shouldReceive('forever')->once()->andReturn(false);
+
+        self::assertFalse($this->pool->set('forever', 'value'));
+    }
+
+    public function testHierarchyCounterUsesForeverStorage(): void
+    {
+        $pool = new class($this->mockStore) extends IlluminateCachePool {
+            public function clearObject(string $key): bool
+            {
+                return $this->clearOneObjectFromCache($key);
+            }
+        };
+
+        $this->mockStore->shouldReceive('get')->times(4)->andReturn(null);
+        $this->mockStore->shouldReceive('forever')->once()->with(m::type('string'), 0)->andReturn(true);
+        $this->mockStore->shouldReceive('increment')->once()->with(m::type('string'))->andReturn(1);
+
+        self::assertTrue($pool->clearObject('|parent'));
+    }
+
+    public function testDeletingAParentWithoutAStoredItemInvalidatesItsDescendants(): void
+    {
+        $store = new \Illuminate\Cache\ArrayStore();
+        $pool = new IlluminateCachePool($store);
+        self::assertTrue($pool->save($pool->getItem('|parent|child')->set('value')));
+
+        self::assertTrue($pool->deleteItem('|parent'));
+        self::assertFalse($pool->hasItem('|parent|child'));
+    }
+
+    public function testHierarchyDeleteReportsFailedCounterInitialization(): void
+    {
+        $pool = new class($this->mockStore) extends IlluminateCachePool {
+            public function clearObject(string $key): bool
+            {
+                return $this->clearOneObjectFromCache($key);
+            }
+        };
+
+        $this->mockStore->shouldReceive('get')->times(4)->andReturn(null);
+        $this->mockStore->shouldReceive('forever')->once()->andReturn(false);
+        $this->mockStore->shouldReceive('increment')->once()->andReturn(1);
+
+        self::assertFalse($pool->clearObject('|parent'));
+    }
+
+    public function testHierarchyDeleteReportsFailedCounterIncrement(): void
+    {
+        $pool = new class($this->mockStore) extends IlluminateCachePool {
+            public function clearObject(string $key): bool
+            {
+                return $this->clearOneObjectFromCache($key);
+            }
+        };
+
+        $this->mockStore->shouldReceive('get')->times(4)->andReturn(null);
+        $this->mockStore->shouldReceive('forever')->once()->andReturn(true);
+        $this->mockStore->shouldReceive('increment')->once()->andReturn(false);
+
+        self::assertFalse($pool->clearObject('|parent'));
+    }
+
+    public function testDeleteReportsARealBackendFailure(): void
+    {
+        $payload = serialize([true, 'value', [], null]);
+        $this->mockStore->shouldReceive('get')->times(3)->with('key')->andReturn($payload);
+        $this->mockStore->shouldReceive('forget')->once()->with('key')->andReturn(false);
+
+        self::assertFalse($this->pool->deleteItem('key'));
+    }
+
+    public function testCorruptTagListIsIgnored(): void
+    {
+        $this->mockStore->shouldReceive('get')->twice()->with('tag!corrupt')->andReturn([42]);
+        $this->mockStore->shouldReceive('forget')->once()->with('tag!corrupt')->andReturn(true);
+
+        self::assertTrue($this->pool->invalidateTag('corrupt'));
     }
 }

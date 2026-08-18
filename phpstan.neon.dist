@@ -1,11 +1,10 @@
-includes:
-  - ./phpstan-baseline.neon
-
 parameters:
-    level: 5
+    level: 9
+    phpVersion: 80200
     paths:
         - src
 
-    excludes_analyse:
-        - src/*/Tests/*
-        - src/**/Tests/*
+    excludePaths:
+        analyse:
+            - src/*/Tests/*
+            - src/**/Tests/*

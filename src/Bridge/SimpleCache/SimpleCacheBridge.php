@@ -24,10 +24,7 @@ use Psr\SimpleCache\CacheInterface;
  */
 class SimpleCacheBridge implements CacheInterface
 {
-    /**
-     * @type CacheItemPoolInterface
-     */
-    protected $cacheItemPool;
+    protected CacheItemPoolInterface $cacheItemPool;
 
     /**
      * SimpleCacheBridge constructor.
@@ -37,11 +34,10 @@ class SimpleCacheBridge implements CacheInterface
         $this->cacheItemPool = $cacheItemPool;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function get($key, $default = null)
+    public function get(string $key, mixed $default = null): mixed
     {
+        $this->validateKey($key);
+
         try {
             $item = $this->cacheItemPool->getItem($key);
         } catch (CacheInvalidArgumentException $e) {
@@ -55,11 +51,10 @@ class SimpleCacheBridge implements CacheInterface
         return $item->get();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function set($key, $value, $ttl = null)
+    public function set(string $key, mixed $value, int|\DateInterval|null $ttl = null): bool
     {
+        $this->validateKey($key);
+
         try {
             $item = $this->cacheItemPool->getItem($key);
             $item->expiresAfter($ttl);
@@ -72,11 +67,10 @@ class SimpleCacheBridge implements CacheInterface
         return $this->cacheItemPool->save($item);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function delete($key)
+    public function delete(string $key): bool
     {
+        $this->validateKey($key);
+
         try {
             return $this->cacheItemPool->deleteItem($key);
         } catch (CacheInvalidArgumentException $e) {
@@ -84,28 +78,17 @@ class SimpleCacheBridge implements CacheInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function clear()
+    public function clear(): bool
     {
         return $this->cacheItemPool->clear();
     }
 
     /**
-     * {@inheritdoc}
+     * @param iterable<mixed> $keys
      */
-    public function getMultiple($keys, $default = null)
+    public function getMultiple(iterable $keys, mixed $default = null): iterable
     {
-        if (!is_array($keys)) {
-            if (!$keys instanceof \Traversable) {
-                throw new InvalidArgumentException('$keys is neither an array nor Traversable');
-            }
-
-            // Since we need to throw an exception if *any* key is invalid, it doesn't
-            // make sense to wrap iterators or something like that.
-            $keys = iterator_to_array($keys, false);
-        }
+        $keys = $this->prepareKeys($keys);
 
         try {
             $items = $this->cacheItemPool->getItems($keys);
@@ -117,50 +100,45 @@ class SimpleCacheBridge implements CacheInterface
     }
 
     /**
-     * @param $default
-     * @param $items
+     * @param iterable<array-key, CacheItemInterface> $items
      *
-     * @return \Generator
+     * @return \Generator<string, mixed, mixed, void>
      */
-    private function generateValues($default, $items)
+    private function generateValues(mixed $default, iterable $items): \Generator
     {
-        foreach ($items as $key => $item) {
-            /** @type $item CacheItemInterface */
-            if (!$item->isHit()) {
-                yield $key => $default;
-            } else {
-                yield $key => $item->get();
+        try {
+            foreach ($items as $item) {
+                $key = $item->getKey();
+                if (!$item->isHit()) {
+                    yield $key => $default;
+                } else {
+                    yield $key => $item->get();
+                }
             }
+        } catch (CacheInvalidArgumentException $e) {
+            throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
     /**
-     * {@inheritdoc}
+     * @param iterable<mixed, mixed> $values
      */
-    public function setMultiple($values, $ttl = null)
+    public function setMultiple(iterable $values, int|\DateInterval|null $ttl = null): bool
     {
-        if (!is_array($values)) {
-            if (!$values instanceof \Traversable) {
-                throw new InvalidArgumentException('$values is neither an array nor Traversable');
-            }
-        }
-
-        $keys        = [];
+        $keys = [];
         $arrayValues = [];
         foreach ($values as $key => $value) {
+            if (!is_string($key) && !is_int($key)) {
+                throw new InvalidArgumentException(sprintf('Cache key must be string or integer, "%s" given', get_debug_type($key)));
+            }
+
             if (is_int($key)) {
                 $key = (string) $key;
             }
 
-            if (!is_string($key)) {
-                throw new InvalidArgumentException(sprintf('Cache key must be string, "%s" given', gettype($key)));
-            }
+            $this->validateKey($key);
 
-            if (preg_match('|[\{\}\(\)/\\\@\:]|', $key)) {
-                throw new InvalidArgumentException(sprintf('Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:', $key));
-            }
-
-            $keys[]            = $key;
+            $keys[] = $key;
             $arrayValues[$key] = $value;
         }
 
@@ -170,38 +148,35 @@ class SimpleCacheBridge implements CacheInterface
             throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
         }
 
-        $itemSuccess = true;
-
-        foreach ($items as $key => $item) {
-            /* @var $item CacheItemInterface */
-            $item->set($arrayValues[$key]);
-
-            try {
-                $item->expiresAfter($ttl);
-            } catch (CacheInvalidArgumentException $e) {
-                throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
+        try {
+            $preparedItems = [];
+            foreach ($items as $item) {
+                $preparedItems[] = $item;
             }
 
-            $itemSuccess = $itemSuccess && $this->cacheItemPool->saveDeferred($item);
-        }
+            $itemSuccess = true;
+            foreach ($preparedItems as $item) {
+                $key = $item->getKey();
+                $item->set($arrayValues[$key]);
+                $item->expiresAfter($ttl);
+                $itemSaved = $this->cacheItemPool->saveDeferred($item);
+                $itemSuccess = $itemSaved && $itemSuccess;
+            }
 
-        return $itemSuccess && $this->cacheItemPool->commit();
+            $itemsCommitted = $this->cacheItemPool->commit();
+
+            return $itemSuccess && $itemsCommitted;
+        } catch (CacheInvalidArgumentException $e) {
+            throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
+        }
     }
 
     /**
-     * {@inheritdoc}
+     * @param iterable<mixed> $keys
      */
-    public function deleteMultiple($keys)
+    public function deleteMultiple(iterable $keys): bool
     {
-        if (!is_array($keys)) {
-            if (!$keys instanceof \Traversable) {
-                throw new InvalidArgumentException('$keys is neither an array nor Traversable');
-            }
-
-            // Since we need to throw an exception if *any* key is invalid, it doesn't
-            // make sense to wrap iterators or something like that.
-            $keys = iterator_to_array($keys, false);
-        }
+        $keys = $this->prepareKeys($keys);
 
         try {
             return $this->cacheItemPool->deleteItems($keys);
@@ -210,15 +185,45 @@ class SimpleCacheBridge implements CacheInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function has($key)
+    public function has(string $key): bool
     {
+        $this->validateKey($key);
+
         try {
             return $this->cacheItemPool->hasItem($key);
         } catch (CacheInvalidArgumentException $e) {
             throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
+        }
+    }
+
+    /**
+     * @param iterable<mixed> $keys
+     *
+     * @return list<string>
+     */
+    private function prepareKeys(iterable $keys): array
+    {
+        $validatedKeys = [];
+        foreach ($keys as $key) {
+            if (!is_string($key)) {
+                throw new InvalidArgumentException(sprintf('Cache key must be string, "%s" given', get_debug_type($key)));
+            }
+
+            $this->validateKey($key);
+            $validatedKeys[] = $key;
+        }
+
+        return $validatedKeys;
+    }
+
+    private function validateKey(string $key): void
+    {
+        if ('' === $key) {
+            throw new InvalidArgumentException('Cache key cannot be an empty string');
+        }
+
+        if (preg_match('|[\{\}\(\)/\\\@\:]|', $key)) {
+            throw new InvalidArgumentException(sprintf('Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:', $key));
         }
     }
 }

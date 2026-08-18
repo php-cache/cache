@@ -12,32 +12,75 @@
 namespace Cache\Adapter\Filesystem\Tests;
 
 use Cache\Adapter\Filesystem\FilesystemCachePool;
-use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
+use League\Flysystem\FilesystemOperator;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 
 trait CreatePoolTrait
 {
-    /**
-     * @type Filesystem
-     */
-    private $filesystem;
+    private ?FilesystemOperator $filesystem = null;
 
-    public function createCachePool()
+    private ?string $rootPath = null;
+
+    public function createCachePool(): FilesystemCachePool
     {
         return new FilesystemCachePool($this->getFilesystem());
     }
 
-    public function createSimpleCache()
+    public function createSimpleCache(): FilesystemCachePool
     {
         return $this->createCachePool();
     }
 
-    private function getFilesystem()
+    protected function tearDown(): void
     {
-        if ($this->filesystem === null) {
-            $this->filesystem = new Filesystem(new Local(__DIR__.'/cache'.rand(1, 100000)));
+        try {
+            $this->removeRootPath();
+        } finally {
+            $this->filesystem = null;
+            $this->rootPath = null;
+
+            parent::tearDown();
+        }
+    }
+
+    private function getFilesystem(): FilesystemOperator
+    {
+        if (null === $this->filesystem) {
+            $this->filesystem = new Filesystem(new LocalFilesystemAdapter($this->getRootPath()));
         }
 
         return $this->filesystem;
+    }
+
+    private function getRootPath(): string
+    {
+        if (null === $this->rootPath) {
+            $this->rootPath = sys_get_temp_dir().'/php-cache-filesystem-'.random_int(1, 100000);
+        }
+
+        return $this->rootPath;
+    }
+
+    private function removeRootPath(): void
+    {
+        if (null === $this->rootPath || !is_dir($this->rootPath)) {
+            return;
+        }
+
+        $entries = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($this->rootPath, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST,
+        );
+
+        foreach ($entries as $entry) {
+            if ($entry->isDir() && !$entry->isLink()) {
+                rmdir($entry->getPathname());
+            } else {
+                unlink($entry->getPathname());
+            }
+        }
+
+        rmdir($this->rootPath);
     }
 }

@@ -18,7 +18,7 @@ class IntegrationSimpleCacheTest extends SimpleCacheTest
 {
     use CreateServerTrait;
 
-    public function createSimpleCache()
+    public function createSimpleCache(): MongoDBCachePool
     {
         return new MongoDBCachePool($this->getCollection());
     }

@@ -12,18 +12,19 @@
 namespace Cache\Adapter\MongoDB\Tests;
 
 use Cache\Adapter\MongoDB\MongoDBCachePool;
+use MongoDB\Collection;
 use MongoDB\Driver\Manager;
 
 trait CreateServerTrait
 {
-    private $collection = null;
+    private ?Collection $collection = null;
 
     /**
      * @return mixed
      */
-    public function getCollection()
+    public function getCollection(): Collection
     {
-        if ($this->collection === null) {
+        if (null === $this->collection) {
             $manager = new Manager('mongodb://'.getenv('MONGODB_HOST'));
 
             // In your own code, only do this *once* to initialize your cache
@@ -39,8 +40,8 @@ trait CreateServerTrait
 
     public static function setUpBeforeClass(): void
     {
-        if (!class_exists('\MongoDB\Collection')) {
-            static::markTestSkipped('MonogoDB extension not installed.');
+        if (!class_exists(Manager::class)) {
+            static::markTestSkipped('MongoDB extension not installed.');
         }
 
         parent::setUpBeforeClass();

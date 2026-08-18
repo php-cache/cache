@@ -25,98 +25,91 @@ class EncryptedItemDecorator implements TaggableCacheItemInterface
 {
     use JsonBinaryArmoring;
 
-    /**
-     * The cacheItem should always contain encrypted data.
-     *
-     * @type TaggableCacheItemInterface
-     */
-    private $cacheItem;
+    /** The cache item should always contain encrypted data. */
+    private TaggableCacheItemInterface $cacheItem;
 
-    /**
-     * @type Key
-     */
-    private $key;
+    private Key $key;
 
-    /**
-     * @param TaggableCacheItemInterface $cacheItem
-     * @param Key                        $key
-     */
-    public function __construct(TaggableCacheItemInterface $cacheItem, Key $key)
+    public function __construct(TaggableCacheItemInterface $cacheItem, Key $key, private readonly object $owner)
     {
         $this->cacheItem = $cacheItem;
-        $this->key       = $key;
+        $this->key = $key;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getKey()
+    public function getKey(): string
     {
         return $this->cacheItem->getKey();
     }
 
-    /**
-     * @return TaggableCacheItemInterface
-     */
-    public function getCacheItem()
+    public function getCacheItem(): TaggableCacheItemInterface
     {
         return $this->cacheItem;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function set($value)
+    public function isOwnedBy(object $owner): bool
+    {
+        return $this->owner === $owner;
+    }
+
+    public function set(mixed $value): static
     {
         $type = gettype($value);
 
-        if ($type === 'object' || $type === 'array') {
+        if (is_object($value) || is_array($value)) {
             $value = serialize($value);
+        } elseif (null === $value) {
+            $value = '';
+        } elseif (is_bool($value)) {
+            $value = $value ? '1' : '';
+        } elseif (is_int($value) || is_float($value)) {
+            $value = (string) $value;
+        } elseif (!is_string($value)) {
+            throw new \InvalidArgumentException('Encrypted cache values must be serializable.');
         }
 
-        $json = json_encode(['type' => $type, 'value' => static::jsonArmor($value)]);
+        $json = json_encode(['type' => $type, 'value' => static::jsonArmor($value)], JSON_THROW_ON_ERROR);
 
         $this->cacheItem->set(Crypto::encrypt($json, $this->key));
 
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function get()
+    public function get(): mixed
     {
         if (!$this->isHit()) {
-            return;
+            return null;
         }
 
-        $item = json_decode(Crypto::decrypt($this->cacheItem->get(), $this->key), true);
+        $encrypted = $this->cacheItem->get();
+        if (!is_string($encrypted)) {
+            throw new \UnexpectedValueException('Encrypted cache payload must be a string.');
+        }
+
+        $item = json_decode(Crypto::decrypt($encrypted, $this->key), true, 512, JSON_THROW_ON_ERROR);
+        if (!is_array($item)
+            || !isset($item['type'], $item['value'])
+            || !is_string($item['type'])
+            || !is_string($item['value'])
+        ) {
+            throw new \UnexpectedValueException('Encrypted cache payload is malformed.');
+        }
 
         return $this->transform($item);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function isHit()
+    public function isHit(): bool
     {
         return $this->cacheItem->isHit();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function expiresAt($expiration)
+    public function expiresAt(?\DateTimeInterface $expiration): static
     {
         $this->cacheItem->expiresAt($expiration);
 
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function expiresAfter($time)
+    public function expiresAfter(int|\DateInterval|null $time): static
     {
         $this->cacheItem->expiresAfter($time);
 
@@ -124,17 +117,14 @@ class EncryptedItemDecorator implements TaggableCacheItemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @return array<string, string>
      */
-    public function getPreviousTags()
+    public function getPreviousTags(): array
     {
         return $this->cacheItem->getPreviousTags();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setTags(array $tags)
+    public function setTags(array $tags): static
     {
         $this->cacheItem->setTags($tags);
 
@@ -144,7 +134,7 @@ class EncryptedItemDecorator implements TaggableCacheItemInterface
     /**
      * Creating a copy of the original CacheItemInterface object.
      */
-    public function __clone()
+    public function __clone(): void
     {
         $this->cacheItem = clone $this->cacheItem;
     }
@@ -152,20 +142,20 @@ class EncryptedItemDecorator implements TaggableCacheItemInterface
     /**
      * Transform value back to it original type.
      *
-     * @param array $item
-     *
-     * @return mixed
+     * @param array{type: string, value: string} $item
      */
-    private function transform(array $item)
+    private function transform(array $item): mixed
     {
         $value = static::jsonDeArmor($item['value']);
 
-        if ($item['type'] === 'object' || $item['type'] === 'array') {
-            return unserialize($value);
-        }
-
-        settype($value, $item['type']);
-
-        return $value;
+        return match ($item['type']) {
+            'object', 'array' => unserialize($value),
+            'boolean' => (bool) $value,
+            'integer' => (int) $value,
+            'double' => (float) $value,
+            'string' => $value,
+            'NULL' => null,
+            default => throw new \UnexpectedValueException(sprintf('Unsupported encrypted cache value type "%s".', $item['type'])),
+        };
     }
 }

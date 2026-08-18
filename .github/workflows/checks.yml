@@ -9,14 +9,14 @@ jobs:
 
     steps:
       - name: Set up PHP
-        uses: shivammathur/setup-php@2.7.0
+        uses: shivammathur/setup-php@2.37.2
         with:
-          php-version: 7.4
+          php-version: '8.2'
           coverage: none
           tools: composer-normalize
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Normalize
         run: |
@@ -24,16 +24,15 @@ jobs:
           echo ::group::Root
           composer-normalize --dry-run
           echo ::endgroup::
-          for PACKAGE in $(find src -maxdepth 4 -type f -name composer.json | sort)
-          do
-            echo ::group::$PACKAGE
+          while IFS= read -r PACKAGE; do
+            echo "::group::$PACKAGE"
             localExit=0
-            composer-normalize $PACKAGE --dry-run || localExit=1
-            ok=$(( $localExit || $ok ))
+            composer-normalize "$PACKAGE" --dry-run || localExit=1
+            ok=$((localExit || ok))
             echo ::endgroup::
-            if [ $localExit -ne 0 ]; then
+            if [ "$localExit" -ne 0 ]; then
               echo "::error::$PACKAGE failed"
             fi
-          done
+          done < <(find src -maxdepth 4 -type f -name composer.json | sort)
 
-          exit $ok
+          exit "$ok"

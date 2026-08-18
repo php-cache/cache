@@ -1,8 +1,30 @@
-# Change Log
+# Changelog
 
-The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
+Each release groups changes under Added, Removed, Changed, or Fixed headings.
 
-## UNRELEASED
+## 2.0.0
+
+### Changed
+
+* Require PHP 8.2 or later.
+* Require `psr/cache` 3.
+* Add native parameter and return types required by the PSR interfaces.
+* Store public hierarchy keys under a distinct internal path. Clear existing hierarchy entries before upgrading.
+
+### Added
+
+* Accept any PSR-6 pool. Generic pools use generation keys to clear one namespace without clearing unrelated data.
+* Add `NamespacedCachePool::create()`. It preserves native tag support when the wrapped pool is taggable.
+
+### Fixed
+
+* Encode namespace components with a reversible format that uses only PSR-6's portable key alphabet.
+* Encode structural separators and literal encoding markers in public key components without changing other backend-supported bytes.
+* Scope tag indexes to their namespace while preserving public tag names on cache items.
+* Persist fresh generation metadata so eviction cannot expose values hidden by an earlier clear.
+* Preserve hierarchy root and descendant deletion semantics on generic PSR-6 pools.
+* Reject empty namespaces before they can target a hierarchical pool root.
+* Preserve nested namespace storage keys without aliasing outer hierarchy keys.
 
 ## 1.2.0
 

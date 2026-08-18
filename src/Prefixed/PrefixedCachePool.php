@@ -11,6 +11,9 @@
 
 namespace Cache\Prefixed;
 
+use Cache\Prefixed\Exception\InvalidArgumentException;
+use Cache\TagInterop\TaggableCacheItemInterface;
+use Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
@@ -23,99 +26,127 @@ class PrefixedCachePool implements CacheItemPoolInterface
 {
     use PrefixedUtilityTrait;
 
-    /**
-     * @type CacheItemPoolInterface
-     */
-    private $cachePool;
+    private CacheItemPoolInterface $cachePool;
+
+    private readonly object $owner;
 
     /**
-     * @param CacheItemPoolInterface $cachePool
-     * @param string                 $prefix
+     * @return ($cachePool is TaggableCacheItemPoolInterface ? TaggablePrefixedCachePool : self)
      */
-    public function __construct(CacheItemPoolInterface $cachePool, $prefix)
+    public static function create(CacheItemPoolInterface $cachePool, string $prefix): self
+    {
+        if ($cachePool instanceof TaggableCacheItemPoolInterface) {
+            return new TaggablePrefixedCachePool($cachePool, $prefix);
+        }
+
+        return new self($cachePool, $prefix);
+    }
+
+    public function __construct(CacheItemPoolInterface $cachePool, string $prefix)
     {
         $this->cachePool = $cachePool;
-        $this->prefix    = $prefix;
+        $this->prefix = $this->encodePrefix($prefix);
+        $this->owner = new \stdClass();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getItem($key)
+    public function getItem(string $key): CacheItemInterface
     {
+        $originalKey = $key;
         $this->prefixValue($key);
 
-        return $this->cachePool->getItem($key);
+        return $this->wrapItem($originalKey, $this->cachePool->getItem($key));
     }
 
     /**
-     * {@inheritdoc}
+     * @param array<array-key, string> $keys
+     *
+     * @return iterable<string, CacheItemInterface>
      */
-    public function getItems(array $keys = [])
+    public function getItems(array $keys = []): iterable
     {
-        $this->prefixValues($keys);
+        $prefixedKeys = $this->prefixValues($keys);
 
-        return $this->cachePool->getItems($keys);
+        $originalKeys = [];
+        foreach ($prefixedKeys as $index => $prefixedKey) {
+            $originalKeys["\0".$prefixedKey] = $keys[$index];
+        }
+
+        return $this->wrapItems($prefixedKeys, $originalKeys);
     }
 
     /**
-     * {@inheritdoc}
+     * @param array<array-key, string> $prefixedKeys
+     * @param array<string, string>    $originalKeys
+     *
+     * @return \Generator<string, CacheItemInterface>
      */
-    public function hasItem($key)
+    private function wrapItems(array $prefixedKeys, array $originalKeys): \Generator
+    {
+        foreach ($this->cachePool->getItems($prefixedKeys) as $item) {
+            $mappedKey = "\0".$item->getKey();
+            if (!array_key_exists($mappedKey, $originalKeys)) {
+                continue;
+            }
+
+            $originalKey = $originalKeys[$mappedKey];
+            yield $originalKey => $this->wrapItem($originalKey, $item);
+        }
+    }
+
+    private function wrapItem(string $key, CacheItemInterface $item): PrefixedCacheItem
+    {
+        if ($item instanceof TaggableCacheItemInterface) {
+            return new TaggablePrefixedCacheItem($key, $item, $this->owner);
+        }
+
+        return new PrefixedCacheItem($key, $item, $this->owner);
+    }
+
+    public function hasItem(string $key): bool
     {
         $this->prefixValue($key);
 
         return $this->cachePool->hasItem($key);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function clear()
+    public function clear(): bool
     {
         return $this->cachePool->clear();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function deleteItem($key)
+    public function deleteItem(string $key): bool
     {
         $this->prefixValue($key);
 
         return $this->cachePool->deleteItem($key);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function deleteItems(array $keys)
+    public function deleteItems(array $keys): bool
     {
-        $this->prefixValues($keys);
+        $keys = $this->prefixValues($keys);
 
         return $this->cachePool->deleteItems($keys);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function save(CacheItemInterface $item)
+    public function save(CacheItemInterface $item): bool
     {
-        return $this->cachePool->save($item);
+        if (!$item instanceof PrefixedCacheItem || !$item->isOwnedBy($this->owner)) {
+            throw new InvalidArgumentException('Cache items are not transferable between pools.');
+        }
+
+        return $this->cachePool->save($item->unwrap());
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function saveDeferred(CacheItemInterface $item)
+    public function saveDeferred(CacheItemInterface $item): bool
     {
-        return $this->cachePool->saveDeferred($item);
+        if (!$item instanceof PrefixedCacheItem || !$item->isOwnedBy($this->owner)) {
+            throw new InvalidArgumentException('Cache items are not transferable between pools.');
+        }
+
+        return $this->cachePool->saveDeferred($item->unwrap());
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function commit()
+    public function commit(): bool
     {
         return $this->cachePool->commit();
     }

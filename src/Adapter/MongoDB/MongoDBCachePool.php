@@ -15,6 +15,7 @@ use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\JsonBinaryArmoring;
 use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Adapter\Common\TagSupportWithArray;
+use MongoDB\BSON\UTCDateTime;
 use MongoDB\Collection;
 use MongoDB\Driver\Manager;
 
@@ -27,133 +28,138 @@ class MongoDBCachePool extends AbstractCachePool
     use JsonBinaryArmoring;
     use TagSupportWithArray;
 
-    /**
-     * @type Collection
-     */
-    private $collection;
+    private Collection $collection;
 
-    /**
-     * @param Collection $collection
-     */
     public function __construct(Collection $collection)
     {
         $this->collection = $collection;
     }
 
-    /**
-     * @param Manager $manager
-     * @param string  $database
-     * @param string  $collection
-     *
-     * @return Collection
-     */
-    public static function createCollection(Manager $manager, $database, $collection)
+    public static function createCollection(Manager $manager, string $database, string $collection): Collection
     {
         $collection = new Collection($manager, $database, $collection);
-        $collection->createIndex(['expireAt' => 1], ['expireAfterSeconds' => 0]);
+        $collection->createIndex(['expiresAt' => 1], ['expireAfterSeconds' => 0]);
 
         return $collection;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function fetchObjectFromCache($key)
+    protected function fetchObjectFromCache(string $key): array
     {
-        $object = $this->collection->findOne(['_id' => $key]);
+        $document = $this->collection->findOne(['_id' => $key], ['typeMap' => ['root' => 'array']]);
 
-        if (!$object || !isset($object->data)) {
+        if (!is_array($document) || !array_key_exists('data', $document) || !array_key_exists('tags', $document)) {
             return [false, null, [], null];
         }
 
-        if (isset($object->expiresAt)) {
-            if ($object->expiresAt < time()) {
-                return [false, null, [], null];
-            }
+        $expiresAt = $document['expiresAt'] ?? null;
+        if ($expiresAt instanceof UTCDateTime) {
+            $expiresAt = $expiresAt->toDateTime()->getTimestamp();
+        }
+        if (null !== $expiresAt && (!is_int($expiresAt) || $expiresAt <= time())) {
+            return [false, null, [], null];
         }
 
-        return [
-            true,
-            $this->thawValue($object->data),
-            $this->thawValue($object->tags),
-            $object->expirationTimestamp,
-        ];
+        if (!$this->thawValue($document['data'], $value) || !$this->thawValue($document['tags'], $tags)) {
+            return [false, null, [], null];
+        }
+
+        if (!is_array($tags)) {
+            return [false, null, [], null];
+        }
+
+        $validTags = [];
+        foreach ($tags as $tag) {
+            if (!is_string($tag)) {
+                return [false, null, [], null];
+            }
+
+            $validTags[$tag] = $tag;
+        }
+
+        $expirationTimestamp = $document['expirationTimestamp'] ?? null;
+        if (null !== $expirationTimestamp && !is_int($expirationTimestamp)) {
+            return [false, null, [], null];
+        }
+
+        return [true, $value, $validTags, $expirationTimestamp];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function clearAllObjectsFromCache()
+    protected function clearAllObjectsFromCache(): bool
     {
         $this->collection->deleteMany([]);
 
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function clearOneObjectFromCache($key)
+    protected function clearOneObjectFromCache(string $key): bool
     {
         $this->collection->deleteOne(['_id' => $key]);
 
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function storeItemInCache(PhpCacheItem $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, ?int $ttl): bool
     {
+        $expirationTimestamp = $item->getExpirationTimestamp();
         $object = [
-            '_id'                 => $item->getKey(),
-            'data'                => $this->freezeValue($item->get()),
-            'tags'                => $this->freezeValue($item->getTags()),
-            'expirationTimestamp' => $item->getExpirationTimestamp(),
+            '_id' => $item->getKey(),
+            'data' => $this->freezeValue($item->get()),
+            'tags' => $this->freezeValue($item->getTags()),
+            'expirationTimestamp' => $expirationTimestamp,
         ];
 
-        if ($ttl) {
-            $object['expiresAt'] = time() + $ttl;
+        $update = ['$set' => $object];
+        if (null !== $ttl && $ttl > 0 && null !== $expirationTimestamp) {
+            $update['$set']['expiresAt'] = new UTCDateTime($expirationTimestamp * 1000);
+        } else {
+            $update['$unset'] = ['expiresAt' => true];
         }
 
-        $this->collection->updateOne(['_id' => $item->getKey()], ['$set' => $object], ['upsert' => true]);
+        $this->collection->updateOne(['_id' => $item->getKey()], $update, ['upsert' => true]);
 
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getDirectValue($name)
+    public function getDirectValue(string $name): mixed
     {
-        $object = $this->collection->findOne(['_id' => $name]);
-        if (!$object || !isset($object->data)) {
-            return;
+        $document = $this->collection->findOne(['_id' => $name], ['typeMap' => ['root' => 'array']]);
+        if (!is_array($document) || !array_key_exists('data', $document)) {
+            return null;
         }
 
-        return $this->thawValue($object->data);
+        return $this->thawValue($document['data'], $value) ? $value : null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setDirectValue($name, $value)
+    public function setDirectValue(string $name, mixed $value): bool
     {
         $object = [
-            '_id'  => $name,
+            '_id' => $name,
             'data' => $this->freezeValue($value),
         ];
 
         $this->collection->updateOne(['_id' => $name], ['$set' => $object], ['upsert' => true]);
+
+        return true;
     }
 
-    private function freezeValue($value)
+    private function freezeValue(mixed $value): string
     {
         return static::jsonArmor(serialize($value));
     }
 
-    private function thawValue($value)
+    private function thawValue(mixed $payload, mixed &$value): bool
     {
-        return unserialize(static::jsonDeArmor($value));
+        if (!is_string($payload)) {
+            return false;
+        }
+
+        $serialized = static::jsonDeArmor($payload);
+        try {
+            $value = @unserialize($serialized);
+        } catch (\Throwable) {
+            return false;
+        }
+
+        return false !== $value || serialize(false) === $serialized;
     }
 }

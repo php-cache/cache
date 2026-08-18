@@ -2,6 +2,22 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 2.0.0
+
+### Changed
+
+* Require PHP 8.2 or later.
+* Require `psr/cache` 3, `psr/simple-cache` 3, and `psr/log` 3.
+* Add native PHP types throughout the shared item and pool implementations.
+* Require tag-list mutation hooks and direct storage writers to return success status.
+* Reject malformed cache payloads instead of trusting their stored shape.
+
+### Fixed
+
+* Validate bulk keys before deleting data or tag indexes.
+* Attempt every `setMultiple()` write and commit accepted deferred items even when another item fails.
+* Report tag-index and deferred-commit failures from save, delete, and invalidation operations.
+
 ## 1.3.0
 
 * Support for PHP 8.1

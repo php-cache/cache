@@ -18,21 +18,13 @@ use Cache\Adapter\Common\AbstractCachePool;
  */
 trait HierarchicalCachePoolTrait
 {
-    /**
-     * A temporary cache for keys.
-     *
-     * @type array
-     */
-    private $keyCache = [];
+    /** @var array<string, string> */
+    private array $keyCache = [];
 
     /**
      * Get a value from the storage.
-     *
-     * @param string $name
-     *
-     * @return mixed
      */
-    abstract public function getDirectValue($name);
+    abstract public function getDirectValue(string $name): mixed;
 
     /**
      * Get a key to use with the hierarchy. If the key does not start with HierarchicalPoolInterface::SEPARATOR
@@ -40,10 +32,8 @@ trait HierarchicalCachePoolTrait
      *
      * @param string $key      The original key
      * @param string &$pathKey A cache key for the path. If this key is changed everything beyond that path is changed.
-     *
-     * @return string|array
      */
-    protected function getHierarchyKey($key, &$pathKey = null)
+    protected function getHierarchyKey(string $key, ?string &$pathKey = null): string
     {
         if (!$this->isHierarchyKey($key)) {
             return $key;
@@ -62,7 +52,8 @@ trait HierarchicalCachePoolTrait
             if (isset($this->keyCache[$pathKey])) {
                 $index = $this->keyCache[$pathKey];
             } else {
-                $index                    = $this->getDirectValue($pathKey);
+                $index = $this->getDirectValue($pathKey);
+                $index = is_string($index) || is_int($index) ? (string) $index : '';
                 $this->keyCache[$pathKey] = $index;
             }
 
@@ -81,36 +72,30 @@ trait HierarchicalCachePoolTrait
     /**
      * Clear the cache for the keys.
      */
-    protected function clearHierarchyKeyCache()
+    protected function clearHierarchyKeyCache(): void
     {
         $this->keyCache = [];
     }
 
     /**
      * A hierarchy key MUST begin with the separator.
-     *
-     * @param string $key
-     *
-     * @return bool
      */
-    private function isHierarchyKey($key)
+    private function isHierarchyKey(string $key): bool
     {
-        return substr($key, 0, 1) === HierarchicalPoolInterface::HIERARCHY_SEPARATOR;
+        return HierarchicalPoolInterface::HIERARCHY_SEPARATOR === substr($key, 0, 1);
     }
 
     /**
      * This will take a hierarchy key ("|foo|bar") with tags ("|foo|bar!tagHash") and return an array with
      * each level in the hierarchy appended with the tags. ["foo!tagHash", "bar!tagHash"].
      *
-     * @param string $string
-     *
-     * @return array
+     * @return list<string>
      */
-    private function explodeKey($string)
+    private function explodeKey(string $string): array
     {
         list($key, $tag) = explode(AbstractCachePool::SEPARATOR_TAG, $string.AbstractCachePool::SEPARATOR_TAG);
 
-        if ($key === HierarchicalPoolInterface::HIERARCHY_SEPARATOR) {
+        if (HierarchicalPoolInterface::HIERARCHY_SEPARATOR === $key) {
             $parts = ['root'];
         } else {
             $parts = explode(HierarchicalPoolInterface::HIERARCHY_SEPARATOR, $key);

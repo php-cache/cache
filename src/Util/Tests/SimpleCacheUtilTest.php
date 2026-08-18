@@ -17,6 +17,25 @@ use PHPUnit\Framework\TestCase;
 
 class SimpleCacheUtilTest extends TestCase
 {
+    public function testRememberReturnsCachedFalseyValues(): void
+    {
+        foreach ([false, 0, '', [], null] as $index => $value) {
+            $cache = new ArrayCachePool();
+            $key = 'key'.$index;
+            $cache->set($key, $value);
+            $created = false;
+
+            $result = Util\SimpleCache\remember($cache, $key, null, static function () use (&$created): string {
+                $created = true;
+
+                return 'replacement';
+            });
+
+            self::assertSame($value, $result);
+            self::assertFalse($created);
+        }
+    }
+
     public function testRememberCacheHit()
     {
         $cache = new ArrayCachePool();
@@ -30,7 +49,7 @@ class SimpleCacheUtilTest extends TestCase
     public function testRememberCacheMiss()
     {
         $cache = new ArrayCachePool();
-        $res   = Util\SimpleCache\remember($cache, 'foo', null, function () {
+        $res = Util\SimpleCache\remember($cache, 'foo', null, function () {
             return 'bar';
         });
         $this->assertEquals('bar', $res);

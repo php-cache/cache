@@ -2,7 +2,13 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
-## UNRELEASED
+## 2.0.0
+
+### Changed
+
+* Require PHP 8.2 or later.
+* Require `psr/cache` 3 and Defuse PHP Encryption 2.4.
+* Add native parameter and return types required by the PSR interfaces.
 
 ## 1.3.0
 

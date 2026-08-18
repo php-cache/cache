@@ -15,23 +15,27 @@ use Cache\Adapter\Redis\RedisCachePool;
 
 trait CreateRedisArrayCachePoolTrait
 {
-    private $client = null;
+    private ?\RedisArray $client = null;
 
-    public function createCachePool()
+    public function createCachePool(): RedisCachePool
     {
         return new RedisCachePool($this->getClient());
     }
 
-    private function getClient()
+    private function getClient(): \RedisArray
     {
-        if ($this->client === null) {
+        if (!class_exists(\RedisArray::class)) {
+            $this->markTestSkipped('The Redis extension is not installed.');
+        }
+
+        if (null === $this->client) {
             $this->client = new \RedisArray(['127.0.0.1:6379']);
         }
 
         return $this->client;
     }
 
-    public function createSimpleCache()
+    public function createSimpleCache(): RedisCachePool
     {
         return $this->createCachePool();
     }

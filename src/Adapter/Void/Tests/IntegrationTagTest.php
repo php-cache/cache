@@ -16,25 +16,31 @@ use Cache\IntegrationTests\TaggableCachePoolTest;
 
 class IntegrationTagTest extends TaggableCachePoolTest
 {
-    protected $skippedTests = [
-        'testBasicUsage'                 => 'Void adapter does not save,',
-        'testGetItems'                   => 'Void adapter does not save,',
-        'testHasItem'                    => 'Void adapter does not save,',
-        'testDeleteItem'                 => 'Void adapter does not save,',
-        'testKeysWithDeferred'           => 'Void adapter does not save,',
-        'testSaveDeferred'               => 'Void adapter does not save,',
-        'testMultipleTags'               => 'Void adapter does not save,',
+    protected array $skippedTests = [
+        'testBasicUsage' => 'Void adapter does not save,',
+        'testGetItems' => 'Void adapter does not save,',
+        'testHasItem' => 'Void adapter does not save,',
+        'testDeleteItem' => 'Void adapter does not save,',
+        'testKeysWithDeferred' => 'Void adapter does not save,',
+        'testSaveDeferred' => 'Void adapter does not save,',
+        'testMultipleTags' => 'Void adapter does not save,',
         'testRemoveTagWhenItemIsRemoved' => 'Void adapter does not save,',
-        'testClearPool'                  => 'Void adapter does not save,',
-        'testInvalidateTag'              => 'Void adapter does not save,',
-        'testInvalidateTags'             => 'Void adapter does not save,',
-        'testPreviousTag'                => 'Void adapter does not save,',
-        'testPreviousTagDeferred'        => 'Void adapter does not save,',
-        'testTagAccessorDuplicateTags'   => 'Void adapter does not save,',
-        'testTagsAreCleanedOnSave'       => 'Void adapter does not save,',
+        'testClearPool' => 'Void adapter does not save,',
+        'testInvalidateTag' => 'Void adapter does not save,',
+        'testInvalidateTags' => 'Void adapter does not save,',
+        'testPreviousTag' => 'Void adapter does not save,',
+        'testPreviousTagDeferred' => 'Void adapter does not save,',
+        'testPreviousTagsPreserveIdentityMap' => 'Void adapter does not save,',
+        'testTagAccessorDuplicateTags' => 'Void adapter does not save,',
+        'testTagsAreCleanedOnSave' => 'Void adapter does not save,',
+        'testTagsAreCleanedWhenSameItemIsSavedAgain' => 'Void adapter does not save,',
+        'testExpiredSaveDoesNotLeaveTagIndex' => 'Void adapter does not save,',
+        'testTagsAreCleanedWhenSameItemIsSavedDeferredAgain' => 'Void adapter does not save,',
+        'testExpiredDeferredSaveDoesNotLeaveTagIndex' => 'Void adapter does not save,',
+        'testImmediateSaveOverridesDeferredTags' => 'Void adapter does not save,',
     ];
 
-    public function createCachePool()
+    public function createCachePool(): VoidCachePool
     {
         return new VoidCachePool();
     }

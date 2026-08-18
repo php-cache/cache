@@ -11,7 +11,12 @@
 
 namespace Cache\Bridge\SimpleCache\Tests;
 
+use Cache\Adapter\Common\Exception\InvalidArgumentException as PoolInvalidArgumentException;
+use Cache\Adapter\PHPArray\ArrayCachePool;
+use Cache\Bridge\SimpleCache\Exception\InvalidArgumentException as BridgeInvalidArgumentException;
 use Cache\Bridge\SimpleCache\SimpleCacheBridge;
+use Cache\Namespaced\NamespacedCachePool;
+use Cache\Prefixed\PrefixedCachePool;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
@@ -20,17 +25,17 @@ use Psr\Cache\CacheItemPoolInterface;
 class SimpleCacheBridgeTest extends TestCase
 {
     /**
-     * @type SimpleCacheBridge
+     * @var SimpleCacheBridge
      */
     private $bridge;
 
     /**
-     * @type m\MockInterface|CacheItemPoolInterface
+     * @var m\MockInterface|CacheItemPoolInterface
      */
     private $mock;
 
     /**
-     * @type m\MockInterface|CacheItemInterface
+     * @var m\MockInterface|CacheItemInterface
      */
     private $itemMock;
 
@@ -43,6 +48,224 @@ class SimpleCacheBridgeTest extends TestCase
         $this->bridge = new SimpleCacheBridge($this->mock);
 
         $this->itemMock = m::mock(CacheItemInterface::class);
+    }
+
+    public function testPoolInvalidArgumentsAreWrapped(): void
+    {
+        foreach ([
+            'get' => 'getItem',
+            'set' => 'getItem',
+            'delete' => 'deleteItem',
+            'getMultiple' => 'getItems',
+            'setMultiple' => 'getItems',
+            'deleteMultiple' => 'deleteItems',
+            'has' => 'hasItem',
+        ] as $operation => $poolOperation) {
+            $exception = new PoolInvalidArgumentException('invalid', 42);
+            $pool = $this->createMock(CacheItemPoolInterface::class);
+            $pool->method($poolOperation)->willThrowException($exception);
+            $bridge = new SimpleCacheBridge($pool);
+
+            try {
+                match ($operation) {
+                    'get' => $bridge->get('key'),
+                    'set' => $bridge->set('key', 'value'),
+                    'delete' => $bridge->delete('key'),
+                    'getMultiple' => $bridge->getMultiple(['key']),
+                    'setMultiple' => $bridge->setMultiple(['key' => 'value']),
+                    'deleteMultiple' => $bridge->deleteMultiple(['key']),
+                    'has' => $bridge->has('key'),
+                };
+
+                self::fail(sprintf('%s did not wrap the pool exception', $operation));
+            } catch (BridgeInvalidArgumentException $wrapped) {
+                self::assertSame('invalid', $wrapped->getMessage());
+                self::assertSame(42, $wrapped->getCode());
+                self::assertSame($exception, $wrapped->getPrevious());
+            }
+        }
+    }
+
+    public function testSetMultipleWrapsItemInvalidArgument(): void
+    {
+        $exception = new PoolInvalidArgumentException('invalid');
+        $item = $this->createMock(CacheItemInterface::class);
+        $item->method('getKey')->willReturn('key');
+        $item->method('set')->with('value')->willReturnSelf();
+        $item->method('expiresAfter')->with(null)->willThrowException($exception);
+
+        $pool = $this->createMock(CacheItemPoolInterface::class);
+        $pool->method('getItems')->with(['key'])->willReturn(['key' => $item]);
+
+        try {
+            (new SimpleCacheBridge($pool))->setMultiple(['key' => 'value']);
+            self::fail('setMultiple did not wrap the item exception');
+        } catch (BridgeInvalidArgumentException $wrapped) {
+            self::assertSame($exception, $wrapped->getPrevious());
+        }
+    }
+
+    public function testGetMultipleWrapsLazyPoolInvalidArgument(): void
+    {
+        $exception = new class('invalid') extends \RuntimeException implements \Psr\Cache\InvalidArgumentException {
+        };
+        $items = (static function () use ($exception): \Generator {
+            throw $exception;
+            yield;
+        })();
+        $pool = $this->createMock(CacheItemPoolInterface::class);
+        $pool->method('getItems')->willReturn($items);
+
+        try {
+            iterator_to_array((new SimpleCacheBridge($pool))->getMultiple(['key']));
+            self::fail('getMultiple did not wrap the lazy pool exception');
+        } catch (BridgeInvalidArgumentException $wrapped) {
+            self::assertSame($exception, $wrapped->getPrevious());
+        }
+    }
+
+    public function testSetMultipleWrapsLazyPoolInvalidArgument(): void
+    {
+        $exception = new class('invalid') extends \RuntimeException implements \Psr\Cache\InvalidArgumentException {
+        };
+        $items = (static function () use ($exception): \Generator {
+            throw $exception;
+            yield;
+        })();
+        $pool = $this->createMock(CacheItemPoolInterface::class);
+        $pool->method('getItems')->willReturn($items);
+
+        try {
+            (new SimpleCacheBridge($pool))->setMultiple(['key' => 'value']);
+            self::fail('setMultiple did not wrap the lazy pool exception');
+        } catch (BridgeInvalidArgumentException $wrapped) {
+            self::assertSame($exception, $wrapped->getPrevious());
+        }
+    }
+
+    public function testSetMultipleDoesNotMutateBeforeLazyIterationCompletes(): void
+    {
+        $exception = new class('invalid') extends \RuntimeException implements \Psr\Cache\InvalidArgumentException {
+        };
+        $item = $this->createMock(CacheItemInterface::class);
+        $item->method('getKey')->willReturn('first');
+        $item->method('set')->willReturnSelf();
+        $item->method('expiresAfter')->willReturnSelf();
+        $items = (static function () use ($exception, $item): \Generator {
+            yield 'first' => $item;
+            throw $exception;
+        })();
+        $pool = $this->createMock(CacheItemPoolInterface::class);
+        $pool->method('getItems')->willReturn($items);
+        $pool->expects(self::never())->method('saveDeferred');
+
+        try {
+            (new SimpleCacheBridge($pool))->setMultiple(['first' => 'value', 'second' => 'value']);
+            self::fail('setMultiple did not wrap the lazy pool exception');
+        } catch (BridgeInvalidArgumentException $wrapped) {
+            self::assertSame($exception, $wrapped->getPrevious());
+        }
+    }
+
+    public function testSetMultipleAttemptsEveryItemAndAlwaysCommits(): void
+    {
+        $first = $this->createMock(CacheItemInterface::class);
+        $first->method('getKey')->willReturn('first');
+        $first->method('set')->with('one')->willReturnSelf();
+        $first->method('expiresAfter')->with(null)->willReturnSelf();
+        $second = $this->createMock(CacheItemInterface::class);
+        $second->method('getKey')->willReturn('second');
+        $second->method('set')->with('two')->willReturnSelf();
+        $second->method('expiresAfter')->with(null)->willReturnSelf();
+
+        $pool = $this->createMock(CacheItemPoolInterface::class);
+        $pool->method('getItems')->willReturn(['first' => $first, 'second' => $second]);
+        $pool->expects(self::exactly(2))->method('saveDeferred')->willReturnOnConsecutiveCalls(false, true);
+        $pool->expects(self::once())->method('commit')->willReturn(true);
+
+        self::assertFalse((new SimpleCacheBridge($pool))->setMultiple(['first' => 'one', 'second' => 'two']));
+    }
+
+    public function testClearReturnsPoolResult(): void
+    {
+        $pool = $this->createMock(CacheItemPoolInterface::class);
+        $pool->expects(self::once())->method('clear')->willReturn(true);
+
+        self::assertTrue((new SimpleCacheBridge($pool))->clear());
+    }
+
+    public function testGetMultipleUsesDefaultForMisses(): void
+    {
+        $item = $this->createMock(CacheItemInterface::class);
+        $item->method('getKey')->willReturn('key');
+        $item->method('isHit')->willReturn(false);
+
+        $pool = $this->createMock(CacheItemPoolInterface::class);
+        $pool->method('getItems')->with(['key'])->willReturn(['key' => $item]);
+
+        self::assertSame(
+            ['key' => 'default'],
+            iterator_to_array((new SimpleCacheBridge($pool))->getMultiple(['key'], 'default'))
+        );
+    }
+
+    public function testGetMultiplePreservesNumericStringKeys(): void
+    {
+        $item = $this->createMock(CacheItemInterface::class);
+        $item->method('getKey')->willReturn('123');
+        $item->method('isHit')->willReturn(true);
+        $item->method('get')->willReturn('value');
+
+        $pool = $this->createMock(CacheItemPoolInterface::class);
+        $pool->method('getItems')->with(['123'])->willReturn([123 => $item]);
+
+        foreach ((new SimpleCacheBridge($pool))->getMultiple(['123']) as $key => $value) {
+            self::assertSame('123', $key);
+            self::assertSame('value', $value);
+        }
+    }
+
+    public function testSetMultipleConvertsIntegerKeys(): void
+    {
+        $item = $this->createMock(CacheItemInterface::class);
+        $item->method('getKey')->willReturn('1');
+        $item->method('set')->with('value')->willReturnSelf();
+        $item->method('expiresAfter')->with(null)->willReturnSelf();
+
+        $pool = $this->createMock(CacheItemPoolInterface::class);
+        $pool->method('getItems')->with(['1'])->willReturn(['1' => $item]);
+        $pool->method('saveDeferred')->with($item)->willReturn(true);
+        $pool->method('commit')->willReturn(true);
+
+        self::assertTrue((new SimpleCacheBridge($pool))->setMultiple([1 => 'value']));
+    }
+
+    public function testMultipleOperationsRejectNonStringKeys(): void
+    {
+        $bridge = new SimpleCacheBridge($this->createStub(CacheItemPoolInterface::class));
+
+        foreach (['getMultiple', 'deleteMultiple'] as $operation) {
+            try {
+                $bridge->{$operation}([1]);
+                self::fail(sprintf('%s accepted an integer key', $operation));
+            } catch (BridgeInvalidArgumentException $exception) {
+                self::assertSame('Cache key must be string, "int" given', $exception->getMessage());
+            }
+        }
+    }
+
+    public function testOperationsRejectInvalidKeys(): void
+    {
+        $bridge = new SimpleCacheBridge($this->createStub(CacheItemPoolInterface::class));
+
+        foreach (['', 'invalid/key'] as $key) {
+            try {
+                $bridge->has($key);
+                self::fail(sprintf('has accepted the invalid key "%s"', $key));
+            } catch (BridgeInvalidArgumentException) {
+                self::addToAssertionCount(1);
+            }
+        }
     }
 
     public function testConstructor()
@@ -95,5 +318,23 @@ class SimpleCacheBridgeTest extends TestCase
         $this->mock->shouldReceive('deleteItem')->once()->with('some_item')->andReturn(true);
 
         $this->assertTrue($this->bridge->delete('some_item'));
+    }
+
+    public function testSetMultiplePreservesKeysWithNamespacedPool()
+    {
+        $values = ['key1' => 'value1', 'key2' => 'value2'];
+        $cache = new SimpleCacheBridge(new NamespacedCachePool(new ArrayCachePool(), 'namespace'));
+
+        $this->assertTrue($cache->setMultiple($values));
+        $this->assertSame($values, iterator_to_array($cache->getMultiple(array_keys($values))));
+    }
+
+    public function testSetMultiplePreservesKeysWithPrefixedPool()
+    {
+        $values = ['key1' => 'value1', 'key2' => 'value2'];
+        $cache = new SimpleCacheBridge(new PrefixedCachePool(new ArrayCachePool(), 'prefix'));
+
+        $this->assertTrue($cache->setMultiple($values));
+        $this->assertSame($values, iterator_to_array($cache->getMultiple(array_keys($values))));
     }
 }

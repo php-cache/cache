@@ -11,7 +11,6 @@
 
 namespace Cache\Bridge\Doctrine;
 
-use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\Cache\CacheProvider;
 use Psr\Cache\CacheItemPoolInterface;
 
@@ -22,25 +21,17 @@ use Psr\Cache\CacheItemPoolInterface;
  */
 class DoctrineCacheBridge extends CacheProvider
 {
-    /**
-     * @type CacheItemPoolInterface
-     */
-    private $cachePool;
+    private CacheItemPoolInterface $cachePool;
 
     /**
      * DoctrineCacheBridge constructor.
-     *
-     * @param CacheItemPoolInterface $cachePool
      */
     public function __construct(CacheItemPoolInterface $cachePool)
     {
         $this->cachePool = $cachePool;
     }
 
-    /**
-     * @return CacheItemPoolInterface
-     */
-    public function getCachePool()
+    public function getCachePool(): CacheItemPoolInterface
     {
         return $this->cachePool;
     }
@@ -48,11 +39,11 @@ class DoctrineCacheBridge extends CacheProvider
     /**
      * Fetches an entry from the cache.
      *
-     * @param string $id The id of the cache entry to fetch.
+     * @param string $id the id of the cache entry to fetch
      *
-     * @return mixed|false The cached data or FALSE, if no cache entry exists for the given id.
+     * @return mixed|false the cached data or FALSE, if no cache entry exists for the given id
      */
-    protected function doFetch($id)
+    protected function doFetch($id): mixed
     {
         $item = $this->cachePool->getItem($this->normalizeKey($id));
 
@@ -66,11 +57,11 @@ class DoctrineCacheBridge extends CacheProvider
     /**
      * Tests if an entry exists in the cache.
      *
-     * @param string $id The cache id of the entry to check for.
+     * @param string $id the cache id of the entry to check for
      *
-     * @return bool TRUE if a cache entry exists for the given cache id, FALSE otherwise.
+     * @return bool TRUE if a cache entry exists for the given cache id, FALSE otherwise
      */
-    protected function doContains($id)
+    protected function doContains($id): bool
     {
         return $this->cachePool->hasItem($this->normalizeKey($id));
     }
@@ -78,19 +69,19 @@ class DoctrineCacheBridge extends CacheProvider
     /**
      * Puts data into the cache.
      *
-     * @param string $id       The cache id.
-     * @param string $data     The cache entry/data.
+     * @param string $id       the cache id
+     * @param mixed  $data     the cache entry/data
      * @param int    $lifeTime The lifetime. If != 0, sets a specific lifetime for this
      *                         cache entry (0 => infinite lifeTime).
      *
-     * @return bool TRUE if the entry was successfully stored in the cache, FALSE otherwise.
+     * @return bool TRUE if the entry was successfully stored in the cache, FALSE otherwise
      */
-    protected function doSave($id, $data, $lifeTime = 0)
+    protected function doSave($id, $data, $lifeTime = 0): bool
     {
         $item = $this->cachePool->getItem($this->normalizeKey($id));
         $item->set($data);
 
-        if ($lifeTime !== 0) {
+        if (0 !== $lifeTime) {
             $item->expiresAfter($lifeTime);
         }
 
@@ -100,11 +91,11 @@ class DoctrineCacheBridge extends CacheProvider
     /**
      * Deletes a cache entry.
      *
-     * @param string $id The cache id.
+     * @param string $id the cache id
      *
-     * @return bool TRUE if the cache entry was successfully deleted, FALSE otherwise.
+     * @return bool TRUE if the cache entry was successfully deleted, FALSE otherwise
      */
-    protected function doDelete($id)
+    protected function doDelete($id): bool
     {
         return $this->cachePool->deleteItem($this->normalizeKey($id));
     }
@@ -112,9 +103,9 @@ class DoctrineCacheBridge extends CacheProvider
     /**
      * Flushes all cache entries.
      *
-     * @return bool TRUE if the cache entries were successfully flushed, FALSE otherwise.
+     * @return bool TRUE if the cache entries were successfully flushed, FALSE otherwise
      */
-    protected function doFlush()
+    protected function doFlush(): bool
     {
         return $this->cachePool->clear();
     }
@@ -124,24 +115,20 @@ class DoctrineCacheBridge extends CacheProvider
      *
      * @since 2.2
      *
-     * @return array|null An associative array with server's statistics if available, NULL otherwise.
+     * @return array<string, mixed>|null an associative array with server statistics if available
      */
-    protected function doGetStats()
+    protected function doGetStats(): ?array
     {
-        // Not possible, as of yet
+        return null;
     }
 
     /**
      * We need to make sure we do not use any characters not supported.
-     *
-     * @param string $key
-     *
-     * @return string
      */
-    private function normalizeKey($key)
+    private function normalizeKey(string $key): string
     {
         if (preg_match('|[\{\}\(\)/\\\@\:]|', $key)) {
-            return preg_replace('|[\{\}\(\)/\\\@\:]|', '_', $key);
+            return preg_replace('|[\{\}\(\)/\\\@\:]|', '_', $key) ?? $key;
         }
 
         return $key;

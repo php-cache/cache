@@ -1,31 +1,36 @@
-# Memcached PSR-6 Cache pool 
-[![Gitter](https://badges.gitter.im/php-cache/cache.svg)](https://gitter.im/php-cache/cache?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+# Memcached PSR-6 cache pool
+
 [![Latest Stable Version](https://poser.pugx.org/cache/memcached-adapter/v/stable)](https://packagist.org/packages/cache/memcached-adapter)
-[![codecov.io](https://codecov.io/github/php-cache/memcached-adapter/coverage.svg?branch=master)](https://codecov.io/github/php-cache/memcached-adapter?branch=master)
-[![Total Downloads](https://poser.pugx.org/cache/memcached-adapter/downloads)](https://packagist.org/packages/cache/memcached-adapter)
-[![Monthly Downloads](https://poser.pugx.org/cache/memcached-adapter/d/monthly.png)](https://packagist.org/packages/cache/memcached-adapter)
+[![Coverage](https://codecov.io/gh/php-cache/memcached-adapter/branch/master/graph/badge.svg)](https://codecov.io/gh/php-cache/memcached-adapter)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
-This is a PSR-6 cache implementation using Memcached. It is a part of the PHP Cache organisation. To read about 
-features like tagging and hierarchy support please read the shared documentation at [www.php-cache.com](http://www.php-cache.com). 
+This package provides PSR-6 and PSR-16 cache implementations backed by the Memcached extension. The pool supports tags and hierarchical keys.
 
-### Install
+## Installation
+
+Install the package and enable the Memcached extension:
 
 ```bash
-composer require cache/memcached-adapter
+composer require cache/memcached-adapter:^2.0
 ```
 
-### Use
-
-To create an instance of `MemcachedCachePool` you need to configure a `\Memcached` client. 
+## Usage
 
 ```php
-$client = new \Memcached();
-$client->addServer('localhost', 11211);
+use Cache\Adapter\Memcached\MemcachedCachePool;
+
+$client = new Memcached();
+$client->addServer('127.0.0.1', 11211);
+
 $pool = new MemcachedCachePool($client);
 ```
 
-### Contribute
+## Bulk operations
 
-Contributions are very welcome! Send a pull request to the [main repository](https://github.com/php-cache/cache) or 
-report any issues you find on the [issue tracker](http://issues.php-cache.com).
+The PSR-16 `getMultiple()`, `setMultiple()`, and `deleteMultiple()` methods use the native Memcached bulk commands. Bulk writes keep the same expiration for every value and remove old tag references after storage succeeds.
+
+The pool treats `false` from Memcached's `getMulti()` as a backend failure. It throws `CachePoolException` instead of returning a batch of cache misses.
+
+## Contributing
+
+Send pull requests to the [main repository](https://github.com/php-cache/cache). Report issues on the [GitHub issue tracker](https://github.com/php-cache/cache/issues).

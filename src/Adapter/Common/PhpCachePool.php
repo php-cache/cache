@@ -18,17 +18,12 @@ use Cache\TagInterop\TaggableCacheItemPoolInterface;
  */
 interface PhpCachePool extends TaggableCacheItemPoolInterface
 {
-    /**
-     * {@inheritdoc}
-     *
-     * @return PhpCacheItem
-     */
-    public function getItem($key);
+    public function getItem(string $key): PhpCacheItem;
 
     /**
-     * {@inheritdoc}
+     * @param array<array-key, string> $keys
      *
-     * @return array|\Traversable|PhpCacheItem[]
+     * @return iterable<string, PhpCacheItem>
      */
-    public function getItems(array $keys = []);
+    public function getItems(array $keys = []): iterable;
 }

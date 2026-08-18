@@ -14,78 +14,96 @@ namespace Cache\Adapter\Memcache;
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
 use Cache\Adapter\Common\TagSupportWithArray;
-use Memcache;
 
 class MemcacheCachePool extends AbstractCachePool
 {
     use TagSupportWithArray;
 
-    /**
-     * @type Memcache
-     */
-    protected $cache;
+    protected \Memcache $cache;
 
-    /**
-     * @param Memcache $cache
-     */
-    public function __construct(Memcache $cache)
+    public function __construct(\Memcache $cache)
     {
         $this->cache = $cache;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function fetchObjectFromCache($key)
+    protected function fetchObjectFromCache(string $key): array
     {
-        if (false === $result = unserialize($this->cache->get($key))) {
-            return [false, null, [], null];
-        }
-
-        return $result;
+        return $this->decodeCacheItem($this->cache->get($key)) ?? [false, null, [], null];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function clearAllObjectsFromCache()
+    protected function clearAllObjectsFromCache(): bool
     {
         return $this->cache->flush();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function clearOneObjectFromCache($key)
+    protected function clearOneObjectFromCache(string $key): bool
     {
         $this->cache->delete($key);
 
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function storeItemInCache(PhpCacheItem $item, $ttl)
+    protected function storeItemInCache(PhpCacheItem $item, ?int $ttl): bool
     {
+        if (null === $ttl) {
+            $ttl = 0;
+        } elseif ($ttl < 0) {
+            return false;
+        } elseif ($ttl > 86400 * 30) {
+            $ttl = time() + $ttl;
+        }
+
         $data = serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]);
 
-        return $this->cache->set($item->getKey(), $data, 0, $ttl ?: 0);
+        return $this->cache->set($item->getKey(), $data, 0, $ttl);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getDirectValue($name)
+    public function getDirectValue(string $name): mixed
     {
         return $this->cache->get($name);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setDirectValue($name, $value)
+    public function setDirectValue(string $name, mixed $value): bool
     {
-        $this->cache->set($name, $value);
+        return $this->cache->set($name, $value);
+    }
+
+    /**
+     * @return array{true, mixed, array<string, string>, int|null}|null
+     */
+    private function decodeCacheItem(mixed $payload): ?array
+    {
+        if (!is_string($payload)) {
+            return null;
+        }
+
+        try {
+            $cacheItem = @unserialize($payload);
+        } catch (\Throwable) {
+            return null;
+        }
+        if (!is_array($cacheItem) || !array_is_list($cacheItem) || 4 !== count($cacheItem)) {
+            return null;
+        }
+
+        [$hit, $value, $tags, $expirationTimestamp] = $cacheItem;
+        if (true !== $hit || !is_array($tags)) {
+            return null;
+        }
+
+        $validTags = [];
+        foreach ($tags as $tag) {
+            if (!is_string($tag)) {
+                return null;
+            }
+
+            $validTags[$tag] = $tag;
+        }
+
+        if (null !== $expirationTimestamp && !is_int($expirationTimestamp)) {
+            return null;
+        }
+
+        return [true, $value, $validTags, $expirationTimestamp];
     }
 }
