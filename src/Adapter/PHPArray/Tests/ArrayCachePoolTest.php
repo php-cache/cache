@@ -293,7 +293,7 @@ class ArrayCachePoolTest extends TestCase
     public function testRemoveListItem()
     {
         $pool = new ArrayCachePool();
-        $reflection = new \ReflectionClass(get_class($pool));
+        $reflection = new \ReflectionClass($pool::class);
         $method = $reflection->getMethod('removeListItem');
 
         // Add a tagged item to test list removal

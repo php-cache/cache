@@ -77,7 +77,7 @@ class SimpleCacheBridgeTest extends TestCase
                     'has' => $bridge->has('key'),
                 };
 
-                self::fail(sprintf('%s did not wrap the pool exception', $operation));
+                self::fail(\sprintf('%s did not wrap the pool exception', $operation));
             } catch (BridgeInvalidArgumentException $wrapped) {
                 self::assertSame('invalid', $wrapped->getMessage());
                 self::assertSame(42, $wrapped->getCode());
@@ -247,7 +247,7 @@ class SimpleCacheBridgeTest extends TestCase
         foreach (['getMultiple', 'deleteMultiple'] as $operation) {
             try {
                 $bridge->{$operation}([1]);
-                self::fail(sprintf('%s accepted an integer key', $operation));
+                self::fail(\sprintf('%s accepted an integer key', $operation));
             } catch (BridgeInvalidArgumentException $exception) {
                 self::assertSame('Cache key must be string, "int" given', $exception->getMessage());
             }
@@ -261,7 +261,7 @@ class SimpleCacheBridgeTest extends TestCase
         foreach (['', 'invalid/key'] as $key) {
             try {
                 $bridge->has($key);
-                self::fail(sprintf('has accepted the invalid key "%s"', $key));
+                self::fail(\sprintf('has accepted the invalid key "%s"', $key));
             } catch (BridgeInvalidArgumentException) {
                 self::addToAssertionCount(1);
             }

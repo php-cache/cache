@@ -118,7 +118,7 @@ class CachePoolChain implements PhpCachePool, CacheInterface, LoggerAwareInterfa
         $hits = [];
         $loadedItems = [];
         $notFoundItems = [];
-        $keysCount = count($keys);
+        $keysCount = \count($keys);
         $poolResponded = false;
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
@@ -154,7 +154,7 @@ class CachePoolChain implements PhpCachePool, CacheInterface, LoggerAwareInterfa
                 if ([] !== $poolNotFoundItems) {
                     $notFoundItems[$poolKey] = $poolNotFoundItems;
                 }
-                if (count($hits) === $keysCount) {
+                if (\count($hits) === $keysCount) {
                     break;
                 }
             } catch (\Exception $e) {
@@ -199,14 +199,14 @@ class CachePoolChain implements PhpCachePool, CacheInterface, LoggerAwareInterfa
     {
         $validatedKeys = [];
         foreach ($keys as $key) {
-            if (!is_string($key)) {
-                throw new InvalidArgumentException(sprintf('Cache key must be string, "%s" given', get_debug_type($key)));
+            if (!\is_string($key)) {
+                throw new InvalidArgumentException(\sprintf('Cache key must be string, "%s" given', get_debug_type($key)));
             }
             if ('' === $key) {
                 throw new InvalidArgumentException('Cache key cannot be an empty string');
             }
             if (preg_match('|[\{\}\(\)/\\\\\@\:]|', $key)) {
-                throw new InvalidArgumentException(sprintf('Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:', $key));
+                throw new InvalidArgumentException(\sprintf('Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:', $key));
             }
 
             $validatedKeys["\0".$key] = $key;
@@ -482,7 +482,7 @@ class CachePoolChain implements PhpCachePool, CacheInterface, LoggerAwareInterfa
 
         $this->log(
             'warning',
-            sprintf(
+            \sprintf(
                 'Removing pool "%s" from chain because it threw an exception when executing "%s"',
                 $poolKey,
                 $operation

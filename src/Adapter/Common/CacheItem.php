@@ -125,10 +125,10 @@ class CacheItem implements PhpCacheItem
             $this->expirationTimestamp = $date->getTimestamp();
         } else {
             $now = time();
-            if ($time > PHP_INT_MAX - $now) {
-                $this->expirationTimestamp = PHP_INT_MAX;
-            } elseif ($time < PHP_INT_MIN + $now) {
-                $this->expirationTimestamp = PHP_INT_MIN;
+            if ($time > \PHP_INT_MAX - $now) {
+                $this->expirationTimestamp = \PHP_INT_MAX;
+            } elseif ($time < \PHP_INT_MIN + $now) {
+                $this->expirationTimestamp = \PHP_INT_MIN;
             } else {
                 $this->expirationTimestamp = $now + $time;
             }
@@ -174,12 +174,12 @@ class CacheItem implements PhpCacheItem
     {
         $this->initialize();
 
-        if (!is_array($tags)) {
+        if (!\is_array($tags)) {
             $tags = [$tags];
         }
         foreach ($tags as $tag) {
-            if (!is_string($tag)) {
-                throw new InvalidArgumentException(sprintf('Cache tag must be string, "%s" given', is_object($tag) ? get_class($tag) : gettype($tag)));
+            if (!\is_string($tag)) {
+                throw new InvalidArgumentException(\sprintf('Cache tag must be string, "%s" given', \is_object($tag) ? $tag::class : \gettype($tag)));
             }
             if (isset($this->tags[$tag])) {
                 continue;
@@ -188,7 +188,7 @@ class CacheItem implements PhpCacheItem
                 throw new InvalidArgumentException('Cache tag length must be greater than zero');
             }
             if (isset($tag[strcspn($tag, '{}()/\@:')])) {
-                throw new InvalidArgumentException(sprintf('Cache tag "%s" contains reserved characters {}()/\@:', $tag));
+                throw new InvalidArgumentException(\sprintf('Cache tag "%s" contains reserved characters {}()/\@:', $tag));
             }
             $this->tags[$tag] = $tag;
         }

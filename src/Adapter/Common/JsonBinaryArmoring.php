@@ -61,9 +61,9 @@ trait JsonBinaryArmoring
         return preg_replace_callback(
             '/[\x80-\xFF]/',
             static function (array $match): string {
-                $byte = ord($match[0]);
+                $byte = \ord($match[0]);
 
-                return chr(0xC0 | ($byte >> 6)).chr(0x80 | ($byte & 0x3F));
+                return \chr(0xC0 | ($byte >> 6)).\chr(0x80 | ($byte & 0x3F));
             },
             $value
         ) ?? $value;
@@ -74,7 +74,7 @@ trait JsonBinaryArmoring
         return preg_replace_callback(
             '/[\xC2-\xC3][\x80-\xBF]/',
             static function (array $match): string {
-                return chr(((ord($match[0][0]) & 0x03) << 6) | (ord($match[0][1]) & 0x3F));
+                return \chr(((\ord($match[0][0]) & 0x03) << 6) | (\ord($match[0][1]) & 0x3F));
             },
             $value
         ) ?? $value;

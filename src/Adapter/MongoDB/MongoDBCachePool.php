@@ -47,7 +47,7 @@ class MongoDBCachePool extends AbstractCachePool
     {
         $document = $this->collection->findOne(['_id' => $key], ['typeMap' => ['root' => 'array']]);
 
-        if (!is_array($document) || !array_key_exists('data', $document) || !array_key_exists('tags', $document)) {
+        if (!\is_array($document) || !\array_key_exists('data', $document) || !\array_key_exists('tags', $document)) {
             return [false, null, [], null];
         }
 
@@ -55,7 +55,7 @@ class MongoDBCachePool extends AbstractCachePool
         if ($expiresAt instanceof UTCDateTime) {
             $expiresAt = $expiresAt->toDateTime()->getTimestamp();
         }
-        if (null !== $expiresAt && (!is_int($expiresAt) || $expiresAt <= time())) {
+        if (null !== $expiresAt && (!\is_int($expiresAt) || $expiresAt <= time())) {
             return [false, null, [], null];
         }
 
@@ -63,13 +63,13 @@ class MongoDBCachePool extends AbstractCachePool
             return [false, null, [], null];
         }
 
-        if (!is_array($tags)) {
+        if (!\is_array($tags)) {
             return [false, null, [], null];
         }
 
         $validTags = [];
         foreach ($tags as $tag) {
-            if (!is_string($tag)) {
+            if (!\is_string($tag)) {
                 return [false, null, [], null];
             }
 
@@ -77,7 +77,7 @@ class MongoDBCachePool extends AbstractCachePool
         }
 
         $expirationTimestamp = $document['expirationTimestamp'] ?? null;
-        if (null !== $expirationTimestamp && !is_int($expirationTimestamp)) {
+        if (null !== $expirationTimestamp && !\is_int($expirationTimestamp)) {
             return [false, null, [], null];
         }
 
@@ -123,7 +123,7 @@ class MongoDBCachePool extends AbstractCachePool
     public function getDirectValue(string $name): mixed
     {
         $document = $this->collection->findOne(['_id' => $name], ['typeMap' => ['root' => 'array']]);
-        if (!is_array($document) || !array_key_exists('data', $document)) {
+        if (!\is_array($document) || !\array_key_exists('data', $document)) {
             return null;
         }
 
@@ -149,7 +149,7 @@ class MongoDBCachePool extends AbstractCachePool
 
     private function thawValue(mixed $payload, mixed &$value): bool
     {
-        if (!is_string($payload)) {
+        if (!\is_string($payload)) {
             return false;
         }
 

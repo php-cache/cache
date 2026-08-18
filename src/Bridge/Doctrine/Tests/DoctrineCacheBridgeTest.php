@@ -112,7 +112,7 @@ class DoctrineCacheBridgeTest extends TestCase
     #[DataProvider('invalidKeys')]
     public function testInvalidKeys(string $key, string $normalizedKey)
     {
-        $normalizedKey = sprintf('[%s][1]', $normalizedKey);
+        $normalizedKey = \sprintf('[%s][1]', $normalizedKey);
         $this->itemMock->shouldReceive('isHit')->andReturn(false);
         $this->itemMock->shouldReceive('set');
 

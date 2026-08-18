@@ -53,7 +53,7 @@ trait HierarchicalCachePoolTrait
                 $index = $this->keyCache[$pathKey];
             } else {
                 $index = $this->getDirectValue($pathKey);
-                $index = is_string($index) || is_int($index) ? (string) $index : '';
+                $index = \is_string($index) || \is_int($index) ? (string) $index : '';
                 $this->keyCache[$pathKey] = $index;
             }
 

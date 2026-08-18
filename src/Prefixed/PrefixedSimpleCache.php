@@ -97,7 +97,7 @@ class PrefixedSimpleCache implements CacheInterface
     {
         foreach ($data as $key => $value) {
             $mappedKey = "\0".(string) $key;
-            if (!array_key_exists($mappedKey, $keysMap)) {
+            if (!\array_key_exists($mappedKey, $keysMap)) {
                 continue;
             }
 
@@ -126,8 +126,8 @@ class PrefixedSimpleCache implements CacheInterface
     {
         $prefixedValues = [];
         foreach ($values as $key => $value) {
-            if (!is_string($key) && !is_int($key)) {
-                throw new InvalidArgumentException(sprintf('Cache key must be string or integer, "%s" given', get_debug_type($key)));
+            if (!\is_string($key) && !\is_int($key)) {
+                throw new InvalidArgumentException(\sprintf('Cache key must be string or integer, "%s" given', get_debug_type($key)));
             }
 
             $key = (string) $key;

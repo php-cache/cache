@@ -52,7 +52,7 @@ final class NamespacedTagMapper
     {
         $publicTags = [];
         foreach ($tags as $tag) {
-            $publicTag = 0 === strpos($tag, $this->prefix) ? substr($tag, strlen($this->prefix)) : $tag;
+            $publicTag = '' !== $tag && str_starts_with($tag, $this->prefix) ? substr($tag, \strlen($this->prefix)) : $tag;
             $publicTags[$publicTag] = $publicTag;
         }
 
@@ -61,8 +61,8 @@ final class NamespacedTagMapper
 
     private function validateTag(mixed $tag): string
     {
-        if (!is_string($tag)) {
-            throw new InvalidArgumentException(sprintf('Cache tag must be string, "%s" given', get_debug_type($tag)));
+        if (!\is_string($tag)) {
+            throw new InvalidArgumentException(\sprintf('Cache tag must be string, "%s" given', get_debug_type($tag)));
         }
 
         if ('' === $tag) {
@@ -70,7 +70,7 @@ final class NamespacedTagMapper
         }
 
         if (isset($tag[strcspn($tag, '{}()/\\@:')])) {
-            throw new InvalidArgumentException(sprintf('Cache tag "%s" contains reserved characters {}()/\@:', $tag));
+            throw new InvalidArgumentException(\sprintf('Cache tag "%s" contains reserved characters {}()/\@:', $tag));
         }
 
         return $tag;

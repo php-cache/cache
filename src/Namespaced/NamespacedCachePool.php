@@ -147,7 +147,7 @@ class NamespacedCachePool implements HierarchicalPoolInterface
                 return $paths;
             }
 
-            foreach (array_slice(explode(HierarchicalPoolInterface::HIERARCHY_SEPARATOR, $key), 1) as $component) {
+            foreach (\array_slice(explode(HierarchicalPoolInterface::HIERARCHY_SEPARATOR, $key), 1) as $component) {
                 $path .= HierarchicalPoolInterface::HIERARCHY_SEPARATOR.$component;
                 $paths[] = $path;
             }
@@ -164,7 +164,7 @@ class NamespacedCachePool implements HierarchicalPoolInterface
             return $path;
         }
 
-        foreach (array_slice(explode(HierarchicalPoolInterface::HIERARCHY_SEPARATOR, $key), 1) as $component) {
+        foreach (\array_slice(explode(HierarchicalPoolInterface::HIERARCHY_SEPARATOR, $key), 1) as $component) {
             $path .= HierarchicalPoolInterface::HIERARCHY_SEPARATOR.$component;
         }
 
@@ -218,11 +218,11 @@ class NamespacedCachePool implements HierarchicalPoolInterface
 
     private function readGenerationMetadata(mixed $metadata, string $path): ?string
     {
-        if (!is_array($metadata)
+        if (!\is_array($metadata)
             || self::GENERATION_METADATA_TYPE !== ($metadata['type'] ?? null)
             || self::GENERATION_METADATA_VERSION !== ($metadata['version'] ?? null)
             || $path !== ($metadata['path'] ?? null)
-            || !is_string($metadata['generation'] ?? null)
+            || !\is_string($metadata['generation'] ?? null)
         ) {
             return null;
         }
@@ -233,10 +233,10 @@ class NamespacedCachePool implements HierarchicalPoolInterface
     private function encodeNamespaceComponent(string $component): string
     {
         $encoded = '';
-        $length = strlen($component);
+        $length = \strlen($component);
         for ($index = 0; $index < $length; ++$index) {
             $byte = $component[$index];
-            $ordinal = ord($byte);
+            $ordinal = \ord($byte);
             $portable = ($ordinal >= 48 && $ordinal <= 57)
                 || ($ordinal >= 65 && $ordinal <= 90)
                 || ($ordinal >= 97 && $ordinal <= 122)
@@ -253,7 +253,7 @@ class NamespacedCachePool implements HierarchicalPoolInterface
     private function encodeKeyComponent(string $component): string
     {
         $encoded = '';
-        $length = strlen($component);
+        $length = \strlen($component);
         for ($index = 0; $index < $length; ++$index) {
             $byte = $component[$index];
             $startsMarker = '_' === $byte && 'x' === ($component[$index + 1] ?? null);
@@ -293,7 +293,7 @@ class NamespacedCachePool implements HierarchicalPoolInterface
         }
 
         if (preg_match('|[\{\}\(\)/\\\@\:]|', $key)) {
-            throw new InvalidArgumentException(sprintf('Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:', $key));
+            throw new InvalidArgumentException(\sprintf('Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:', $key));
         }
     }
 
@@ -321,8 +321,8 @@ class NamespacedCachePool implements HierarchicalPoolInterface
     private function encodeValues(array $keys): array
     {
         foreach ($keys as $index => $key) {
-            if (!is_string($key)) {
-                throw new InvalidArgumentException(sprintf('Cache key must be string, "%s" given', get_debug_type($key)));
+            if (!\is_string($key)) {
+                throw new InvalidArgumentException(\sprintf('Cache key must be string, "%s" given', get_debug_type($key)));
             }
 
             $keys[$index] = $this->encodeKey($key);
@@ -366,7 +366,7 @@ class NamespacedCachePool implements HierarchicalPoolInterface
     {
         foreach ($this->cachePool->getItems($prefixedKeys) as $item) {
             $mappedKey = "\0".$item->getKey();
-            if (!array_key_exists($mappedKey, $originalKeys)) {
+            if (!\array_key_exists($mappedKey, $originalKeys)) {
                 continue;
             }
 

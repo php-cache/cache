@@ -37,18 +37,18 @@ class ApcuCachePool extends AbstractCachePool
 
         $success = false;
         $record = apcu_fetch($key, $success);
-        if (!$success || !is_array($record) || !array_is_list($record) || 3 !== count($record)) {
+        if (!$success || !\is_array($record) || !array_is_list($record) || 3 !== \count($record)) {
             return [false, null, [], null];
         }
 
         $tags = $record[1];
-        if (!is_array($tags)) {
+        if (!\is_array($tags)) {
             return [false, null, [], null];
         }
 
         $decodedTags = [];
         foreach ($tags as $tag) {
-            if (!is_string($tag)) {
+            if (!\is_string($tag)) {
                 return [false, null, [], null];
             }
 
@@ -56,7 +56,7 @@ class ApcuCachePool extends AbstractCachePool
         }
 
         $expiration = $record[2];
-        if (!is_int($expiration) && null !== $expiration) {
+        if (!\is_int($expiration) && null !== $expiration) {
             return [false, null, [], null];
         }
 
@@ -97,7 +97,7 @@ class ApcuCachePool extends AbstractCachePool
      */
     private function skipIfCli(): bool
     {
-        return $this->skipOnCli && 'cli' === php_sapi_name();
+        return $this->skipOnCli && 'cli' === \PHP_SAPI;
     }
 
     public function getDirectValue(string $name): mixed

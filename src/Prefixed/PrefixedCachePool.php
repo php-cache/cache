@@ -84,7 +84,7 @@ class PrefixedCachePool implements CacheItemPoolInterface
     {
         foreach ($this->cachePool->getItems($prefixedKeys) as $item) {
             $mappedKey = "\0".$item->getKey();
-            if (!array_key_exists($mappedKey, $originalKeys)) {
+            if (!\array_key_exists($mappedKey, $originalKeys)) {
                 continue;
             }
 

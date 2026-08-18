@@ -31,7 +31,7 @@ final class InMemoryDoctrineCache implements Cache, FlushableCache
 
     public function contains($id): bool
     {
-        return array_key_exists($id, $this->values);
+        return \array_key_exists($id, $this->values);
     }
 
     public function save($id, $data, $lifeTime = 0): bool
@@ -43,7 +43,7 @@ final class InMemoryDoctrineCache implements Cache, FlushableCache
 
     public function delete($id): bool
     {
-        if ($this->failDeletes || !array_key_exists($id, $this->values)) {
+        if ($this->failDeletes || !\array_key_exists($id, $this->values)) {
             return false;
         }
 

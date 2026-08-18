@@ -164,7 +164,7 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
         }
 
         if (preg_match('|[\{\}\(\)/\\\@\:]|', $key)) {
-            throw new InvalidArgumentException(sprintf('Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:', $key));
+            throw new InvalidArgumentException(\sprintf('Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:', $key));
         }
     }
 
@@ -177,8 +177,8 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
     {
         $validatedKeys = [];
         foreach ($keys as $key) {
-            if (!is_string($key)) {
-                throw new InvalidArgumentException(sprintf('Cache key must be string, "%s" given', get_debug_type($key)));
+            if (!\is_string($key)) {
+                throw new InvalidArgumentException(\sprintf('Cache key must be string, "%s" given', get_debug_type($key)));
             }
 
             $this->validateKey($key);
@@ -260,13 +260,13 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
     {
         $listItem = $this->tagStorePool->getItem($name);
         $stored = $listItem->get();
-        if (!is_array($stored)) {
+        if (!\is_array($stored)) {
             return [];
         }
 
         $list = [];
         foreach ($stored as $value) {
-            if (is_string($value)) {
+            if (\is_string($value)) {
                 $list[] = $value;
             }
         }

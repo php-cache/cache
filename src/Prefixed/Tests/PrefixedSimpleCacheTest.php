@@ -46,7 +46,7 @@ class PrefixedSimpleCacheTest extends TestCase
             ->getMock();
 
         $invocation = $stub->expects($this->once())->method($method);
-        call_user_func_array([$invocation->willReturn($result), 'with'], $arguments);
+        \call_user_func_array([$invocation->willReturn($result), 'with'], $arguments);
 
         return $stub;
     }

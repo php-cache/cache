@@ -27,10 +27,10 @@ trait PrefixedUtilityTrait
     private function encodePrefix(string $prefix): string
     {
         $encoded = '';
-        $length = strlen($prefix);
+        $length = \strlen($prefix);
         for ($index = 0; $index < $length; ++$index) {
             $byte = $prefix[$index];
-            $ordinal = ord($byte);
+            $ordinal = \ord($byte);
             $portable = ($ordinal >= 48 && $ordinal <= 57)
                 || ($ordinal >= 65 && $ordinal <= 90)
                 || ($ordinal >= 97 && $ordinal <= 122)
@@ -64,7 +64,7 @@ trait PrefixedUtilityTrait
         }
 
         if (preg_match('|[\{\}\(\)/\\\@\:]|', $key)) {
-            throw new InvalidArgumentException(sprintf('Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:', $key));
+            throw new InvalidArgumentException(\sprintf('Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:', $key));
         }
     }
 
@@ -78,8 +78,8 @@ trait PrefixedUtilityTrait
     private function prefixValues(array $keys): array
     {
         foreach ($keys as $index => $key) {
-            if (!is_string($key)) {
-                throw new InvalidArgumentException(sprintf('Cache key must be string, "%s" given', get_debug_type($key)));
+            if (!\is_string($key)) {
+                throw new InvalidArgumentException(\sprintf('Cache key must be string, "%s" given', get_debug_type($key)));
             }
 
             $this->prefixValue($key);

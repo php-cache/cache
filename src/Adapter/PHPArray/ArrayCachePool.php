@@ -73,7 +73,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
 
         [$data, $tags, $timestamp] = $element;
 
-        if (is_object($data)) {
+        if (\is_object($data)) {
             $data = clone $data;
         }
 
@@ -110,7 +110,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     {
         $keys = $this->getHierarchyKey($item->getKey());
         $value = $item->get();
-        if (is_object($value)) {
+        if (\is_object($value)) {
             $value = clone $value;
         }
         if (null !== $this->limit) {
@@ -146,13 +146,13 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     protected function getList(string $name): array
     {
         $data = $this->cache[$name] ?? [];
-        if (!is_array($data)) {
+        if (!\is_array($data)) {
             return [];
         }
 
         $list = [];
         foreach ($data as $value) {
-            if (!is_string($value)) {
+            if (!\is_string($value)) {
                 return [];
             }
 
@@ -203,11 +203,11 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
 
         while ([] !== $keys) {
             $key = array_shift($keys);
-            if (!is_array($element)) {
+            if (!\is_array($element)) {
                 $element = [];
             }
 
-            if (!$keys && is_null($value) && $unset) {
+            if (!$keys && null === $value && $unset) {
                 unset($element[$key]);
                 unset($element);
                 $element = null;
@@ -216,7 +216,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
             }
         }
 
-        if (!$unset && !is_null($value)) {
+        if (!$unset && null !== $value) {
             $element = $value;
         }
 
@@ -233,14 +233,14 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         $data = $this->cache;
 
         foreach ($keys as $key) {
-            if (!is_array($data) || !array_key_exists($key, $data)) {
+            if (!\is_array($data) || !\array_key_exists($key, $data)) {
                 return false;
             }
 
             $data = $data[$key];
         }
 
-        return is_array($data) && array_key_exists(0, $data);
+        return \is_array($data) && \array_key_exists(0, $data);
     }
 
     /**
@@ -264,19 +264,19 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     /** @return array{mixed, array<string, string>, int|null}|null */
     private function decodeCacheElement(mixed $element): ?array
     {
-        if (!is_array($element)
-            || !array_key_exists(0, $element)
-            || !array_key_exists(1, $element)
-            || !array_key_exists(2, $element)
-            || !is_array($element[1])
-            || (!is_int($element[2]) && null !== $element[2])
+        if (!\is_array($element)
+            || !\array_key_exists(0, $element)
+            || !\array_key_exists(1, $element)
+            || !\array_key_exists(2, $element)
+            || !\is_array($element[1])
+            || (!\is_int($element[2]) && null !== $element[2])
         ) {
             return null;
         }
 
         $tags = [];
         foreach ($element[1] as $tag) {
-            if (!is_string($tag)) {
+            if (!\is_string($tag)) {
                 return null;
             }
 

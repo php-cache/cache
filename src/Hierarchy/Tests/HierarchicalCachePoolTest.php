@@ -130,12 +130,12 @@ class HierarchicalCachePoolTest extends TestCase
         $result = $method->invoke($pool, '|key');
         $this->assertCount(2, $result);
         $this->assertEquals('key!', $result[1]);
-        $this->assertTrue(in_array('key!', $result));
+        $this->assertTrue(\in_array('key!', $result));
 
         $result = $method->invoke($pool, '|key|bar');
         $this->assertCount(3, $result);
-        $this->assertTrue(in_array('key!', $result));
-        $this->assertTrue(in_array('bar!', $result));
+        $this->assertTrue(\in_array('key!', $result));
+        $this->assertTrue(\in_array('bar!', $result));
 
         $result = $method->invoke($pool, '|');
         $this->assertCount(1, $result);

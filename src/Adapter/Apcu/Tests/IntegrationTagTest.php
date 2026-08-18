@@ -19,7 +19,7 @@ class IntegrationTagTest extends TaggableCachePoolTest
 {
     public function createCachePool(): TaggableCacheItemPoolInterface
     {
-        if (defined('HHVM_VERSION') || !function_exists('apcu_store') || (function_exists('apcu_enabled') && !apcu_enabled())) {
+        if (\defined('HHVM_VERSION') || !\function_exists('apcu_store') || (\function_exists('apcu_enabled') && !apcu_enabled())) {
             $this->markTestSkipped();
         }
 

@@ -141,10 +141,10 @@ class FilesystemCachePool extends AbstractCachePool
     private function getFilePath(string $key): string
     {
         if (!preg_match('|^[a-zA-Z0-9_\.! ]+$|', $key)) {
-            throw new InvalidArgumentException(sprintf('Invalid key "%s". Valid filenames must match [a-zA-Z0-9_\.! ].', $key));
+            throw new InvalidArgumentException(\sprintf('Invalid key "%s". Valid filenames must match [a-zA-Z0-9_\.! ].', $key));
         }
 
-        return sprintf('%s/%s', $this->folder, $key);
+        return \sprintf('%s/%s', $this->folder, $key);
     }
 
     /**
@@ -214,19 +214,19 @@ class FilesystemCachePool extends AbstractCachePool
     private function decodeCacheItem(string $contents): ?array
     {
         $stored = @unserialize($contents);
-        if (!is_array($stored)
-            || !array_key_exists(0, $stored)
-            || !array_key_exists(1, $stored)
-            || !array_key_exists(2, $stored)
-            || !is_array($stored[1])
-            || (!is_int($stored[2]) && null !== $stored[2])
+        if (!\is_array($stored)
+            || !\array_key_exists(0, $stored)
+            || !\array_key_exists(1, $stored)
+            || !\array_key_exists(2, $stored)
+            || !\is_array($stored[1])
+            || (!\is_int($stored[2]) && null !== $stored[2])
         ) {
             return null;
         }
 
         $tags = [];
         foreach ($stored[1] as $tag) {
-            if (!is_string($tag)) {
+            if (!\is_string($tag)) {
                 return null;
             }
 
@@ -242,13 +242,13 @@ class FilesystemCachePool extends AbstractCachePool
     private function decodeList(string $contents): array
     {
         $stored = @unserialize($contents);
-        if (!is_array($stored)) {
+        if (!\is_array($stored)) {
             return [];
         }
 
         $list = [];
         foreach ($stored as $key) {
-            if (!is_string($key)) {
+            if (!\is_string($key)) {
                 return [];
             }
 

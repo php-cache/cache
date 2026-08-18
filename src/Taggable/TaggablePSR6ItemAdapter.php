@@ -123,15 +123,15 @@ class TaggablePSR6ItemAdapter implements TaggableCacheItemInterface
      */
     private function tag(string|array $tags): static
     {
-        if (!is_array($tags)) {
+        if (!\is_array($tags)) {
             $tags = [$tags];
         }
 
         $this->initializeTags();
 
         foreach ($tags as $tag) {
-            if (!is_string($tag)) {
-                throw new InvalidArgumentException(sprintf('Cache tag must be string, "%s" given', is_object($tag) ? get_class($tag) : gettype($tag)));
+            if (!\is_string($tag)) {
+                throw new InvalidArgumentException(\sprintf('Cache tag must be string, "%s" given', \is_object($tag) ? $tag::class : \gettype($tag)));
             }
             if (isset($this->tags[$tag])) {
                 continue;
@@ -140,7 +140,7 @@ class TaggablePSR6ItemAdapter implements TaggableCacheItemInterface
                 throw new InvalidArgumentException('Cache tag length must be greater than zero');
             }
             if (isset($tag[strcspn($tag, '{}()/\@:')])) {
-                throw new InvalidArgumentException(sprintf('Cache tag "%s" contains reserved characters {}()/\@:', $tag));
+                throw new InvalidArgumentException(\sprintf('Cache tag "%s" contains reserved characters {}()/\@:', $tag));
             }
             $this->tags[$tag] = $tag;
         }
@@ -195,18 +195,18 @@ class TaggablePSR6ItemAdapter implements TaggableCacheItemInterface
      */
     private function unpackStoredItem(mixed $rawItem): ?array
     {
-        if (!is_array($rawItem)
-            || !array_key_exists('value', $rawItem)
+        if (!\is_array($rawItem)
+            || !\array_key_exists('value', $rawItem)
             || !isset($rawItem['tags'])
-            || !is_array($rawItem['tags'])
-            || 2 !== count($rawItem)
+            || !\is_array($rawItem['tags'])
+            || 2 !== \count($rawItem)
         ) {
             return null;
         }
 
         $tags = [];
         foreach ($rawItem['tags'] as $tag) {
-            if (!is_string($tag)) {
+            if (!\is_string($tag)) {
                 return null;
             }
 

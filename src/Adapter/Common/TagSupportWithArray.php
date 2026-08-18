@@ -28,7 +28,7 @@ trait TagSupportWithArray
     protected function appendListItem(string $name, string $value): bool
     {
         $data = $this->getDirectValue($name);
-        if (!is_array($data)) {
+        if (!\is_array($data)) {
             $data = [];
         }
         $data[] = $value;
@@ -42,13 +42,13 @@ trait TagSupportWithArray
     protected function getList(string $name): array
     {
         $data = $this->getDirectValue($name);
-        if (!is_array($data)) {
+        if (!\is_array($data)) {
             return [];
         }
 
         $values = [];
         foreach ($data as $value) {
-            if (is_string($value)) {
+            if (\is_string($value)) {
                 $values[] = $value;
             }
         }

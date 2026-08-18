@@ -53,21 +53,21 @@ class EncryptedItemDecorator implements TaggableCacheItemInterface
 
     public function set(mixed $value): static
     {
-        $type = gettype($value);
+        $type = \gettype($value);
 
-        if (is_object($value) || is_array($value)) {
+        if (\is_object($value) || \is_array($value)) {
             $value = serialize($value);
         } elseif (null === $value) {
             $value = '';
-        } elseif (is_bool($value)) {
+        } elseif (\is_bool($value)) {
             $value = $value ? '1' : '';
-        } elseif (is_int($value) || is_float($value)) {
+        } elseif (\is_int($value) || \is_float($value)) {
             $value = (string) $value;
-        } elseif (!is_string($value)) {
+        } elseif (!\is_string($value)) {
             throw new \InvalidArgumentException('Encrypted cache values must be serializable.');
         }
 
-        $json = json_encode(['type' => $type, 'value' => static::jsonArmor($value)], JSON_THROW_ON_ERROR);
+        $json = json_encode(['type' => $type, 'value' => static::jsonArmor($value)], \JSON_THROW_ON_ERROR);
 
         $this->cacheItem->set(Crypto::encrypt($json, $this->key));
 
@@ -81,15 +81,15 @@ class EncryptedItemDecorator implements TaggableCacheItemInterface
         }
 
         $encrypted = $this->cacheItem->get();
-        if (!is_string($encrypted)) {
+        if (!\is_string($encrypted)) {
             throw new \UnexpectedValueException('Encrypted cache payload must be a string.');
         }
 
-        $item = json_decode(Crypto::decrypt($encrypted, $this->key), true, 512, JSON_THROW_ON_ERROR);
-        if (!is_array($item)
+        $item = json_decode(Crypto::decrypt($encrypted, $this->key), true, 512, \JSON_THROW_ON_ERROR);
+        if (!\is_array($item)
             || !isset($item['type'], $item['value'])
-            || !is_string($item['type'])
-            || !is_string($item['value'])
+            || !\is_string($item['type'])
+            || !\is_string($item['value'])
         ) {
             throw new \UnexpectedValueException('Encrypted cache payload is malformed.');
         }
@@ -155,7 +155,7 @@ class EncryptedItemDecorator implements TaggableCacheItemInterface
             'double' => (float) $value,
             'string' => $value,
             'NULL' => null,
-            default => throw new \UnexpectedValueException(sprintf('Unsupported encrypted cache value type "%s".', $item['type'])),
+            default => throw new \UnexpectedValueException(\sprintf('Unsupported encrypted cache value type "%s".', $item['type'])),
         };
     }
 }

@@ -139,7 +139,7 @@ final class PayloadClient implements ClientInterface
         }
         if ('srem' === $method) {
             $this->setRemovalArguments[] = $arguments;
-            $members = is_array($arguments[1]) ? $arguments[1] : [$arguments[1]];
+            $members = \is_array($arguments[1]) ? $arguments[1] : [$arguments[1]];
             $removed = 0;
             foreach ($members as $member) {
                 if (isset($this->sets[$arguments[0]][$member])) {
@@ -151,7 +151,7 @@ final class PayloadClient implements ClientInterface
             return $removed;
         }
         if ('del' === $method) {
-            $keys = is_array($arguments[0]) ? $arguments[0] : $arguments;
+            $keys = \is_array($arguments[0]) ? $arguments[0] : $arguments;
             $removed = 0;
             foreach ($keys as $key) {
                 if (isset($this->sets[$key]) || isset($this->values[$key])) {

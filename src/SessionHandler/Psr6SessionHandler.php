@@ -38,7 +38,7 @@ class Psr6SessionHandler extends AbstractSessionHandler
         $this->cache = $cache;
 
         if ($diff = array_diff(array_keys($options), ['prefix', 'ttl'])) {
-            throw new \InvalidArgumentException(sprintf('The following options are not supported "%s"', implode(', ', $diff)));
+            throw new \InvalidArgumentException(\sprintf('The following options are not supported "%s"', implode(', ', $diff)));
         }
 
         $this->ttl = isset($options['ttl']) ? (int) $options['ttl'] : 86400;
@@ -67,7 +67,7 @@ class Psr6SessionHandler extends AbstractSessionHandler
         if ($item->isHit()) {
             $data = $item->get();
 
-            return is_string($data) ? $data : '';
+            return \is_string($data) ? $data : '';
         }
 
         return '';

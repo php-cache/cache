@@ -54,7 +54,7 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
 
         $result = $this->cache->flushDb();
 
-        if (!is_array($result)) {
+        if (!\is_array($result)) {
             return true === $result;
         }
 
@@ -104,7 +104,7 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
 
         $deleted = $this->cache->del($keyString);
 
-        return $generationAdvanced && is_int($deleted) && $deleted >= 0;
+        return $generationAdvanced && \is_int($deleted) && $deleted >= 0;
     }
 
     protected function storeItemInCache(PhpCacheItem $item, ?int $ttl): bool
@@ -127,13 +127,13 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     {
         $added = $this->cache->sAdd($name, $value);
 
-        return is_int($added) && $added >= 0;
+        return \is_int($added) && $added >= 0;
     }
 
     protected function getList(string $name): array
     {
         $items = $this->cache->sMembers($name);
-        if (!is_array($items)) {
+        if (!\is_array($items)) {
             $this->failedListReads[$name] = true;
 
             return [];
@@ -154,14 +154,14 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
 
         $deleted = $this->cache->del($name);
 
-        return is_int($deleted) && $deleted >= 0;
+        return \is_int($deleted) && $deleted >= 0;
     }
 
     protected function removeListItem(string $name, string $key): bool
     {
         $removed = $this->cache->sRem($name, $key);
 
-        return is_int($removed) && $removed >= 0;
+        return \is_int($removed) && $removed >= 0;
     }
 
     /**
@@ -169,7 +169,7 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      */
     private function decodeCacheItem(mixed $payload): ?array
     {
-        if (!is_string($payload)) {
+        if (!\is_string($payload)) {
             return null;
         }
 
@@ -178,25 +178,25 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         } catch (\Throwable) {
             return null;
         }
-        if (!is_array($cacheItem) || !array_is_list($cacheItem) || 4 !== count($cacheItem)) {
+        if (!\is_array($cacheItem) || !array_is_list($cacheItem) || 4 !== \count($cacheItem)) {
             return null;
         }
 
         [$hit, $value, $tags, $expirationTimestamp] = $cacheItem;
-        if (true !== $hit || !is_array($tags)) {
+        if (true !== $hit || !\is_array($tags)) {
             return null;
         }
 
         $validTags = [];
         foreach ($tags as $tag) {
-            if (!is_string($tag)) {
+            if (!\is_string($tag)) {
                 return null;
             }
 
             $validTags[$tag] = $tag;
         }
 
-        if (null !== $expirationTimestamp && !is_int($expirationTimestamp)) {
+        if (null !== $expirationTimestamp && !\is_int($expirationTimestamp)) {
             return null;
         }
 

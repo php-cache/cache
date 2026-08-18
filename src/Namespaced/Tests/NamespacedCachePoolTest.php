@@ -13,6 +13,7 @@ namespace Cache\Namespaced\Tests;
 
 use Cache\Adapter\PHPArray\ArrayCachePool;
 use Cache\Namespaced\NamespacedCachePool;
+use Cache\Namespaced\NamespacedTagMapper;
 use Cache\TagInterop\TaggableCacheItemInterface;
 use Cache\TagInterop\TaggableCacheItemPoolInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -82,6 +83,20 @@ class NamespacedCachePoolTest extends TestCase
         $this->assertFalse($inner->hasItem('key'));
         $this->assertTrue($outer->hasItem('key'));
         $this->assertSame('outer', $outer->getItem('key')->get());
+    }
+
+    public function testUnmapTagsPreservesEmptyAndForeignTags()
+    {
+        $mapper = new NamespacedTagMapper('namespace');
+
+        $this->assertSame(
+            ['' => '', 'foreign' => 'foreign', 'tag' => 'tag'],
+            $mapper->unmapTags([
+                'empty' => '',
+                'foreign' => 'foreign',
+                'tag' => $mapper->map('tag'),
+            ])
+        );
     }
 
     public function testCreateDoesNotAdvertiseTagsForAGenericPool()

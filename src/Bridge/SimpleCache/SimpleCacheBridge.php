@@ -128,11 +128,11 @@ class SimpleCacheBridge implements CacheInterface
         $keys = [];
         $arrayValues = [];
         foreach ($values as $key => $value) {
-            if (!is_string($key) && !is_int($key)) {
-                throw new InvalidArgumentException(sprintf('Cache key must be string or integer, "%s" given', get_debug_type($key)));
+            if (!\is_string($key) && !\is_int($key)) {
+                throw new InvalidArgumentException(\sprintf('Cache key must be string or integer, "%s" given', get_debug_type($key)));
             }
 
-            if (is_int($key)) {
+            if (\is_int($key)) {
                 $key = (string) $key;
             }
 
@@ -205,8 +205,8 @@ class SimpleCacheBridge implements CacheInterface
     {
         $validatedKeys = [];
         foreach ($keys as $key) {
-            if (!is_string($key)) {
-                throw new InvalidArgumentException(sprintf('Cache key must be string, "%s" given', get_debug_type($key)));
+            if (!\is_string($key)) {
+                throw new InvalidArgumentException(\sprintf('Cache key must be string, "%s" given', get_debug_type($key)));
             }
 
             $this->validateKey($key);
@@ -223,7 +223,7 @@ class SimpleCacheBridge implements CacheInterface
         }
 
         if (preg_match('|[\{\}\(\)/\\\@\:]|', $key)) {
-            throw new InvalidArgumentException(sprintf('Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:', $key));
+            throw new InvalidArgumentException(\sprintf('Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:', $key));
         }
     }
 }

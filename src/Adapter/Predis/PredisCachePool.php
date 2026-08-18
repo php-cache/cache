@@ -110,7 +110,7 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
      */
     private function decodeCacheItem(mixed $payload): ?array
     {
-        if (!is_string($payload)) {
+        if (!\is_string($payload)) {
             return null;
         }
 
@@ -119,25 +119,25 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
         } catch (\Throwable) {
             return null;
         }
-        if (!is_array($cacheItem) || !array_is_list($cacheItem) || 4 !== count($cacheItem)) {
+        if (!\is_array($cacheItem) || !array_is_list($cacheItem) || 4 !== \count($cacheItem)) {
             return null;
         }
 
         [$hit, $value, $tags, $expirationTimestamp] = $cacheItem;
-        if (true !== $hit || !is_array($tags)) {
+        if (true !== $hit || !\is_array($tags)) {
             return null;
         }
 
         $validTags = [];
         foreach ($tags as $tag) {
-            if (!is_string($tag)) {
+            if (!\is_string($tag)) {
                 return null;
             }
 
             $validTags[$tag] = $tag;
         }
 
-        if (null !== $expirationTimestamp && !is_int($expirationTimestamp)) {
+        if (null !== $expirationTimestamp && !\is_int($expirationTimestamp)) {
             return null;
         }
 

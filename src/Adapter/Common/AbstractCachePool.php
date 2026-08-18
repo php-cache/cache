@@ -275,10 +275,10 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
      */
     protected function validateKey(mixed $key): string
     {
-        if (!is_string($key)) {
-            $e = new InvalidArgumentException(sprintf(
+        if (!\is_string($key)) {
+            $e = new InvalidArgumentException(\sprintf(
                 'Cache key must be string, "%s" given',
-                gettype($key)
+                \gettype($key)
             ));
             $this->handleException($e, __FUNCTION__);
         }
@@ -287,7 +287,7 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
             $this->handleException($e, __FUNCTION__);
         }
         if (preg_match('|[\{\}\(\)/\\\@\:]|', $key)) {
-            $e = new InvalidArgumentException(sprintf(
+            $e = new InvalidArgumentException(\sprintf(
                 'Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:',
                 $key
             ));
@@ -328,7 +328,7 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 
         $this->log($level, $e->getMessage(), ['exception' => $e]);
         if (!$e instanceof CacheException) {
-            $e = new CachePoolException(sprintf('Exception thrown when executing "%s". ', $function), 0, $e);
+            $e = new CachePoolException(\sprintf('Exception thrown when executing "%s". ', $function), 0, $e);
         }
 
         throw $e;
@@ -489,7 +489,7 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
         $keys = [];
         $arrayValues = [];
         foreach ($values as $key => $value) {
-            if (is_int($key)) {
+            if (\is_int($key)) {
                 $key = (string) $key;
             }
             $this->validateKey($key);
