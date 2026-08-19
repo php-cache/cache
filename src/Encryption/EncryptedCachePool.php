@@ -80,7 +80,7 @@ class EncryptedCachePool implements TaggableCacheItemPoolInterface
 
     public function hasItem(string $key): bool
     {
-        return $this->cachePool->hasItem($key);
+        return $this->getItem($key)->isHit();
     }
 
     public function clear(): bool

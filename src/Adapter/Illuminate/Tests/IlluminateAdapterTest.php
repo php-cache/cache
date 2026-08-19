@@ -58,6 +58,7 @@ class IlluminateAdapterTest extends TestCase
         yield 'invalid hit marker' => [serialize([false, 'value', [], null])];
         yield 'invalid tags' => [serialize([true, 'value', [42], null])];
         yield 'invalid expiration' => [serialize([true, 'value', [], 'tomorrow'])];
+        yield 'incomplete class' => [str_replace('stdClass', 'GoneType', serialize([true, new \stdClass(), [], null]))];
     }
 
     public function testTtlIsPassedToIlluminateInSeconds()

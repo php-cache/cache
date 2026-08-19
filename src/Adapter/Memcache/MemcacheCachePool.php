@@ -13,6 +13,7 @@ namespace Cache\Adapter\Memcache;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\PhpUnserializer;
 use Cache\Adapter\Common\TagSupportWithArray;
 
 class MemcacheCachePool extends AbstractCachePool
@@ -77,9 +78,7 @@ class MemcacheCachePool extends AbstractCachePool
             return null;
         }
 
-        try {
-            $cacheItem = @unserialize($payload);
-        } catch (\Throwable) {
+        if (!PhpUnserializer::unserialize($payload, $cacheItem)) {
             return null;
         }
         if (!\is_array($cacheItem) || !array_is_list($cacheItem) || 4 !== \count($cacheItem)) {

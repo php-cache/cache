@@ -11,6 +11,7 @@
 
 namespace Cache\Adapter\Doctrine\Tests;
 
+use Cache\Adapter\Common\Exception\CachePoolException;
 use Cache\Adapter\Doctrine\DoctrineCachePool;
 use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\Cache\FlushableCache;
@@ -69,6 +70,7 @@ class DoctrineAdapterTest extends TestCase
         yield 'invalid hit marker' => [serialize([false, 'value', [], null])];
         yield 'invalid tags' => [serialize([true, 'value', [42], null])];
         yield 'invalid expiration' => [serialize([true, 'value', [], 'tomorrow'])];
+        yield 'incomplete class' => [str_replace('stdClass', 'GoneType', serialize([true, new \stdClass(), [], null]))];
     }
 
     public function testCorruptTagListIsIgnored()
@@ -77,6 +79,19 @@ class DoctrineAdapterTest extends TestCase
         $this->mockDoctrine->shouldReceive('delete')->once()->with('tag!corrupt')->andReturn(true);
 
         self::assertTrue($this->pool->invalidateTag('corrupt'));
+    }
+
+    public function testBackendFetchExceptionIsNotTreatedAsCacheMiss()
+    {
+        $backendException = new \RuntimeException('backend failed');
+        $this->mockDoctrine->shouldReceive('fetch')->once()->with('key')->andThrow($backendException);
+
+        try {
+            $this->pool->getItem('key')->isHit();
+            self::fail('The backend exception was not propagated.');
+        } catch (CachePoolException $exception) {
+            self::assertSame($backendException, $exception->getPrevious());
+        }
     }
 
     public function testInvalidatingAnExistingTagReportsABackendFailure()

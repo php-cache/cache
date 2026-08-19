@@ -12,10 +12,25 @@
 namespace Cache\Adapter\Apcu;
 
 use Cache\Adapter\Apcu\Tests\ApcuFunctionStub;
+use Cache\Adapter\Apcu\Tests\ApcuUnserializationException;
 
 function apcu_fetch(mixed $key, ?bool &$success = null): mixed
 {
+    if (null !== ApcuFunctionStub::$exception) {
+        throw ApcuFunctionStub::$exception;
+    }
+    if (null !== ApcuFunctionStub::$missingClass) {
+        spl_autoload_call(ApcuFunctionStub::$missingClass);
+    }
+    if (ApcuFunctionStub::$throwUnserializationException) {
+        (new ApcuUnserializationException())->__unserialize([]);
+    }
+
     $success = ApcuFunctionStub::$success;
+
+    if (null !== ApcuFunctionStub::$serializedValue) {
+        return unserialize(ApcuFunctionStub::$serializedValue);
+    }
 
     return ApcuFunctionStub::$storedValue;
 }

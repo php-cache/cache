@@ -13,6 +13,7 @@ namespace Cache\Adapter\Illuminate;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\PhpUnserializer;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
 use Illuminate\Contracts\Cache\Store;
@@ -52,9 +53,7 @@ class IlluminateCachePool extends AbstractCachePool implements HierarchicalPoolI
             return [false, null, [], null];
         }
 
-        try {
-            $record = @unserialize($payload);
-        } catch (\Throwable) {
+        if (!PhpUnserializer::unserialize($payload, $record)) {
             return [false, null, [], null];
         }
 

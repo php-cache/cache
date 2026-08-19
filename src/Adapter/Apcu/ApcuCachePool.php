@@ -13,6 +13,7 @@ namespace Cache\Adapter\Apcu;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\PhpUnserializer;
 use Cache\Adapter\Common\TagSupportWithArray;
 
 /**
@@ -36,8 +37,10 @@ class ApcuCachePool extends AbstractCachePool
         }
 
         $success = false;
-        $record = apcu_fetch($key, $success);
-        if (!$success || !\is_array($record) || !array_is_list($record) || 3 !== \count($record)) {
+        $complete = PhpUnserializer::decodeWith(static function () use ($key, &$success): mixed {
+            return apcu_fetch($key, $success);
+        }, $record);
+        if (!$complete || !$success || !\is_array($record) || !array_is_list($record) || 3 !== \count($record)) {
             return [false, null, [], null];
         }
 
@@ -102,7 +105,7 @@ class ApcuCachePool extends AbstractCachePool
 
     public function getDirectValue(string $name): mixed
     {
-        return apcu_fetch($name);
+        return PhpUnserializer::decodeWith(static fn (): mixed => apcu_fetch($name), $value) ? $value : null;
     }
 
     public function setDirectValue(string $name, mixed $value): bool

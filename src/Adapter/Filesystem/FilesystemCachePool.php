@@ -14,6 +14,7 @@ namespace Cache\Adapter\Filesystem;
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\Exception\InvalidArgumentException;
 use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\PhpUnserializer;
 use League\Flysystem\FilesystemOperator;
 use League\Flysystem\UnableToDeleteFile;
 use League\Flysystem\UnableToReadFile;
@@ -231,7 +232,9 @@ class FilesystemCachePool extends AbstractCachePool
      */
     private function decodeCacheItem(string $contents): ?array
     {
-        $stored = @unserialize($contents);
+        if (!PhpUnserializer::unserialize($contents, $stored)) {
+            return null;
+        }
         if (!\is_array($stored)
             || !\array_key_exists(0, $stored)
             || !\array_key_exists(1, $stored)
@@ -259,8 +262,7 @@ class FilesystemCachePool extends AbstractCachePool
      */
     private function decodeList(string $contents): array
     {
-        $stored = @unserialize($contents);
-        if (!\is_array($stored)) {
+        if (!PhpUnserializer::unserialize($contents, $stored) || !\is_array($stored)) {
             return [];
         }
 

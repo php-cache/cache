@@ -65,6 +65,7 @@ class PredisCachePoolTest extends TestCase
         yield 'non-string' => [123];
         yield 'malformed' => ['not serialized'];
         yield 'wrong shape' => [serialize(['value'])];
+        yield 'incomplete class' => [str_replace('stdClass', 'GoneType', serialize([true, new \stdClass(), [], null]))];
     }
 }
 

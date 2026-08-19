@@ -87,6 +87,10 @@ class MongoDBCachePoolTest extends TestCase
         yield 'malformed data' => [['data' => 'not serialized', 'tags' => serialize([])]];
         yield 'malformed tags' => [['data' => serialize('value'), 'tags' => 'not serialized']];
         yield 'throwing unserialize' => [['data' => serialize(new ThrowingSerializedValue()), 'tags' => serialize([])]];
+        yield 'incomplete class' => [[
+            'data' => str_replace('stdClass', 'GoneType', serialize(new \stdClass())),
+            'tags' => serialize([]),
+        ]];
     }
 }
 

@@ -12,6 +12,7 @@
 namespace Cache\Encryption;
 
 use Cache\Adapter\Common\JsonBinaryArmoring;
+use Cache\Adapter\Common\PhpUnserializer;
 use Cache\TagInterop\TaggableCacheItemInterface;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
@@ -76,30 +77,16 @@ class EncryptedItemDecorator implements TaggableCacheItemInterface
 
     public function get(): mixed
     {
-        if (!$this->isHit()) {
+        if (!$this->cacheItem->isHit() || !$this->decode($decodedValue)) {
             return null;
         }
 
-        $encrypted = $this->cacheItem->get();
-        if (!\is_string($encrypted)) {
-            throw new \UnexpectedValueException('Encrypted cache payload must be a string.');
-        }
-
-        $item = json_decode(Crypto::decrypt($encrypted, $this->key), true, 512, \JSON_THROW_ON_ERROR);
-        if (!\is_array($item)
-            || !isset($item['type'], $item['value'])
-            || !\is_string($item['type'])
-            || !\is_string($item['value'])
-        ) {
-            throw new \UnexpectedValueException('Encrypted cache payload is malformed.');
-        }
-
-        return $this->transform($item);
+        return $decodedValue;
     }
 
     public function isHit(): bool
     {
-        return $this->cacheItem->isHit();
+        return $this->cacheItem->isHit() && $this->decode($decodedValue);
     }
 
     public function expiresAt(?\DateTimeInterface $expiration): static
@@ -143,19 +130,42 @@ class EncryptedItemDecorator implements TaggableCacheItemInterface
      * Transform value back to it original type.
      *
      * @param array{type: string, value: string} $item
+     *
+     * @return array{bool, mixed}
      */
-    private function transform(array $item): mixed
+    private function transform(array $item): array
     {
         $value = static::jsonDeArmor($item['value']);
 
         return match ($item['type']) {
-            'object', 'array' => unserialize($value),
-            'boolean' => (bool) $value,
-            'integer' => (int) $value,
-            'double' => (float) $value,
-            'string' => $value,
-            'NULL' => null,
+            'object', 'array' => PhpUnserializer::unserialize($value, $decodedValue) ? [true, $decodedValue] : [false, null],
+            'boolean' => [true, (bool) $value],
+            'integer' => [true, (int) $value],
+            'double' => [true, (float) $value],
+            'string' => [true, $value],
+            'NULL' => [true, null],
             default => throw new \UnexpectedValueException(\sprintf('Unsupported encrypted cache value type "%s".', $item['type'])),
         };
+    }
+
+    private function decode(mixed &$decodedValue): bool
+    {
+        $encrypted = $this->cacheItem->get();
+        if (!\is_string($encrypted)) {
+            throw new \UnexpectedValueException('Encrypted cache payload must be a string.');
+        }
+
+        $item = json_decode(Crypto::decrypt($encrypted, $this->key), true, 512, \JSON_THROW_ON_ERROR);
+        if (!\is_array($item)
+            || !isset($item['type'], $item['value'])
+            || !\is_string($item['type'])
+            || !\is_string($item['value'])
+        ) {
+            throw new \UnexpectedValueException('Encrypted cache payload is malformed.');
+        }
+
+        [$valid, $decodedValue] = $this->transform($item);
+
+        return $valid;
     }
 }

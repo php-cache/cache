@@ -81,6 +81,7 @@ class MemcacheCachePoolTest extends TestCase
         yield 'malformed' => ['not serialized'];
         yield 'wrong shape' => [serialize(['value'])];
         yield 'throwing unserialize' => [serialize(new ThrowingSerializedValue())];
+        yield 'incomplete class' => [str_replace('stdClass', 'GoneType', serialize([true, new \stdClass(), [], null]))];
     }
 }
 

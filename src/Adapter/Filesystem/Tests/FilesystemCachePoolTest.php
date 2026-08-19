@@ -157,6 +157,25 @@ class FilesystemCachePoolTest extends TestCase
         $this->assertFalse($pool->getItem('malformed')->isHit());
     }
 
+    public function testThrowingUnserializeCacheFileIsMiss()
+    {
+        $pool = $this->createCachePool();
+
+        $this->getFilesystem()->write('cache/throwing', serialize([new ThrowingSerializedValue(), [], null]));
+
+        self::assertFalse($pool->getItem('throwing')->isHit());
+    }
+
+    public function testIncompleteClassCacheFileIsMiss()
+    {
+        $pool = $this->createCachePool();
+        $payload = str_replace('stdClass', 'GoneType', serialize([new \stdClass(), [], null]));
+
+        $this->getFilesystem()->write('cache/incomplete', $payload);
+
+        self::assertFalse($pool->getItem('incomplete')->isHit());
+    }
+
     public function testCorruptedTagListIsEmpty()
     {
         $pool = $this->createCachePool();
@@ -164,6 +183,15 @@ class FilesystemCachePoolTest extends TestCase
         $this->getFilesystem()->write('cache/tag!corrupt_tag', 'corrupt data');
 
         $this->assertTrue($pool->invalidateTag('corrupt_tag'));
+    }
+
+    public function testThrowingUnserializeTagListIsEmpty()
+    {
+        $pool = $this->createCachePool();
+
+        $this->getFilesystem()->write('cache/tag!throwing', serialize([new ThrowingSerializedValue()]));
+
+        self::assertTrue($pool->invalidateTag('throwing'));
     }
 
     public function testClearKeepsCacheDirectory()
@@ -176,5 +204,18 @@ class FilesystemCachePoolTest extends TestCase
         clearstatcache(true, $this->getRootPath().'/cache');
         $this->assertSame($inode, fileinode($this->getRootPath().'/cache'));
         $this->assertFalse($pool->hasItem('before_clear'));
+    }
+}
+
+final class ThrowingSerializedValue
+{
+    public function __serialize(): array
+    {
+        return [];
+    }
+
+    public function __unserialize(array $data)
+    {
+        throw new \RuntimeException();
     }
 }

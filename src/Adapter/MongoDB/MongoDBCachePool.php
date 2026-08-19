@@ -14,6 +14,7 @@ namespace Cache\Adapter\MongoDB;
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\JsonBinaryArmoring;
 use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\PhpUnserializer;
 use Cache\Adapter\Common\TagSupportWithArray;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Collection;
@@ -154,9 +155,7 @@ class MongoDBCachePool extends AbstractCachePool
         }
 
         $serialized = static::jsonDeArmor($payload);
-        try {
-            $value = @unserialize($serialized);
-        } catch (\Throwable) {
+        if (!PhpUnserializer::unserialize($serialized, $value)) {
             return false;
         }
 

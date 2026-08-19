@@ -14,6 +14,7 @@ namespace Cache\Adapter\Redis;
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\Exception\CachePoolException;
 use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\PhpUnserializer;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
 
@@ -173,9 +174,7 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
             return null;
         }
 
-        try {
-            $cacheItem = @unserialize($payload);
-        } catch (\Throwable) {
+        if (!PhpUnserializer::unserialize($payload, $cacheItem)) {
             return null;
         }
         if (!\is_array($cacheItem) || !array_is_list($cacheItem) || 4 !== \count($cacheItem)) {

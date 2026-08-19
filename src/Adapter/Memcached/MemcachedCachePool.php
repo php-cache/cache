@@ -14,6 +14,7 @@ namespace Cache\Adapter\Memcached;
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\CacheItem;
 use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\PhpUnserializer;
 use Cache\Adapter\Common\TagSupportWithArray;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
@@ -305,9 +306,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
             return null;
         }
 
-        try {
-            $cacheItem = @unserialize($payload);
-        } catch (\Throwable) {
+        if (!PhpUnserializer::unserialize($payload, $cacheItem)) {
             return null;
         }
         if (!\is_array($cacheItem) || !array_is_list($cacheItem) || 4 !== \count($cacheItem)) {

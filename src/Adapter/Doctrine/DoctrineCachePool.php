@@ -13,6 +13,7 @@ namespace Cache\Adapter\Doctrine;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\PhpUnserializer;
 use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\Cache\FlushableCache;
 
@@ -38,9 +39,7 @@ class DoctrineCachePool extends AbstractCachePool
             return [false, null, [], null];
         }
 
-        try {
-            $record = @unserialize($payload);
-        } catch (\Throwable) {
+        if (!PhpUnserializer::unserialize($payload, $record)) {
             return [false, null, [], null];
         }
 

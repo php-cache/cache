@@ -12,6 +12,7 @@
 namespace Cache\Adapter\Apcu\Tests;
 
 use Cache\Adapter\Apcu\ApcuCachePool;
+use Cache\Adapter\Common\Exception\CachePoolException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
@@ -19,13 +20,37 @@ use PHPUnit\Framework\TestCase;
 
 final class ApcuFunctionStub
 {
+    public static ?\Throwable $exception = null;
+
+    public static ?string $missingClass = null;
+
+    public static ?string $serializedValue = null;
+
     public static mixed $storedValue = null;
 
     public static bool $success = true;
 
+    public static bool $throwUnserializationException = false;
+
     public static ?string $storedKey = null;
 
     public static ?int $storedTtl = null;
+}
+
+final class ApcuUnserializationFailure
+{
+    public function __unserialize(array $data)
+    {
+        throw new \Error('cached payload could not be decoded');
+    }
+}
+
+final class ApcuUnserializationException
+{
+    public function __unserialize(array $data)
+    {
+        throw new \RuntimeException('cached payload could not be decoded');
+    }
 }
 
 final class ApcuCachePoolTest extends TestCase
@@ -79,5 +104,60 @@ final class ApcuCachePoolTest extends TestCase
         yield 'legacy serialized payload' => [serialize(['value', [], null])];
         yield 'invalid tags' => [['value', [42], null]];
         yield 'invalid expiration' => [['value', [], 'tomorrow']];
+    }
+
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
+    public function testIncompleteClassPayloadIsACacheMiss()
+    {
+        require_once __DIR__.'/Fixtures/apcu_functions.php';
+
+        ApcuFunctionStub::$missingClass = 'GoneType';
+        ApcuFunctionStub::$storedValue = ['value', [], null];
+        ApcuFunctionStub::$success = true;
+
+        self::assertFalse((new ApcuCachePool())->getItem('incomplete')->isHit());
+    }
+
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
+    public function testUnserializationErrorIsACacheMiss()
+    {
+        require_once __DIR__.'/Fixtures/apcu_functions.php';
+
+        ApcuFunctionStub::$serializedValue = serialize([new ApcuUnserializationFailure(), [], null]);
+        ApcuFunctionStub::$success = true;
+
+        self::assertFalse((new ApcuCachePool())->getItem('broken')->isHit());
+    }
+
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
+    public function testUnserializationExceptionIsACacheMiss()
+    {
+        require_once __DIR__.'/Fixtures/apcu_functions.php';
+
+        ApcuFunctionStub::$storedValue = ['value', [], null];
+        ApcuFunctionStub::$success = true;
+        ApcuFunctionStub::$throwUnserializationException = true;
+
+        self::assertFalse((new ApcuCachePool())->getItem('broken')->isHit());
+    }
+
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
+    public function testBackendFetchExceptionIsNotTreatedAsCacheMiss()
+    {
+        require_once __DIR__.'/Fixtures/apcu_functions.php';
+
+        $backendException = new \RuntimeException('backend failed');
+        ApcuFunctionStub::$exception = $backendException;
+
+        try {
+            (new ApcuCachePool())->getItem('key')->isHit();
+            self::fail('The backend exception was not propagated.');
+        } catch (CachePoolException $exception) {
+            self::assertSame($backendException, $exception->getPrevious());
+        }
     }
 }

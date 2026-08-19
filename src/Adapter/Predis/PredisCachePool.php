@@ -13,6 +13,7 @@ namespace Cache\Adapter\Predis;
 
 use Cache\Adapter\Common\AbstractCachePool;
 use Cache\Adapter\Common\PhpCacheItem;
+use Cache\Adapter\Common\PhpUnserializer;
 use Cache\Hierarchy\HierarchicalCachePoolTrait;
 use Cache\Hierarchy\HierarchicalPoolInterface;
 use Predis\ClientInterface as Client;
@@ -114,9 +115,7 @@ class PredisCachePool extends AbstractCachePool implements HierarchicalPoolInter
             return null;
         }
 
-        try {
-            $cacheItem = @unserialize($payload);
-        } catch (\Throwable) {
+        if (!PhpUnserializer::unserialize($payload, $cacheItem)) {
             return null;
         }
         if (!\is_array($cacheItem) || !array_is_list($cacheItem) || 4 !== \count($cacheItem)) {
