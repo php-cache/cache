@@ -2,6 +2,12 @@
 
 Each release groups changes under Added, Removed, Changed, or Fixed headings.
 
+## 2.0.3
+
+### Fixed
+
+* Validate filesystem key constraints in `getItem()` and safely store the PSR-required `.` and `..` keys.
+
 ## 2.0.0
 
 ### Added

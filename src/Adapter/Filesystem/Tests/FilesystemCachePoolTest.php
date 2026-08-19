@@ -27,13 +27,34 @@ class FilesystemCachePoolTest extends TestCase
 {
     use CreatePoolTrait;
 
-    public function testInvalidKey()
+    public function testGetItemRejectsInvalidFilenameKeyImmediately()
     {
         $this->expectException(InvalidArgumentException::class);
 
         $pool = $this->createCachePool();
 
-        $pool->getItem('test%string')->get();
+        $pool->getItem('DoctrineNamespaceCacheKey[]');
+    }
+
+    #[DataProvider('dotKeyProvider')]
+    public function testRoundTripsDotKeys(string $key, string $storageKey)
+    {
+        $pool = $this->createCachePool();
+
+        self::assertTrue($pool->save($pool->getItem($key)->set('value')));
+        self::assertTrue($this->getFilesystem()->fileExists('cache/'.$storageKey));
+        self::assertSame('value', $pool->getItem($key)->get());
+        self::assertTrue($pool->deleteItem($key));
+        self::assertFalse($pool->hasItem($key));
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function dotKeyProvider(): iterable
+    {
+        yield 'current directory' => ['.', '@dot'];
+        yield 'parent directory' => ['..', '@dotdot'];
     }
 
     public function testCleanupOnExpire()

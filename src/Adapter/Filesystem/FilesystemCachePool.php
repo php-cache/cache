@@ -73,6 +73,11 @@ class FilesystemCachePool extends AbstractCachePool
         $this->folder = implode('/', $segments);
     }
 
+    protected function validateKey(mixed $key): string
+    {
+        return $this->validateFilename(parent::validateKey($key));
+    }
+
     /**
      * @return array{bool, mixed, array<string, string>, int|null}
      */
@@ -140,11 +145,24 @@ class FilesystemCachePool extends AbstractCachePool
      */
     private function getFilePath(string $key): string
     {
+        $key = $this->validateFilename($key);
+        // PSR-6 requires dot keys; @ is reserved, so these storage names cannot collide with valid keys.
+        $key = match ($key) {
+            '.' => '@dot',
+            '..' => '@dotdot',
+            default => $key,
+        };
+
+        return \sprintf('%s/%s', $this->folder, $key);
+    }
+
+    private function validateFilename(string $key): string
+    {
         if (!preg_match('|^[a-zA-Z0-9_\.! ]+$|', $key)) {
             throw new InvalidArgumentException(\sprintf('Invalid key "%s". Valid filenames must match [a-zA-Z0-9_\.! ].', $key));
         }
 
-        return \sprintf('%s/%s', $this->folder, $key);
+        return $key;
     }
 
     /**
