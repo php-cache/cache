@@ -22,6 +22,16 @@ use Cache\Adapter\PHPArray\ArrayCachePool;
 $pool = new ArrayCachePool();
 ```
 
+## Limit stored items
+
+Pass a positive maximum item count as the first constructor argument. The default `null` value keeps every item for the process lifetime.
+
+```php
+$pool = new ArrayCachePool(1_000);
+```
+
+When the pool reaches the limit, saving a new key removes the key in the next storage slot. Updating an existing key keeps its slot.
+
 ## Contributing
 
 Send pull requests to the [main repository](https://github.com/php-cache/cache). Report issues on the [GitHub issue tracker](https://github.com/php-cache/cache/issues).
