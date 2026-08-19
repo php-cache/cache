@@ -156,9 +156,7 @@ class DoctrineCacheBridgeTest extends TestCase
                 self::assertFalse($bridge->contains($key));
             }
         } finally {
-            if ($filesystem->directoryExists('cache')) {
-                $filesystem->deleteDirectory('cache');
-            }
+            $filesystem->deleteDirectory('cache');
             if (is_dir($rootPath)) {
                 rmdir($rootPath);
             }
