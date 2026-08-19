@@ -76,6 +76,21 @@ class ArrayCachePoolTest extends TestCase
         }
     }
 
+    public function testStorageExceptionUsesGetItemOperationName()
+    {
+        $exception = new \RuntimeException('backend down');
+        $pool = new ThrowingArrayCachePool();
+        $pool->fetchException = $exception;
+
+        try {
+            $pool->getItem('key')->isHit();
+            self::fail('getItem did not wrap the storage exception');
+        } catch (CachePoolException $wrapped) {
+            self::assertSame($exception, $wrapped->getPrevious());
+            self::assertSame('Exception thrown when executing "getItem". ', $wrapped->getMessage());
+        }
+    }
+
     public function testSetMultipleWrapsItemExpirationFailure()
     {
         $exception = new InvalidArgumentException('invalid');
@@ -367,11 +382,22 @@ final class ThrowingArrayCachePool extends ArrayCachePool
 {
     public ?\RuntimeException $clearException = null;
 
+    public ?\RuntimeException $fetchException = null;
+
     public ?\RuntimeException $saveException = null;
 
     protected function clearAllObjectsFromCache(): bool
     {
         throw $this->clearException ?? new \LogicException('clearException is not configured');
+    }
+
+    protected function fetchObjectFromCache(string $key): array
+    {
+        if (null !== $this->fetchException) {
+            throw $this->fetchException;
+        }
+
+        return parent::fetchObjectFromCache($key);
     }
 
     protected function storeItemInCache(PhpCacheItem $item, ?int $ttl): bool

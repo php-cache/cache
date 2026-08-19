@@ -107,7 +107,7 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
             try {
                 return $this->fetchObjectFromCache($key);
             } catch (\Exception $e) {
-                $this->handleException($e, __FUNCTION__);
+                $this->handleException($e, 'getItem');
             }
         };
 
