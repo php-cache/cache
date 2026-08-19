@@ -49,20 +49,20 @@
         "cache/encryption-cache": "self.version",
         "cache/filesystem-adapter": "self.version",
         "cache/hierarchical-cache": "self.version",
-        "cache/illuminate-adapter": "1.0.0",
+        "cache/illuminate-adapter": "1.0.2",
         "cache/memcache-adapter": "self.version",
         "cache/memcached-adapter": "self.version",
         "cache/mongodb-adapter": "self.version",
         "cache/namespaced-cache": "self.version",
         "cache/predis-adapter": "self.version",
         "cache/prefixed-cache": "self.version",
-        "cache/psr-6-doctrine-bridge": "4.0.0",
+        "cache/psr-6-doctrine-bridge": "4.0.3",
         "cache/redis-adapter": "self.version",
         "cache/session-handler": "self.version",
         "cache/simple-cache-bridge": "self.version",
         "cache/tag-interop": "self.version",
         "cache/taggable-cache": "self.version",
-        "cache/util": "1.0.0",
+        "cache/util": "1.0.2",
         "cache/void-adapter": "self.version"
     },
     "provide": {
@@ -93,7 +93,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "2.0-dev"
+            "dev-master": "2.1-dev"
         }
     },
     "scripts": {
