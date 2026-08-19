@@ -22,6 +22,36 @@ class MemcachedCachePoolTest extends TestCase
     use CreatePoolTrait;
 
     #[RunInSeparateProcess]
+    public function testBinaryProtocolCanBeDisabled()
+    {
+        if (class_exists(\Memcached::class)) {
+            $this->markTestSkipped('This test uses a local Memcached stub.');
+        }
+
+        eval('namespace { class Memcached { public const OPT_BINARY_PROTOCOL = 18; private array $options = []; public function setOption(int $option, mixed $value): bool { $this->options[$option] = $value; return true; } public function getOption(int $option): mixed { return $this->options[$option] ?? null; } } }');
+
+        $client = new \Memcached();
+        new MemcachedCachePool($client, false);
+
+        self::assertFalse($client->getOption(\Memcached::OPT_BINARY_PROTOCOL));
+    }
+
+    #[RunInSeparateProcess]
+    public function testBinaryProtocolIsEnabledByDefault()
+    {
+        if (class_exists(\Memcached::class)) {
+            $this->markTestSkipped('This test uses a local Memcached stub.');
+        }
+
+        eval('namespace { class Memcached { public const OPT_BINARY_PROTOCOL = 18; private array $options = []; public function setOption(int $option, mixed $value): bool { $this->options[$option] = $value; return true; } public function getOption(int $option): mixed { return $this->options[$option] ?? null; } } }');
+
+        $client = new \Memcached();
+        new MemcachedCachePool($client);
+
+        self::assertTrue($client->getOption(\Memcached::OPT_BINARY_PROTOCOL));
+    }
+
+    #[RunInSeparateProcess]
     public function testValidTaggedBackendPayloadIsHit()
     {
         if (class_exists(\Memcached::class)) {

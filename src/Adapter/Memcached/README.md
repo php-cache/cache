@@ -25,6 +25,12 @@ $client->addServer('127.0.0.1', 11211);
 $pool = new MemcachedCachePool($client);
 ```
 
+The pool enables Memcached's binary protocol by default. Pass `false` as the second constructor argument when an ASCII-only proxy handles the connection:
+
+```php
+$pool = new MemcachedCachePool($client, false);
+```
+
 ## Bulk operations
 
 The PSR-16 `getMultiple()`, `setMultiple()`, and `deleteMultiple()` methods use the native Memcached bulk commands. Bulk writes keep the same expiration for every value and remove old tag references after storage succeeds.
