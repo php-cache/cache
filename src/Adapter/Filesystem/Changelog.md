@@ -2,6 +2,13 @@
 
 Each release groups changes under Added, Removed, Changed, or Fixed headings.
 
+## 2.0.4
+
+### Fixed
+
+* Treat serialized items and tag indexes that reference unavailable PHP classes as cache misses.
+* Allow installing with `psr/simple-cache` 2 or 3.
+
 ## 2.0.3
 
 ### Fixed

@@ -4,11 +4,11 @@
 [![Static analysis](https://github.com/php-cache/cache/actions/workflows/static.yml/badge.svg)](https://github.com/php-cache/cache/actions/workflows/static.yml)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
-PHP Cache provides PSR-6 and PSR-16 cache adapters, decorators, and integration tools. This monorepo is the source for the packages in the [PHP Cache organization](https://github.com/php-cache).
+PHP Cache provides PSR-6 and PSR-16 cache adapters, decorators, and integration tools. This repository contains the packages in the [PHP Cache organization](https://github.com/php-cache).
 
 ## Requirements
 
-Version 2 requires PHP 8.2 or later and `psr/cache` 3.x. Packages that implement PSR-16 require `psr/simple-cache` 3.x.
+Version 2 requires PHP 8.2 or later and `psr/cache` 3.x. Packages that implement PSR-16 support `psr/simple-cache` 2.x and 3.x.
 
 Some adapters also need a PHP extension or client library. Composer lists those requirements for each split package.
 
@@ -20,7 +20,7 @@ Install the package for the backend you use:
 composer require cache/redis-adapter:^2.0
 ```
 
-You can install every adapter and library through the monorepo package:
+You can install every adapter and library through the aggregate package:
 
 ```bash
 composer require cache/cache:^2.0

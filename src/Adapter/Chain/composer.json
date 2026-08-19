@@ -30,7 +30,7 @@
         "cache/tag-interop": "^2.0",
         "psr/cache": "^3.0",
         "psr/log": "^3.0",
-        "psr/simple-cache": "^3.0"
+        "psr/simple-cache": "^2.0 || ^3.0"
     },
     "require-dev": {
         "cache/array-adapter": "^2.0",
@@ -40,7 +40,7 @@
     },
     "provide": {
         "psr/cache-implementation": "3.0",
-        "psr/simple-cache-implementation": "3.0"
+        "psr/simple-cache-implementation": "2.0 || 3.0"
     },
     "suggest": {
         "cache/void-adapter": "Provides a no-op final fallback for failed cache backends"

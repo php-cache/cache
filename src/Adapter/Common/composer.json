@@ -26,7 +26,7 @@
         "cache/tag-interop": "^2.0",
         "psr/cache": "^3.0",
         "psr/log": "^3.0",
-        "psr/simple-cache": "^3.0"
+        "psr/simple-cache": "^2.0 || ^3.0"
     },
     "require-dev": {
         "cache/integration-tests": "^1.0@dev",

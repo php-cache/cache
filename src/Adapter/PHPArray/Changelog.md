@@ -2,6 +2,16 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 2.0.3
+
+### Added
+
+* Document the optional in-memory item limit.
+
+### Fixed
+
+* Allow installing with `psr/simple-cache` 2 or 3.
+
 ## 2.0.0
 
 ### Changed

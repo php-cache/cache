@@ -20,7 +20,7 @@
         "php": "^8.2",
         "cache/tag-interop": "^2.0",
         "psr/cache": "^3.0",
-        "psr/simple-cache": "^3.0"
+        "psr/simple-cache": "^2.0 || ^3.0"
     },
     "require-dev": {
         "cache/array-adapter": "^2.0",

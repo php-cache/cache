@@ -2,6 +2,17 @@
 
 Each release groups changes under Added, Removed, Changed, or Fixed headings.
 
+## 2.1.0
+
+### Added
+
+* Allow callers to turn off the Memcached binary protocol through the pool constructor.
+
+### Fixed
+
+* Treat serialized payloads that reference unavailable PHP classes as cache misses.
+* Allow installing with `psr/simple-cache` 2 or 3.
+
 ## 2.0.0
 
 ### Added

@@ -2,6 +2,13 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 2.0.3
+
+### Fixed
+
+* Treat APCu payloads that reference unavailable classes or fail during deserialization as cache misses.
+* Allow installing with `psr/simple-cache` 2 or 3.
+
 ## 2.0.0
 
 ### Changed

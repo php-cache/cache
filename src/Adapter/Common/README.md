@@ -14,7 +14,7 @@ Application code should install a concrete adapter instead. Adapter authors can 
 composer require cache/adapter-common:^2.0
 ```
 
-Version 2 requires PHP 8.2, `psr/cache` 3, and `psr/simple-cache` 3.
+Version 2 requires PHP 8.2 and `psr/cache` 3. Its PSR-16 API supports `psr/simple-cache` 2 and 3.
 
 ## Documentation
 

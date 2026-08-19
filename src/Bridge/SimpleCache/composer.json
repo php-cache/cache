@@ -20,7 +20,7 @@
     "require": {
         "php": "^8.2",
         "psr/cache": "^3.0",
-        "psr/simple-cache": "^3.0"
+        "psr/simple-cache": "^2.0 || ^3.0"
     },
     "require-dev": {
         "cache/array-adapter": "^2.0",
@@ -32,7 +32,7 @@
         "symfony/cache": "^7.4 || ^8.0"
     },
     "provide": {
-        "psr/simple-cache-implementation": "3.0"
+        "psr/simple-cache-implementation": "2.0 || 3.0"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

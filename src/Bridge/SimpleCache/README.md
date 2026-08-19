@@ -22,7 +22,7 @@ $pool = new ArrayCachePool();
 $cache = new SimpleCacheBridge($pool);
 ```
 
-Version 2 implements `psr/cache` 3 and `psr/simple-cache` 3.
+Version 2 implements `psr/cache` 3 and supports `psr/simple-cache` 2 and 3.
 
 ## Contributing
 

@@ -2,6 +2,12 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 2.0.3
+
+### Fixed
+
+* Treat encrypted values that reference unavailable PHP classes as cache misses.
+
 ## 2.0.0
 
 ### Changed

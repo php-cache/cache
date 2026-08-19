@@ -25,7 +25,7 @@
     "homepage": "https://www.php-cache.com/en/latest/",
     "require": {
         "php": "^8.2",
-        "psr/simple-cache": "^3.0"
+        "psr/simple-cache": "^2.0 || ^3.0"
     },
     "require-dev": {
         "cache/array-adapter": "^2.0",
