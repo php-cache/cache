@@ -11,7 +11,12 @@
 
 namespace Cache\Bridge\Doctrine\Tests;
 
+use Cache\Adapter\Chain\CachePoolChain;
+use Cache\Adapter\Filesystem\FilesystemCachePool;
+use Cache\Adapter\PHPArray\ArrayCachePool;
 use Cache\Bridge\Doctrine\DoctrineCacheBridge;
+use League\Flysystem\Filesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mockery as m;
 use Mockery\MockInterface;
@@ -19,6 +24,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Cache\InvalidArgumentException as CacheInvalidArgumentException;
 
 /**
  * @author Aaron Scherer <aequasi@gmail.com>
@@ -107,6 +113,82 @@ class DoctrineCacheBridgeTest extends TestCase
     public function testGetStats()
     {
         $this->assertNull($this->bridge->getStats());
+    }
+
+    public function testFilesystemPoolRoundTripsDoctrineKeys()
+    {
+        $this->assertDoctrineKeysRoundTripThroughFilesystem(false);
+    }
+
+    public function testChainWithFilesystemPoolRoundTripsDoctrineKeys()
+    {
+        $this->assertDoctrineKeysRoundTripThroughFilesystem(true);
+    }
+
+    private function assertDoctrineKeysRoundTripThroughFilesystem(bool $useChain)
+    {
+        $rootPath = sys_get_temp_dir().'/php-cache-doctrine-bridge-'.bin2hex(random_bytes(8));
+        $filesystem = new Filesystem(new LocalFilesystemAdapter($rootPath));
+        $filesystemPool = new FilesystemCachePool($filesystem);
+        $pool = $filesystemPool;
+        if ($useChain) {
+            $arrayPool = new ArrayCachePool();
+            $arrayPool->save($arrayPool->getItem('DoctrineNamespaceCacheKey[]')->set(1));
+            $arrayPool->save($arrayPool->getItem('[metadata][1]')->set('legacy value'));
+            $pool = new CachePoolChain([$arrayPool, $filesystemPool]);
+        }
+        $bridge = new DoctrineCacheBridge($pool);
+        $keys = ['metadata', 'id-with-hyphen', str_repeat('a', 400)];
+
+        try {
+            foreach ($keys as $key) {
+                self::assertFalse($bridge->contains($key));
+                self::assertTrue($bridge->save($key, $key));
+                self::assertTrue($bridge->contains($key));
+                self::assertSame($key, $bridge->fetch($key));
+                self::assertTrue($bridge->delete($key));
+                self::assertFalse($bridge->contains($key));
+                self::assertTrue($bridge->save($key, $key));
+            }
+
+            self::assertTrue($bridge->deleteAll());
+            foreach ($keys as $key) {
+                self::assertFalse($bridge->contains($key));
+            }
+        } finally {
+            if ($filesystem->directoryExists('cache')) {
+                $filesystem->deleteDirectory('cache');
+            }
+            if (is_dir($rootPath)) {
+                rmdir($rootPath);
+            }
+        }
+    }
+
+    public function testSaveDoesNotRetryAnUnrelatedInvalidArgumentException()
+    {
+        $exception = new class('save failed') extends \InvalidArgumentException implements CacheInvalidArgumentException {
+        };
+        $this->itemMock->shouldReceive('set')->once()->with('dummy_data');
+        $this->mock->shouldReceive('getItem')->once()->with('[some_item][1]')->andReturn($this->itemMock);
+        $this->mock->shouldReceive('save')->once()->with($this->itemMock)->andThrow($exception);
+
+        $this->expectExceptionObject($exception);
+
+        $this->bridge->save('some_item', 'dummy_data');
+    }
+
+    public function testRejectedLegacyKeyUsesSha256Fallback()
+    {
+        $exception = new class('invalid key') extends \InvalidArgumentException implements CacheInvalidArgumentException {
+        };
+        $doctrineKey = '[some{item][1]';
+        $legacyKey = '[some_item][1]';
+        $this->itemMock->shouldReceive('isHit')->once()->andReturn(false);
+        $this->mock->shouldReceive('getItem')->once()->with($legacyKey)->andThrow($exception);
+        $this->mock->shouldReceive('getItem')->once()->with(hash('sha256', $doctrineKey))->andReturn($this->itemMock);
+
+        self::assertFalse($this->bridge->fetch('some{item'));
     }
 
     #[DataProvider('invalidKeys')]

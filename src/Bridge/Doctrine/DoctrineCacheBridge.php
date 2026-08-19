@@ -12,7 +12,9 @@
 namespace Cache\Bridge\Doctrine;
 
 use Doctrine\Common\Cache\CacheProvider;
+use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Cache\InvalidArgumentException;
 
 /**
  * This is a bridge between a Doctrine cache and PSR6.
@@ -45,7 +47,7 @@ class DoctrineCacheBridge extends CacheProvider
      */
     protected function doFetch($id): mixed
     {
-        $item = $this->cachePool->getItem($this->normalizeKey($id));
+        $item = $this->getItemWithPortableKeyFallback($id);
 
         if ($item->isHit()) {
             return $item->get();
@@ -63,7 +65,10 @@ class DoctrineCacheBridge extends CacheProvider
      */
     protected function doContains($id): bool
     {
-        return $this->cachePool->hasItem($this->normalizeKey($id));
+        return $this->withPortableKeyFallback(
+            $id,
+            fn (string $key): bool => $this->cachePool->hasItem($key)
+        );
     }
 
     /**
@@ -78,7 +83,7 @@ class DoctrineCacheBridge extends CacheProvider
      */
     protected function doSave($id, $data, $lifeTime = 0): bool
     {
-        $item = $this->cachePool->getItem($this->normalizeKey($id));
+        $item = $this->getItemWithPortableKeyFallback($id);
         $item->set($data);
 
         if (0 !== $lifeTime) {
@@ -97,7 +102,10 @@ class DoctrineCacheBridge extends CacheProvider
      */
     protected function doDelete($id): bool
     {
-        return $this->cachePool->deleteItem($this->normalizeKey($id));
+        return $this->withPortableKeyFallback(
+            $id,
+            fn (string $key): bool => $this->cachePool->deleteItem($key)
+        );
     }
 
     /**
@@ -132,5 +140,29 @@ class DoctrineCacheBridge extends CacheProvider
         }
 
         return $key;
+    }
+
+    private function getItemWithPortableKeyFallback(string $key): CacheItemInterface
+    {
+        return $this->withPortableKeyFallback(
+            $key,
+            fn (string $normalizedKey): CacheItemInterface => $this->cachePool->getItem($normalizedKey)
+        );
+    }
+
+    /**
+     * @template T
+     *
+     * @param callable(string): T $operation
+     *
+     * @return T
+     */
+    private function withPortableKeyFallback(string $key, callable $operation): mixed
+    {
+        try {
+            return $operation($this->normalizeKey($key));
+        } catch (InvalidArgumentException) {
+            return $operation(hash('sha256', $key));
+        }
     }
 }

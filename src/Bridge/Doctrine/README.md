@@ -29,6 +29,8 @@ $cacheProvider->getCachePool();
 
 `$pool` must implement `Psr\Cache\CacheItemPoolInterface` from `psr/cache` 3.x.
 
+The bridge keeps legacy normalized keys when the pool accepts them. If the pool rejects a key, the bridge retries with a 64-character SHA-256 key.
+
 ## Contributing
 
 Send pull requests to the [main repository](https://github.com/php-cache/cache). Report issues on the [GitHub issue tracker](https://github.com/php-cache/cache/issues).

@@ -23,7 +23,12 @@
         "psr/cache-implementation": "^3.0"
     },
     "require-dev": {
+        "cache/array-adapter": "^2.0",
+        "cache/chain-adapter": "^2.0.3",
         "cache/doctrine-adapter": "^2.0",
+        "cache/filesystem-adapter": "^2.0.3",
+        "league/flysystem": "^3.15.1",
+        "league/flysystem-local": "^3.15",
         "mockery/mockery": "^1.6",
         "phpunit/phpunit": "^11.5"
     },

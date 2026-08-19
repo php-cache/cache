@@ -2,6 +2,12 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 4.0.3
+
+### Fixed
+
+* Retry rejected legacy keys as portable SHA-256 keys while preserving accepted key mappings.
+
 ## 4.0.0
 
 ### Changed
