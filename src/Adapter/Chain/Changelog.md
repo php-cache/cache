@@ -20,7 +20,7 @@ Each release groups changes under Added, Removed, Changed, or Fixed headings.
 
 * Require PHP 8.2 or later.
 * Require `psr/cache` 3 and `psr/simple-cache` 3.
-* Require `cache/simple-cache-bridge` 4.
+* Require `cache/simple-cache-bridge` 2.
 * Add native parameter and return types required by the PSR interfaces.
 * Implement PSR-16 directly through the PSR-6 bridge.
 * Require every chain member to implement `Cache\Adapter\Common\PhpCachePool`.
