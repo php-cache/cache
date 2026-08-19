@@ -2,6 +2,12 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 2.1.0
+
+### Added
+
+* Add `ExtensibleTaggablePSR6PoolAdapter` as an opt-in extension base with protected pool access.
+
 ## 2.0.0
 
 ### Changed

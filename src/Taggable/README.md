@@ -35,9 +35,13 @@ By default, tag metadata shares the wrapped pool. Pass a second PSR-6 pool when 
 
 ## Native tag-list storage
 
-Extend `TaggablePSR6PoolAdapter` when your tag store has native list operations. The constructor and list methods are protected, and `makeTaggable()` uses late static binding.
+Extend `ExtensibleTaggablePSR6PoolAdapter` when your tag store has native list operations. Its constructor and list methods are protected. `makeTaggable()` uses late static binding.
 
-Override `appendListItem()`, `removeListItem()`, `removeList()`, and `getList()`. Keep the native client in your subclass. The adapter does not expose either wrapped pool as mutable subclass state.
+Override `appendListItem()`, `removeListItem()`, `removeList()`, and `getList()`. Use `getCachePool()` and `getTagStorePool()` to access the supplied PSR-6 pools.
+
+The adapter keeps both wrapped pools private, so subclasses cannot replace them. The supplied tag-store object must expose its native list operations or native client through a subtype your subclass can recognize.
+
+`makeTaggable()` returns an already-taggable cache pool unchanged when no separate tag store is supplied. Pass a separate tag store when the subclass hooks must run.
 
 The three mutation methods return `false` when the tag store cannot update its index. The adapter reports that failure from the calling cache operation.
 

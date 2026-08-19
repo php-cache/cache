@@ -14,6 +14,7 @@ namespace Cache\Taggable\Tests;
 use Cache\Adapter\PHPArray\ArrayCachePool;
 use Cache\IntegrationTests\TaggableCachePoolTest;
 use Cache\Taggable\Exception\InvalidArgumentException;
+use Cache\Taggable\ExtensibleTaggablePSR6PoolAdapter;
 use Cache\Taggable\TaggablePSR6PoolAdapter;
 use Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Psr\Cache\CacheItemPoolInterface;
@@ -33,17 +34,21 @@ class SeparateTagPoolPSR6AdapterTest extends TaggableCachePoolTest
         self::assertSame($pool, TaggablePSR6PoolAdapter::makeTaggable($pool));
     }
 
-    public function testSubclassCanReplaceTagListOperations()
+    public function testSubclassCanUseWrappedTagStoreForNativeListOperations()
     {
-        $pool = NativeListTaggablePool::makeTaggable(new SymfonyArrayAdapter());
+        $cachePool = new SymfonyArrayAdapter();
+        $tagStore = new NativeListTagStore();
+        $pool = NativeListTaggablePool::makeTaggable($cachePool, $tagStore);
         $this->assertInstanceOf(NativeListTaggablePool::class, $pool);
+        $this->assertSame($cachePool, $pool->wrappedCachePool());
+        $this->assertSame($tagStore, $pool->wrappedTagStorePool());
         $this->assertTrue($pool->save($pool->getItem('key')->set('value')->setTags(['tag'])));
-        $this->assertSame(1, $pool->appendCalls);
+        $this->assertSame(1, $tagStore->appendCalls);
 
         $this->assertTrue($pool->invalidateTag('tag'));
         $this->assertFalse($pool->hasItem('key'));
-        $this->assertGreaterThan(0, $pool->removeItemCalls);
-        $this->assertSame(1, $pool->removeCalls);
+        $this->assertGreaterThan(0, $tagStore->removeItemCalls);
+        $this->assertSame(1, $tagStore->removeCalls);
     }
 
     public function testGetItemsWrapsEveryReturnedItem()
@@ -281,7 +286,50 @@ class SeparateTagPoolPSR6AdapterTest extends TaggableCachePoolTest
     }
 }
 
-final class NativeListTaggablePool extends TaggablePSR6PoolAdapter
+final class NativeListTaggablePool extends ExtensibleTaggablePSR6PoolAdapter
+{
+    public function wrappedCachePool(): CacheItemPoolInterface
+    {
+        return $this->getCachePool();
+    }
+
+    public function wrappedTagStorePool(): CacheItemPoolInterface
+    {
+        return $this->getTagStorePool();
+    }
+
+    protected function appendListItem(string $name, string $value): bool
+    {
+        return $this->nativeTagStore()->appendListItem($name, $value);
+    }
+
+    protected function removeList(string $name): bool
+    {
+        return $this->nativeTagStore()->removeList($name);
+    }
+
+    protected function removeListItem(string $name, string $key): bool
+    {
+        return $this->nativeTagStore()->removeListItem($name, $key);
+    }
+
+    protected function getList(string $name): array
+    {
+        return $this->nativeTagStore()->getList($name);
+    }
+
+    private function nativeTagStore(): NativeListTagStore
+    {
+        $tagStore = $this->getTagStorePool();
+        if (!$tagStore instanceof NativeListTagStore) {
+            throw new \LogicException('A native list tag store is required.');
+        }
+
+        return $tagStore;
+    }
+}
+
+final class NativeListTagStore extends SymfonyArrayAdapter
 {
     /** @var array<string, list<string>> */
     private array $lists = [];
@@ -292,7 +340,7 @@ final class NativeListTaggablePool extends TaggablePSR6PoolAdapter
 
     public int $removeItemCalls = 0;
 
-    protected function appendListItem(string $name, string $value): bool
+    public function appendListItem(string $name, string $value): bool
     {
         ++$this->appendCalls;
         $this->lists[$name][] = $value;
@@ -300,7 +348,7 @@ final class NativeListTaggablePool extends TaggablePSR6PoolAdapter
         return true;
     }
 
-    protected function removeList(string $name): bool
+    public function removeList(string $name): bool
     {
         ++$this->removeCalls;
         unset($this->lists[$name]);
@@ -308,7 +356,7 @@ final class NativeListTaggablePool extends TaggablePSR6PoolAdapter
         return true;
     }
 
-    protected function removeListItem(string $name, string $key): bool
+    public function removeListItem(string $name, string $key): bool
     {
         ++$this->removeItemCalls;
         $this->lists[$name] = array_values(array_filter(
@@ -319,7 +367,10 @@ final class NativeListTaggablePool extends TaggablePSR6PoolAdapter
         return true;
     }
 
-    protected function getList(string $name): array
+    /**
+     * @return list<string>
+     */
+    public function getList(string $name): array
     {
         return $this->lists[$name] ?? [];
     }
