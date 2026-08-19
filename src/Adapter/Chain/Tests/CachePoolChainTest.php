@@ -14,6 +14,7 @@ namespace Cache\Adapter\Chain\Tests;
 use Cache\Adapter\Chain\CachePoolChain;
 use Cache\Adapter\Common\CacheItem;
 use Cache\Adapter\Common\Exception\CachePoolException;
+use Cache\Adapter\Common\Exception\InvalidArgumentException;
 use Cache\Adapter\Common\PhpCachePool;
 use Cache\Adapter\PHPArray\ArrayCachePool;
 use Cache\TagInterop\TaggableCacheItemPoolInterface;
@@ -66,6 +67,204 @@ class CachePoolChainTest extends TestCase
         $this->expectException(\Psr\Cache\InvalidArgumentException::class);
 
         (new CachePoolChain([$pool]))->saveDeferred($item);
+    }
+
+    public function testGetItemValidatesLowerPriorityPoolAfterHit()
+    {
+        $firstPool = new ArrayCachePool();
+        $firstPool->save($firstPool->getItem('key')->set('value'));
+        $exception = new InvalidArgumentException('invalid key');
+        $secondPool = $this->createMock(PhpCachePool::class);
+        $secondPool->expects(self::once())->method('getItem')->with('key')->willThrowException($exception);
+
+        $this->expectExceptionObject($exception);
+
+        (new CachePoolChain([$firstPool, $secondPool]))->getItem('key');
+    }
+
+    public function testGetItemDoesNotEvaluateLowerPriorityItemAfterHit()
+    {
+        $firstPool = new ArrayCachePool();
+        $firstPool->save($firstPool->getItem('key')->set('value'));
+        $lazyItem = new CacheItem('key', static function (): array {
+            throw new \RuntimeException('Lower-priority item was evaluated.');
+        });
+        $secondPool = $this->createMock(PhpCachePool::class);
+        $secondPool->expects(self::once())->method('getItem')->with('key')->willReturn($lazyItem);
+
+        $item = (new CachePoolChain([$firstPool, $secondPool]))->getItem('key');
+
+        self::assertSame('value', $item->get());
+    }
+
+    public function testGetItemsValidatesLowerPriorityPoolBeforeReturningHigherPriorityHits()
+    {
+        $firstPool = new ArrayCachePool();
+        $firstPool->save($firstPool->getItem('key')->set('value'));
+        $exception = new InvalidArgumentException('invalid key');
+        $secondPool = $this->createMock(PhpCachePool::class);
+        $secondPool->expects(self::once())->method('getItem')->with('key')->willThrowException($exception);
+
+        $this->expectExceptionObject($exception);
+
+        iterator_to_array((new CachePoolChain([$firstPool, $secondPool]))->getItems(['key']));
+    }
+
+    public function testGetItemsStopsReadingPoolsAfterEveryKeyIsFound()
+    {
+        $firstPool = new ArrayCachePool();
+        $firstPool->save($firstPool->getItem('key')->set('value'));
+        $secondPool = $this->createMock(PhpCachePool::class);
+        $secondPool->expects(self::once())->method('getItem')->with('key')->willReturn(new CacheItem('key', false));
+        $secondPool->expects(self::never())->method('getItems');
+
+        $items = iterator_to_array((new CachePoolChain([$firstPool, $secondPool]))->getItems(['key']));
+
+        self::assertSame('value', $items['key']->get());
+    }
+
+    public function testHasItemValidatesLowerPriorityPoolBeforeReturningHit()
+    {
+        $firstPool = new ArrayCachePool();
+        $firstPool->save($firstPool->getItem('key')->set('value'));
+        $exception = new InvalidArgumentException('invalid key');
+        $secondPool = $this->createMock(PhpCachePool::class);
+        $secondPool->expects(self::once())->method('getItem')->with('key')->willThrowException($exception);
+
+        $this->expectExceptionObject($exception);
+
+        (new CachePoolChain([$firstPool, $secondPool]))->hasItem('key');
+    }
+
+    public function testHasItemStopsReadingPoolsAfterHit()
+    {
+        $firstPool = new ArrayCachePool();
+        $firstPool->save($firstPool->getItem('key')->set('value'));
+        $secondPool = $this->createMock(PhpCachePool::class);
+        $secondPool->expects(self::once())->method('getItem')->with('key')->willReturn(new CacheItem('key', false));
+        $secondPool->expects(self::never())->method('hasItem');
+
+        self::assertTrue((new CachePoolChain([$firstPool, $secondPool]))->hasItem('key'));
+    }
+
+    public function testSaveValidatesEveryPoolBeforeMutatingEarlierPool()
+    {
+        $firstPool = new ArrayCachePool();
+        $exception = new InvalidArgumentException('invalid key');
+        $secondPool = $this->createMock(PhpCachePool::class);
+        $secondPool->method('getItem')->with('key')->willThrowException($exception);
+        $secondPool->method('save')->willThrowException($exception);
+        $chain = new CachePoolChain([$firstPool, $secondPool]);
+
+        try {
+            $chain->save(new CacheItem('key', true, 'value'));
+            self::fail('The invalid key was accepted.');
+        } catch (InvalidArgumentException $caught) {
+            self::assertSame($exception, $caught);
+        }
+
+        self::assertFalse($firstPool->hasItem('key'));
+    }
+
+    public function testDeleteItemValidatesEveryPoolBeforeMutatingEarlierPool()
+    {
+        $firstPool = new ArrayCachePool();
+        $firstPool->save($firstPool->getItem('key')->set('value'));
+        $exception = new InvalidArgumentException('invalid key');
+        $secondPool = $this->createMock(PhpCachePool::class);
+        $secondPool->method('getItem')->with('key')->willThrowException($exception);
+        $secondPool->method('deleteItem')->willThrowException($exception);
+        $chain = new CachePoolChain([$firstPool, $secondPool]);
+
+        try {
+            $chain->deleteItem('key');
+            self::fail('The invalid key was accepted.');
+        } catch (InvalidArgumentException $caught) {
+            self::assertSame($exception, $caught);
+        }
+
+        self::assertTrue($firstPool->hasItem('key'));
+    }
+
+    public function testDeleteItemsValidatesEveryPoolBeforeMutatingEarlierPool()
+    {
+        $firstPool = new ArrayCachePool();
+        $firstPool->save($firstPool->getItem('key')->set('value'));
+        $exception = new InvalidArgumentException('invalid key');
+        $secondPool = $this->createMock(PhpCachePool::class);
+        $secondPool->method('getItem')->with('key')->willThrowException($exception);
+        $secondPool->method('deleteItems')->willThrowException($exception);
+        $chain = new CachePoolChain([$firstPool, $secondPool]);
+
+        try {
+            $chain->deleteItems(['key']);
+            self::fail('The invalid key was accepted.');
+        } catch (InvalidArgumentException $caught) {
+            self::assertSame($exception, $caught);
+        }
+
+        self::assertTrue($firstPool->hasItem('key'));
+    }
+
+    public function testSaveDeferredValidatesEveryPoolBeforeMutatingEarlierPool()
+    {
+        $firstPool = new ArrayCachePool();
+        $exception = new InvalidArgumentException('invalid key');
+        $secondPool = $this->createMock(PhpCachePool::class);
+        $secondPool->method('getItem')->with('key')->willThrowException($exception);
+        $secondPool->method('saveDeferred')->willThrowException($exception);
+        $chain = new CachePoolChain([$firstPool, $secondPool]);
+
+        try {
+            $chain->saveDeferred(new CacheItem('key', true, 'value'));
+            self::fail('The invalid key was accepted.');
+        } catch (InvalidArgumentException $caught) {
+            self::assertSame($exception, $caught);
+        }
+
+        self::assertFalse($firstPool->hasItem('key'));
+    }
+
+    public function testSkipOnFailureDoesNotRemovePoolThatRejectsAKey()
+    {
+        $exception = new InvalidArgumentException('invalid key');
+        $rejectingPool = $this->createMock(PhpCachePool::class);
+        $rejectingPool->expects(self::exactly(2))->method('getItem')->with('key')->willThrowException($exception);
+        $chain = new CachePoolChain([$rejectingPool, new ArrayCachePool()], ['skip_on_failure' => true]);
+
+        for ($attempt = 0; $attempt < 2; ++$attempt) {
+            try {
+                $chain->getItem('key');
+                self::fail('The invalid key was accepted.');
+            } catch (InvalidArgumentException $caught) {
+                self::assertSame($exception, $caught);
+            }
+        }
+    }
+
+    public function testSkipOnFailureRemovesPoolThatFailsDuringMutationPreflight()
+    {
+        $exception = new \RuntimeException('backend unavailable');
+        $failedPool = $this->createMock(PhpCachePool::class);
+        $failedPool->expects(self::once())->method('getItem')->with('key')->willThrowException($exception);
+        $failedPool->expects(self::never())->method('save');
+        $fallbackPool = new ArrayCachePool();
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())
+            ->method('log')
+            ->with(
+                'warning',
+                'Removing pool "primary" from chain because it threw an exception when executing "save"',
+                ['exception' => $exception]
+            );
+        $chain = new CachePoolChain(
+            ['primary' => $failedPool, 'fallback' => $fallbackPool],
+            ['skip_on_failure' => true]
+        );
+        $chain->setLogger($logger);
+
+        self::assertTrue($chain->save(new CacheItem('key', true, 'value')));
+        self::assertSame('value', $fallbackPool->getItem('key')->get());
     }
 
     public function testPoolFailureIsRethrownByDefault()

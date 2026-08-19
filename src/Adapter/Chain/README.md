@@ -35,6 +35,8 @@ $value = $pool->get('key');
 
 Each pool in the chain must implement `Cache\Adapter\Common\PhpCachePool`. This keeps cache items transferable while the chain backfills earlier pools. Wrap the completed chain with other PSR-6 decorators instead of adding generic or decorated pools as chain members.
 
+A key must be accepted by every pool in the chain. The chain checks each member before returning a higher-priority hit or starting a write or delete, which prevents partial mutations when one backend has narrower key rules.
+
 Backfills preserve the cached value, expiration, and stored tags. Tag invalidation therefore removes copies from every tier.
 
 ## Fallback behavior

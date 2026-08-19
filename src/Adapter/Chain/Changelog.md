@@ -2,6 +2,12 @@
 
 Each release groups changes under Added, Removed, Changed, or Fixed headings.
 
+## 2.0.3
+
+### Fixed
+
+* Validate keys against every chain member before returning a cached item or starting a broadcast mutation.
+
 ## 2.0.0
 
 ### Changed

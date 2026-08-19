@@ -75,11 +75,17 @@ class CachePoolChain implements PhpCachePool, CacheInterface, LoggerAwareInterfa
 
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
-                $item = $pool->getItem($key);
+                $candidate = $pool->getItem($key);
+
+                if (null !== $result) {
+                    continue;
+                }
+
+                $item = $candidate;
 
                 if ($item->isHit()) {
                     $result = $item;
-                    break;
+                    continue;
                 }
 
                 $needsSave[] = [$poolKey, $pool];
@@ -115,6 +121,8 @@ class CachePoolChain implements PhpCachePool, CacheInterface, LoggerAwareInterfa
     public function getItems(array $keys = []): iterable
     {
         $keys = $this->prepareKeys($keys);
+        $keys = $this->prepareKeysForPools($keys, __FUNCTION__);
+
         $hits = [];
         $loadedItems = [];
         $notFoundItems = [];
@@ -241,6 +249,8 @@ class CachePoolChain implements PhpCachePool, CacheInterface, LoggerAwareInterfa
 
     public function hasItem(string $key): bool
     {
+        [$key] = $this->prepareKeysForPools([$key], __FUNCTION__);
+
         $poolResponded = false;
         foreach ($this->getPools() as $poolKey => $pool) {
             try {
@@ -279,6 +289,8 @@ class CachePoolChain implements PhpCachePool, CacheInterface, LoggerAwareInterfa
 
     public function deleteItem(string $key): bool
     {
+        [$key] = $this->prepareKeysForPools([$key], __FUNCTION__);
+
         $result = true;
         $poolResponded = false;
         foreach ($this->getPools() as $poolKey => $pool) {
@@ -297,6 +309,9 @@ class CachePoolChain implements PhpCachePool, CacheInterface, LoggerAwareInterfa
 
     public function deleteItems(array $keys): bool
     {
+        $keys = $this->prepareKeys($keys);
+        $keys = $this->prepareKeysForPools($keys, __FUNCTION__);
+
         $result = true;
         $poolResponded = false;
         foreach ($this->getPools() as $poolKey => $pool) {
@@ -319,6 +334,8 @@ class CachePoolChain implements PhpCachePool, CacheInterface, LoggerAwareInterfa
             throw new InvalidArgumentException('Cache items are not transferable between pools. Item MUST implement PhpCacheItem.');
         }
 
+        $this->prepareKeysForPools([$item->getKey()], __FUNCTION__);
+
         $result = true;
         $poolResponded = false;
         foreach ($this->getPools() as $poolKey => $pool) {
@@ -340,6 +357,8 @@ class CachePoolChain implements PhpCachePool, CacheInterface, LoggerAwareInterfa
         if (!$item instanceof PhpCacheItem) {
             throw new InvalidArgumentException('Cache items are not transferable between pools. Item MUST implement PhpCacheItem.');
         }
+
+        $this->prepareKeysForPools([$item->getKey()], __FUNCTION__);
 
         $result = true;
         $poolResponded = false;
@@ -472,6 +491,27 @@ class CachePoolChain implements PhpCachePool, CacheInterface, LoggerAwareInterfa
         }
 
         return $this->pools;
+    }
+
+    /**
+     * @param list<string> $keys
+     *
+     * @return list<string>
+     */
+    private function prepareKeysForPools(array $keys, string $operation): array
+    {
+        foreach ($this->getPools() as $poolKey => $pool) {
+            foreach ($keys as $key) {
+                try {
+                    $pool->getItem($key);
+                } catch (\Exception $e) {
+                    $this->handleException($poolKey, $operation, $e);
+                    break;
+                }
+            }
+        }
+
+        return $keys;
     }
 
     private function handleException(int|string $poolKey, string $operation, \Exception $exception): void
