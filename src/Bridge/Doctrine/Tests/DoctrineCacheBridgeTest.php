@@ -141,6 +141,12 @@ class DoctrineCacheBridgeTest extends TestCase
         $keys = ['metadata', 'id-with-hyphen', str_repeat('a', 400)];
 
         try {
+            if ($useChain) {
+                self::assertTrue($bridge->contains('metadata'));
+                self::assertSame('legacy value', $bridge->fetch('metadata'));
+                self::assertTrue($bridge->delete('metadata'));
+            }
+
             foreach ($keys as $key) {
                 self::assertFalse($bridge->contains($key));
                 self::assertTrue($bridge->save($key, $key));

@@ -2,6 +2,12 @@
 
 Each release groups changes under Added, Removed, Changed, or Fixed headings.
 
+## 2.0.4
+
+### Changed
+
+* Test against Array Adapter 2 and 3.
+
 ## 2.0.3
 
 ### Fixed

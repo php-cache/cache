@@ -38,7 +38,8 @@
         "phpstan/phpstan": "2.2.8",
         "phpunit/phpunit": "^11.5",
         "predis/predis": "^2.0 || ^3.0",
-        "symfony/cache": "^7.4 || ^8.0"
+        "symfony/cache": "^7.4 || ^8.0",
+        "symfony/clock": "^7.4 || ^8.0"
     },
     "replace": {
         "cache/adapter-common": "3.0.0",
@@ -53,16 +54,16 @@
         "cache/memcache-adapter": "3.0.0",
         "cache/memcached-adapter": "3.0.0",
         "cache/mongodb-adapter": "3.0.0",
-        "cache/namespaced-cache": "2.0.3",
+        "cache/namespaced-cache": "2.0.4",
         "cache/predis-adapter": "3.0.0",
-        "cache/prefixed-cache": "2.0.3",
+        "cache/prefixed-cache": "2.0.4",
         "cache/psr-6-doctrine-bridge": "4.0.4",
         "cache/redis-adapter": "3.0.0",
-        "cache/session-handler": "2.0.3",
+        "cache/session-handler": "2.0.4",
         "cache/simple-cache-bridge": "2.0.4",
         "cache/tag-interop": "2.0.0",
         "cache/taggable-cache": "3.0.0",
-        "cache/util": "1.0.3",
+        "cache/util": "1.0.4",
         "cache/void-adapter": "3.0.0"
     },
     "provide": {

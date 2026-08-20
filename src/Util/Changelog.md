@@ -2,6 +2,12 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 1.0.4
+
+### Changed
+
+* Test against Array Adapter 2 and 3.
+
 ## 1.0.3
 
 ### Fixed

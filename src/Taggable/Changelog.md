@@ -6,6 +6,7 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ### Changed
 
+* Test against Array Adapter 2 and 3.
 * Expose the wrapped cache and tag-store pools as protected `readonly` properties on `TaggablePSR6PoolAdapter`.
 * Store a generation snapshot with each tagged item instead of a reverse tag index.
 * Validate tag generations in `getItem()`, `getItems()`, and `hasItem()`.
