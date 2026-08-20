@@ -30,6 +30,12 @@ interface PhpCacheItem extends HasExpirationTimestampInterface, TaggableCacheIte
      */
     public function getTags(): array;
 
+    /** @return list<array{0: string, 1: string}> */
+    public function getTagVersions(): array;
+
+    /** @param list<array{0: string, 1: string}> $tagVersions */
+    public function setTagVersions(array $tagVersions): void;
+
     /**
      * Move newly assigned tags to the set loaded from storage.
      */

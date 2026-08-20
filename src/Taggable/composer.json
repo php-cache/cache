@@ -36,7 +36,8 @@
         "cache/array-adapter": "^2.0",
         "cache/integration-tests": "^1.0@dev",
         "phpunit/phpunit": "^11.5",
-        "symfony/cache": "^7.4 || ^8.0"
+        "symfony/cache": "^7.4 || ^8.0",
+        "symfony/clock": "^7.4 || ^8.0"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
@@ -50,7 +51,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "2.1-dev"
+            "dev-master": "3.0-dev"
         }
     }
 }

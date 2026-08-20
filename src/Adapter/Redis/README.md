@@ -13,7 +13,7 @@ Use the [Predis adapter](https://github.com/php-cache/predis-adapter) when your 
 Install the package and enable the Redis extension:
 
 ```bash
-composer require cache/redis-adapter:^2.0
+composer require cache/redis-adapter:^3.0
 ```
 
 ## Usage
@@ -39,6 +39,20 @@ $cluster = new RedisCluster(null, [
 ]);
 $clusterPool = new RedisCachePool($cluster);
 ```
+
+## Upgrading to version 3
+
+Version 3 stores tag indexes as sorted sets under the reserved `php-cache:tag:` prefix. Each index expires with its longest-lived item and stays persistent while it contains a non-expiring item.
+
+Each tagged item stores a generation snapshot. The sorted set stores the current generation marker with the item index.
+
+After the last indexed item is removed, the generation marker remains for 60 seconds. This lets an immediate rewrite reuse the same generation before the new index member is added.
+
+Version 2 uses Redis sets under `tag!` keys. Version 3 does not read those indexes.
+
+Stop all workers, clear the Redis cache, and then deploy version 3. Follow the same sequence before a rollback.
+
+RedisArray runs tag scripts on the current shard selected for each tag key. Its index, `autorehash`, and previous-ring fallbacks do not apply to tag indexes. Stop workers and clear the cache before changing the RedisArray ring.
 
 ## Upgrading to version 2
 

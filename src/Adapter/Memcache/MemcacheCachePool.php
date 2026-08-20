@@ -39,9 +39,7 @@ class MemcacheCachePool extends AbstractCachePool
 
     protected function clearOneObjectFromCache(string $key): bool
     {
-        $this->cache->delete($key);
-
-        return true;
+        return $this->cache->delete($key) || false === $this->cache->get($key);
     }
 
     protected function storeItemInCache(PhpCacheItem $item, ?int $ttl): bool
@@ -54,7 +52,7 @@ class MemcacheCachePool extends AbstractCachePool
             $ttl = time() + $ttl;
         }
 
-        $data = serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]);
+        $data = serialize([true, $item->get(), $item->getTagVersions(), $item->getExpirationTimestamp()]);
 
         return $this->cache->set($item->getKey(), $data, 0, $ttl);
     }
@@ -70,7 +68,7 @@ class MemcacheCachePool extends AbstractCachePool
     }
 
     /**
-     * @return array{true, mixed, array<string, string>, int|null}|null
+     * @return array{true, mixed, list<array{0: string, 1: string}>, int|null}|null
      */
     private function decodeCacheItem(mixed $payload): ?array
     {
@@ -91,12 +89,16 @@ class MemcacheCachePool extends AbstractCachePool
         }
 
         $validTags = [];
-        foreach ($tags as $tag) {
-            if (!\is_string($tag)) {
+        foreach ($tags as $tagVersion) {
+            if (!\is_array($tagVersion) || !array_is_list($tagVersion) || 2 !== \count($tagVersion)) {
+                return null;
+            }
+            [$tag, $version] = $tagVersion;
+            if (!\is_string($tag) || !\is_string($version)) {
                 return null;
             }
 
-            $validTags[$tag] = $tag;
+            $validTags[] = [$tag, $version];
         }
 
         if (null !== $expirationTimestamp && !\is_int($expirationTimestamp)) {

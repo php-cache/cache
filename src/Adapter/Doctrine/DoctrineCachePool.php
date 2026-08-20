@@ -53,12 +53,16 @@ class DoctrineCachePool extends AbstractCachePool
         }
 
         $decodedTags = [];
-        foreach ($tags as $tag) {
-            if (!\is_string($tag)) {
+        foreach ($tags as $tagVersion) {
+            if (!\is_array($tagVersion) || !array_is_list($tagVersion) || 2 !== \count($tagVersion)) {
+                return [false, null, [], null];
+            }
+            [$tag, $version] = $tagVersion;
+            if (!\is_string($tag) || !\is_string($version)) {
                 return [false, null, [], null];
             }
 
-            $decodedTags[$tag] = $tag;
+            $decodedTags[] = [$tag, $version];
         }
 
         $expiration = $record[3];
@@ -89,7 +93,7 @@ class DoctrineCachePool extends AbstractCachePool
             $ttl = 0;
         }
 
-        $data = serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]);
+        $data = serialize([true, $item->get(), $item->getTagVersions(), $item->getExpirationTimestamp()]);
 
         return $this->cache->save($item->getKey(), $data, $ttl);
     }

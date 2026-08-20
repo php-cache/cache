@@ -2,6 +2,12 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 3.0.0
+
+### Changed
+
+* Require `cache/adapter-common` 3 and `cache/hierarchical-cache` 2.1.
+
 ## 2.0.3
 
 ### Fixed

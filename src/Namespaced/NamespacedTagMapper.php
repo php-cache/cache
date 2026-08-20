@@ -53,10 +53,19 @@ final class NamespacedTagMapper
         $publicTags = [];
         foreach ($tags as $tag) {
             $publicTag = '' !== $tag && str_starts_with($tag, $this->prefix) ? substr($tag, \strlen($this->prefix)) : $tag;
-            $publicTags[$publicTag] = $publicTag;
+            $publicTags[self::tagIndex($publicTag)] = $publicTag;
         }
 
         return $publicTags;
+    }
+
+    private static function tagIndex(string $tag): string
+    {
+        if (1 === preg_match('/^(?:0|-?[1-9][0-9]*)$/D', $tag) && (string) (int) $tag === $tag) {
+            return ':'.$tag;
+        }
+
+        return $tag;
     }
 
     private function validateTag(mixed $tag): string

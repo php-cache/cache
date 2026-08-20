@@ -2,6 +2,12 @@
 
 Each release groups changes under Added, Removed, Changed, or Fixed headings.
 
+## 2.0.3
+
+### Fixed
+
+* Preserve numeric string tag names when mapping tags back to the public namespace.
+
 ## 2.0.0
 
 ### Changed

@@ -22,18 +22,34 @@ class MemcachedCachePoolTest extends TestCase
     use CreatePoolTrait;
 
     #[RunInSeparateProcess]
-    public function testBinaryProtocolCanBeDisabled()
+    public function testConstructorAppliesMemcachedOptionsWithoutRemovingDefaults()
     {
-        if (class_exists(\Memcached::class)) {
-            $this->markTestSkipped('This test uses a local Memcached stub.');
+        if (!class_exists(\Memcached::class)) {
+            eval('namespace { class Memcached { public const OPT_BINARY_PROTOCOL = 18; public const OPT_CONNECT_TIMEOUT = 14; public const OPT_RETRY_TIMEOUT = 15; private array $options = []; public function setOption(int $option, mixed $value): bool { $this->options[$option] = $value; return true; } public function getOption(int $option): mixed { return $this->options[$option] ?? null; } } }');
         }
 
-        eval('namespace { class Memcached { public const OPT_BINARY_PROTOCOL = 18; private array $options = []; public function setOption(int $option, mixed $value): bool { $this->options[$option] = $value; return true; } public function getOption(int $option): mixed { return $this->options[$option] ?? null; } } }');
+        $client = new \Memcached();
+        new MemcachedCachePool($client, [
+            \Memcached::OPT_CONNECT_TIMEOUT => 1000,
+            \Memcached::OPT_RETRY_TIMEOUT => 2,
+        ]);
+
+        self::assertTrue((bool) $client->getOption(\Memcached::OPT_BINARY_PROTOCOL));
+        self::assertSame(1000, $client->getOption(\Memcached::OPT_CONNECT_TIMEOUT));
+        self::assertSame(2, $client->getOption(\Memcached::OPT_RETRY_TIMEOUT));
+    }
+
+    #[RunInSeparateProcess]
+    public function testConstructorOptionCanDisableBinaryProtocol()
+    {
+        if (!class_exists(\Memcached::class)) {
+            eval('namespace { class Memcached { public const OPT_BINARY_PROTOCOL = 18; private array $options = []; public function setOption(int $option, mixed $value): bool { $this->options[$option] = $value; return true; } public function getOption(int $option): mixed { return $this->options[$option] ?? null; } } }');
+        }
 
         $client = new \Memcached();
-        new MemcachedCachePool($client, false);
+        new MemcachedCachePool($client, [\Memcached::OPT_BINARY_PROTOCOL => false]);
 
-        self::assertFalse($client->getOption(\Memcached::OPT_BINARY_PROTOCOL));
+        self::assertFalse((bool) $client->getOption(\Memcached::OPT_BINARY_PROTOCOL));
     }
 
     #[RunInSeparateProcess]
@@ -58,14 +74,18 @@ class MemcachedCachePoolTest extends TestCase
             $this->markTestSkipped('This test uses a local Memcached stub.');
         }
 
-        eval('namespace { class Memcached { public const OPT_BINARY_PROTOCOL = 18; public mixed $payload; public function setOption(int $option, mixed $value): bool { return true; } public function get(string $key): mixed { return $this->payload; } } }');
+        eval('namespace { class Memcached { public const OPT_BINARY_PROTOCOL = 18; public array $payloads = []; public function setOption(int $option, mixed $value): bool { return true; } public function get(string $key): mixed { return $this->payloads[$key] ?? false; } } }');
 
         $client = new \Memcached();
-        $client->payload = serialize([true, 'value', ['tag' => 'tag'], null]);
+        $client->payloads = [
+            'key' => serialize([true, 'value', [['tag', 'version']], null]),
+            'tagv!'.substr(hash('sha256', 'tag'), 0, 59) => serialize([true, 'version', [], null]),
+        ];
         $item = (new MemcachedCachePool($client))->getItem('key');
 
         self::assertTrue($item->isHit());
         self::assertSame(['tag' => 'tag'], $item->getPreviousTags());
+        self::assertSame([['tag', 'version']], $item->getTagVersions());
     }
 
     /**
@@ -106,6 +126,30 @@ class MemcachedCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
+    public function testGetMultipleRejectsStaleTagVersions()
+    {
+        if (class_exists(\Memcached::class)) {
+            $this->markTestSkipped('This test uses a local Memcached stub.');
+        }
+
+        eval('namespace { class Memcached { public const OPT_BINARY_PROTOCOL = 18; public const GET_PRESERVE_ORDER = 1; public array $values = []; public function setOption(int $option, mixed $value): bool { return true; } public function get(string $key): mixed { return $this->values[$key] ?? false; } public function getMulti(array $keys, int $flags = 0): array|false { return array_map(fn (string $key): mixed => $this->values[$key] ?? null, array_combine($keys, $keys)); } } }');
+
+        $client = new \Memcached();
+        $client->values['key'] = serialize([true, 'stale', [['tag', 'old-version']], null]);
+        $client->values['fresh'] = serialize([true, 'fresh', [['other', 'current-version']], null]);
+        $client->values['tagv!'.substr(hash('sha256', 'tag'), 0, 59)] = serialize([true, 'current-version', [], null]);
+        $client->values['tagv!'.substr(hash('sha256', 'other'), 0, 59)] = serialize([true, 'current-version', [], null]);
+        $pool = new MemcachedCachePool($client);
+
+        self::assertFalse($pool->hasItem('key'));
+        self::assertTrue($pool->hasItem('fresh'));
+        self::assertSame(
+            ['key' => 'default', 'fresh' => 'fresh'],
+            iterator_to_array($pool->getMultiple(['key', 'fresh'], 'default'))
+        );
+    }
+
+    #[RunInSeparateProcess]
     public function testGetMultipleReportsNativeFailure()
     {
         if (class_exists(\Memcached::class)) {
@@ -129,8 +173,9 @@ class MemcachedCachePoolTest extends TestCase
         eval('namespace { class Memcached { public const OPT_BINARY_PROTOCOL = 18; public const GET_PRESERVE_ORDER = 1; public array $values = []; public array $setCalls = []; public array $setMultiCalls = []; public function setOption(int $option, mixed $value): bool { return true; } public function get(string $key): mixed { return $this->values[$key] ?? false; } public function getMulti(array $keys, int $flags = 0): array|false { return array_map(fn (string $key): mixed => $this->values[$key] ?? null, array_combine($keys, $keys)); } public function set(string $key, mixed $value, int $expiration = 0): bool { $this->setCalls[] = [$key, $value, $expiration]; $this->values[$key] = $value; return true; } public function setMulti(array $items, int $expiration = 0): bool { $this->setMultiCalls[] = [$items, $expiration]; foreach ($items as $key => $value) { $this->values[$key] = $value; } return true; } } }');
 
         $client = new \Memcached();
-        $client->values['first'] = serialize([true, 'old', ['old' => 'old'], null]);
-        $client->values['tag!old'] = ['first'];
+        $client->values['first'] = serialize([true, 'old', [['old', 'version']], null]);
+        $tagKey = 'tag!'.substr(hash('sha256', 'old'), 0, 60);
+        $client->values[$tagKey] = ['first'];
         $pool = new MemcachedCachePool($client);
 
         self::assertTrue($pool->setMultiple(['first' => 'new', 'second' => false], 60));
@@ -141,7 +186,7 @@ class MemcachedCachePoolTest extends TestCase
         self::assertSame('new', unserialize($stored['first'])[1]);
         self::assertFalse(unserialize($stored['second'])[1]);
         self::assertGreaterThan(0, $expiration);
-        self::assertSame([], $client->values['tag!old']);
+        self::assertSame([], $client->values[$tagKey]);
     }
 
     #[RunInSeparateProcess]
@@ -154,8 +199,8 @@ class MemcachedCachePoolTest extends TestCase
         eval('namespace { class Memcached { public const OPT_BINARY_PROTOCOL = 18; public const GET_PRESERVE_ORDER = 1; public array $values = []; public function setOption(int $option, mixed $value): bool { return true; } public function get(string $key): mixed { return $this->values[$key] ?? false; } public function getMulti(array $keys, int $flags = 0): array { return array_map(fn (string $key): mixed => $this->values[$key] ?? null, array_combine($keys, $keys)); } public function set(string $key, mixed $value, int $expiration = 0): false { return false; } public function setMulti(array $items, int $expiration = 0): bool { foreach ($items as $key => $value) { $this->values[$key] = $value; } return true; } } }');
 
         $client = new \Memcached();
-        $client->values['key'] = serialize([true, 'old', ['tag' => 'tag'], null]);
-        $client->values['tag!tag'] = ['key'];
+        $client->values['key'] = serialize([true, 'old', [['tag', 'version']], null]);
+        $client->values['tag!'.substr(hash('sha256', 'tag'), 0, 60)] = ['key'];
         $pool = new MemcachedCachePool($client);
 
         self::assertFalse($pool->setMultiple(['key' => 'new']));
@@ -171,14 +216,15 @@ class MemcachedCachePoolTest extends TestCase
         eval('namespace { class Memcached { public const OPT_BINARY_PROTOCOL = 18; public const GET_PRESERVE_ORDER = 1; public const RES_NOTFOUND = 16; public array $values = []; public array $deleteMultiCalls = []; private int $resultCode = 0; public function setOption(int $option, mixed $value): bool { return true; } public function get(string $key): mixed { return $this->values[$key] ?? false; } public function getMulti(array $keys, int $flags = 0): array|false { return array_map(fn (string $key): mixed => $this->values[$key] ?? null, array_combine($keys, $keys)); } public function set(string $key, mixed $value, int $expiration = 0): bool { $this->values[$key] = $value; return true; } public function delete(string $key): bool { if (array_key_exists($key, $this->values)) { unset($this->values[$key]); $this->resultCode = 0; return true; } $this->resultCode = self::RES_NOTFOUND; return false; } public function deleteMulti(array $keys, int $time = 0): array { $this->deleteMultiCalls[] = $keys; $deleted = []; foreach ($keys as $key) { if (array_key_exists($key, $this->values)) { unset($this->values[$key]); $deleted[$key] = true; } else { $deleted[$key] = self::RES_NOTFOUND; } } return $deleted; } public function getResultCode(): int { return $this->resultCode; } } }');
 
         $client = new \Memcached();
-        $client->values['first'] = serialize([true, 'one', ['old' => 'old'], null]);
-        $client->values['tag!old'] = ['first'];
+        $client->values['first'] = serialize([true, 'one', [['old', 'version']], null]);
+        $tagKey = 'tag!'.substr(hash('sha256', 'old'), 0, 60);
+        $client->values[$tagKey] = ['first'];
         $pool = new MemcachedCachePool($client);
 
         self::assertTrue($pool->deleteMultiple(['first', 'missing']));
         self::assertSame([['first', 'missing']], $client->deleteMultiCalls);
         self::assertArrayNotHasKey('first', $client->values);
-        self::assertSame([], $client->values['tag!old']);
+        self::assertSame([], $client->values[$tagKey]);
     }
 
     #[RunInSeparateProcess]
@@ -191,8 +237,8 @@ class MemcachedCachePoolTest extends TestCase
         eval('namespace { class Memcached { public const OPT_BINARY_PROTOCOL = 18; public const GET_PRESERVE_ORDER = 1; public const RES_NOTFOUND = 16; public array $values = []; public function setOption(int $option, mixed $value): bool { return true; } public function get(string $key): mixed { return $this->values[$key] ?? false; } public function getMulti(array $keys, int $flags = 0): array { return array_map(fn (string $key): mixed => $this->values[$key] ?? null, array_combine($keys, $keys)); } public function set(string $key, mixed $value, int $expiration = 0): false { return false; } public function deleteMulti(array $keys, int $time = 0): array { foreach ($keys as $key) { unset($this->values[$key]); } return array_fill_keys($keys, true); } } }');
 
         $client = new \Memcached();
-        $client->values['key'] = serialize([true, 'value', ['tag' => 'tag'], null]);
-        $client->values['tag!tag'] = ['key'];
+        $client->values['key'] = serialize([true, 'value', [['tag', 'version']], null]);
+        $client->values['tag!'.substr(hash('sha256', 'tag'), 0, 60)] = ['key'];
         $pool = new MemcachedCachePool($client);
 
         self::assertFalse($pool->deleteMultiple(['key']));

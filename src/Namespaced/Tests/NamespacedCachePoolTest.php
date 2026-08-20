@@ -85,6 +85,18 @@ class NamespacedCachePoolTest extends TestCase
         $this->assertSame('outer', $outer->getItem('key')->get());
     }
 
+    public function testNumericStringTagsKeepStringMapKeys()
+    {
+        $pool = NamespacedCachePool::create(new ArrayCachePool(), 'namespace');
+        $this->assertInstanceOf(TaggableCacheItemPoolInterface::class, $pool);
+        $this->assertTrue($pool->save($pool->getItem('key')->set('value')->setTags(['0', '123', '-1'])));
+
+        $this->assertSame(
+            [':0' => '0', ':123' => '123', ':-1' => '-1'],
+            $pool->getItem('key')->getPreviousTags()
+        );
+    }
+
     public function testUnmapTagsPreservesEmptyAndForeignTags()
     {
         $mapper = new NamespacedTagMapper('namespace');

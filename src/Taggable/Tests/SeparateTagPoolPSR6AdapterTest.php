@@ -14,11 +14,11 @@ namespace Cache\Taggable\Tests;
 use Cache\Adapter\PHPArray\ArrayCachePool;
 use Cache\IntegrationTests\TaggableCachePoolTest;
 use Cache\Taggable\Exception\InvalidArgumentException;
-use Cache\Taggable\ExtensibleTaggablePSR6PoolAdapter;
 use Cache\Taggable\TaggablePSR6PoolAdapter;
 use Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Cache\Adapter\ArrayAdapter as SymfonyArrayAdapter;
+use Symfony\Component\Clock\MockClock;
 
 class SeparateTagPoolPSR6AdapterTest extends TaggableCachePoolTest
 {
@@ -34,21 +34,21 @@ class SeparateTagPoolPSR6AdapterTest extends TaggableCachePoolTest
         self::assertSame($pool, TaggablePSR6PoolAdapter::makeTaggable($pool));
     }
 
-    public function testSubclassCanUseWrappedTagStoreForNativeListOperations()
+    public function testSubclassCanUseWrappedTagStoreForGenerationOperations()
     {
         $cachePool = new SymfonyArrayAdapter();
-        $tagStore = new NativeListTagStore();
-        $pool = NativeListTaggablePool::makeTaggable($cachePool, $tagStore);
-        $this->assertInstanceOf(NativeListTaggablePool::class, $pool);
+        $tagStore = new NativeGenerationTagStore();
+        $pool = NativeGenerationTaggablePool::makeTaggable($cachePool, $tagStore);
+        $this->assertInstanceOf(NativeGenerationTaggablePool::class, $pool);
         $this->assertSame($cachePool, $pool->wrappedCachePool());
         $this->assertSame($tagStore, $pool->wrappedTagStorePool());
         $this->assertTrue($pool->save($pool->getItem('key')->set('value')->setTags(['tag'])));
-        $this->assertSame(1, $tagStore->appendCalls);
+        $this->assertSame(1, $tagStore->writeCalls);
+        $this->assertSame(2, $tagStore->readCalls);
 
         $this->assertTrue($pool->invalidateTag('tag'));
         $this->assertFalse($pool->hasItem('key'));
-        $this->assertGreaterThan(0, $tagStore->removeItemCalls);
-        $this->assertSame(1, $tagStore->removeCalls);
+        $this->assertSame(1, $tagStore->deleteCalls);
     }
 
     public function testGetItemsWrapsEveryReturnedItem()
@@ -60,6 +60,220 @@ class SeparateTagPoolPSR6AdapterTest extends TaggableCachePoolTest
 
         self::assertSame('key', $items['key']->getKey());
         self::assertSame('value', $items['key']->get());
+    }
+
+    public function testSavingAnUnmodifiedFetchedItemPreservesItsValueAndTags()
+    {
+        $pool = $this->createCachePool();
+        self::assertTrue($pool->save($pool->getItem('key')->set('value')->setTags(['tag'])));
+
+        $item = $pool->getItem('key');
+        self::assertTrue($item->isHit());
+        self::assertTrue($pool->save($item));
+
+        self::assertSame('value', $pool->getItem('key')->get());
+        self::assertTrue($pool->invalidateTag('tag'));
+        self::assertFalse($pool->hasItem('key'));
+    }
+
+    public function testSavePausedAfterGenerationReadCannotSurviveConcurrentInvalidation()
+    {
+        $cache = new SymfonyArrayAdapter();
+        $tagStore = new SymfonyArrayAdapter();
+        $writer = InterleavingGenerationTaggablePool::makeTaggable($cache, $tagStore);
+        $invalidator = TaggablePSR6PoolAdapter::makeTaggable($cache, $tagStore);
+        self::assertTrue($invalidator->save($invalidator->getItem('old')->set('old')->setTags(['tag'])));
+
+        $racingItem = $writer->getItem('racing')->set('racing')->setTags(['tag']);
+        $writer->afterGenerationRead = static function () use ($invalidator) {
+            self::assertTrue($invalidator->invalidateTag('tag'));
+        };
+
+        self::assertTrue($writer->save($racingItem));
+        self::assertFalse($writer->hasItem('old'));
+        self::assertFalse($writer->hasItem('racing'));
+    }
+
+    public function testConcurrentFirstSavesCannotCreateAStaleHit()
+    {
+        $cache = new SymfonyArrayAdapter();
+        $tagStore = new SymfonyArrayAdapter();
+        $first = InterleavingGenerationTaggablePool::makeTaggable($cache, $tagStore);
+        $second = TaggablePSR6PoolAdapter::makeTaggable($cache, $tagStore);
+        $firstItem = $first->getItem('first')->set('first')->setTags(['tag']);
+        $first->afterGenerationRead = static function () use ($second) {
+            self::assertTrue($second->save($second->getItem('second')->set('second')->setTags(['tag'])));
+        };
+
+        self::assertTrue($first->save($firstItem));
+        self::assertTrue($first->hasItem('first'));
+        self::assertFalse($first->hasItem('second'));
+        self::assertTrue($first->invalidateTag('tag'));
+        self::assertFalse($first->hasItem('first'));
+        self::assertFalse($first->hasItem('second'));
+    }
+
+    public function testConcurrentInvalidationsBothSucceed()
+    {
+        $cache = new SymfonyArrayAdapter();
+        $tagStore = new SymfonyArrayAdapter();
+        $first = InterleavingGenerationTaggablePool::makeTaggable($cache, $tagStore);
+        $second = TaggablePSR6PoolAdapter::makeTaggable($cache, $tagStore);
+        self::assertTrue($first->save($first->getItem('key')->set('value')->setTags(['tag'])));
+        $first->afterGenerationDelete = static function () use ($second) {
+            self::assertTrue($second->invalidateTag('tag'));
+        };
+
+        self::assertTrue($first->invalidateTag('tag'));
+        self::assertFalse($first->hasItem('key'));
+    }
+
+    public function testHasItemAndGetItemsRejectInvalidatedGenerations()
+    {
+        $pool = $this->createCachePool();
+        self::assertTrue($pool->save($pool->getItem('key')->set('value')->setTags(['tag'])));
+        self::assertTrue($pool->invalidateTag('tag'));
+
+        self::assertFalse($pool->hasItem('key'));
+        $items = iterator_to_array($pool->getItems(['key']));
+        self::assertFalse($items['key']->isHit());
+        self::assertNull($items['key']->get());
+    }
+
+    public function testItemHitAndValueRemainStableAfterLookup()
+    {
+        $pool = $this->createCachePool();
+        self::assertTrue($pool->save($pool->getItem('key')->set('value')->setTags(['tag'])));
+        $item = $pool->getItem('key');
+        self::assertTrue($item->isHit());
+
+        self::assertTrue($pool->invalidateTag('tag'));
+
+        self::assertSame('value', $item->get());
+        self::assertTrue($item->isHit());
+        self::assertFalse($pool->getItem('key')->isHit());
+    }
+
+    public function testMissingGenerationFailsClosed()
+    {
+        $cache = new SymfonyArrayAdapter();
+        $tagStore = new SymfonyArrayAdapter();
+        $pool = TaggablePSR6PoolAdapter::makeTaggable($cache, $tagStore);
+        self::assertTrue($pool->save($pool->getItem('key')->set('value')->setTags(['tag'])));
+        self::assertTrue($tagStore->deleteItem($this->tagMetadataKey('tag')));
+
+        self::assertFalse($pool->hasItem('key'));
+        self::assertNull($pool->getItem('key')->get());
+    }
+
+    public function testMalformedGenerationFailsReadsAndSavesClosed()
+    {
+        $cache = new SymfonyArrayAdapter();
+        $tagStore = new SymfonyArrayAdapter();
+        $pool = TaggablePSR6PoolAdapter::makeTaggable($cache, $tagStore);
+        self::assertTrue($pool->save($pool->getItem('key')->set('value')->setTags(['tag'])));
+        self::assertTrue($tagStore->save($tagStore->getItem($this->tagMetadataKey('tag'))->set(['invalid'])));
+
+        self::assertFalse($pool->hasItem('key'));
+        self::assertFalse($pool->save($pool->getItem('replacement')->set('value')->setTags(['tag'])));
+        self::assertFalse($cache->hasItem('replacement'));
+    }
+
+    public function testGenerationOverridesTheDefaultLifetimeWithASigned32BitBound()
+    {
+        $clock = new MockClock('2038-01-19T03:13:00+00:00');
+        $tagStore = new SymfonyArrayAdapter(60, clock: $clock);
+        $pool = TaggablePSR6PoolAdapter::makeTaggable(new SymfonyArrayAdapter(), $tagStore);
+        self::assertTrue($pool->save($pool->getItem('key')->set('value')->setTags(['tag'])));
+
+        $clock->sleep(61);
+
+        self::assertTrue($tagStore->hasItem($this->tagMetadataKey('tag')));
+
+        $clock->sleep(7);
+
+        self::assertFalse($tagStore->hasItem($this->tagMetadataKey('tag')));
+    }
+
+    public function testLegacyTaggedPayloadFailsClosed()
+    {
+        $cache = new SymfonyArrayAdapter();
+        self::assertTrue($cache->save($cache->getItem('key')->set([
+            'value' => 'legacy',
+            'tags' => ['tag' => 'tag'],
+        ])));
+        $pool = TaggablePSR6PoolAdapter::makeTaggable($cache, new SymfonyArrayAdapter());
+
+        self::assertFalse($pool->hasItem('key'));
+        self::assertNull($pool->getItem('key')->get());
+    }
+
+    public function testNumericStringTagsRemainValid()
+    {
+        $pool = $this->createCachePool();
+
+        foreach (['0', '123', '-1'] as $tag) {
+            $key = 'key_'.str_replace('-', 'minus_', $tag);
+            self::assertTrue($pool->save($pool->getItem($key)->set('value')->setTags([$tag])));
+            self::assertTrue($pool->hasItem($key));
+            self::assertSame('value', $pool->getItem($key)->get());
+            $previousTags = $pool->getItem($key)->getPreviousTags();
+            self::assertContainsOnly('string', array_keys($previousTags));
+            self::assertContains($tag, $previousTags);
+            self::assertTrue($pool->invalidateTag($tag));
+            self::assertFalse($pool->hasItem($key));
+        }
+    }
+
+    public function testInvalidationValidatesEveryTagBeforeDeletingMetadata()
+    {
+        $pool = $this->createCachePool();
+        self::assertTrue($pool->save($pool->getItem('key')->set('value')->setTags(['valid'])));
+
+        foreach ([['valid', ''], ['valid', 'bad/tag'], ['valid', 2]] as $tags) {
+            try {
+                $pool->invalidateTags($tags);
+                self::fail('invalidateTags accepted an invalid tag');
+            } catch (InvalidArgumentException) {
+                self::addToAssertionCount(1);
+            }
+
+            self::assertTrue($pool->hasItem('key'));
+        }
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $pool->invalidateTag('');
+    }
+
+    public function testChangingTagsOnAnInvalidatedItemCannotRestoreItsValue()
+    {
+        foreach ([['tag'], ['replacement'], []] as $replacementTags) {
+            $pool = $this->createCachePool();
+            self::assertTrue($pool->save($pool->getItem('key')->set('stale')->setTags(['tag'])));
+            self::assertTrue($pool->invalidateTag('tag'));
+            $item = $pool->getItem('key');
+            self::assertFalse($item->isHit());
+            self::assertNull($item->get());
+
+            self::assertTrue($pool->save($item->setTags($replacementTags)));
+
+            $saved = $pool->getItem('key');
+            self::assertTrue($saved->isHit());
+            self::assertNull($saved->get());
+        }
+    }
+
+    public function testMetadataKeysUseThePortablePsr6AlphabetAndLength()
+    {
+        $pool = MetadataKeyTaggablePool::makeTaggable(new SymfonyArrayAdapter(), new SymfonyArrayAdapter());
+        self::assertInstanceOf(MetadataKeyTaggablePool::class, $pool);
+
+        foreach (['tag with spaces!', str_repeat('x', 64)] as $tag) {
+            $metadataKey = $pool->metadataKey($tag);
+            self::assertLessThanOrEqual(64, \strlen($metadataKey));
+            self::assertMatchesRegularExpression('/^[A-Za-z0-9_.]+$/D', $metadataKey);
+        }
     }
 
     public function testGetItemsRejectsAnInvalidItemFromTheWrappedPool()
@@ -90,23 +304,51 @@ class SeparateTagPoolPSR6AdapterTest extends TaggableCachePoolTest
         $pool->hasItem('invalid/key');
     }
 
-    public function testInvalidatingAStaleMissingItemRemovesItsTagIndex()
+    public function testSharedPoolRejectsItsTagMetadataNamespace()
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $backend = new SymfonyArrayAdapter();
+        TaggablePSR6PoolAdapter::makeTaggable($backend)->getItem('__tag.group');
+    }
+
+    public function testSeparatePoolAcceptsTheDefaultTagMetadataNamespace()
+    {
+        $pool = $this->createCachePool();
+
+        self::assertTrue($pool->save($pool->getItem('__tag.group')->set('value')));
+        self::assertSame('value', $pool->getItem('__tag.group')->get());
+    }
+
+    public function testSubclassPrefixReservesItsTagMetadataNamespace()
+    {
+        $backend = new SymfonyArrayAdapter();
+        $pool = CustomPrefixTaggablePool::makeTaggable($backend);
+        self::assertTrue($pool->save($pool->getItem('__tag.group')->set('value')));
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $pool->getItem('__custom_tag.group');
+    }
+
+    public function testInvalidatingAStaleGenerationRemovesIt()
     {
         $cache = new SymfonyArrayAdapter();
         $tagStore = new SymfonyArrayAdapter();
-        $tagStore->save($tagStore->getItem('__tag.tag')->set(['missing']));
+        $tagKey = $this->tagMetadataKey('tag');
+        $tagStore->save($tagStore->getItem($tagKey)->set(['missing']));
         $pool = TaggablePSR6PoolAdapter::makeTaggable($cache, $tagStore);
 
         self::assertTrue($pool->invalidateTag('tag'));
-        self::assertFalse($tagStore->hasItem('__tag.tag'));
+        self::assertFalse($tagStore->hasItem($tagKey));
     }
 
-    public function testStaleTagIndexDoesNotDeleteReplacement()
+    public function testStaleTagMetadataDoesNotInvalidateUntaggedReplacement()
     {
         $cache = new SymfonyArrayAdapter();
         $tagStore = new SymfonyArrayAdapter();
         $pool = TaggablePSR6PoolAdapter::makeTaggable($cache, $tagStore);
-        $tagStore->save($tagStore->getItem('__tag.foo')->set(['key']));
+        $tagStore->save($tagStore->getItem($this->tagMetadataKey('foo'))->set(['key']));
         $pool->save($pool->getItem('key')->set('replacement'));
 
         $pool->invalidateTag('foo');
@@ -134,7 +376,7 @@ class SeparateTagPoolPSR6AdapterTest extends TaggableCachePoolTest
         $pool->saveDeferred($otherPool->getItem('key')->set('value'));
     }
 
-    public function testFailedDeleteItemKeepsTheTagIndex()
+    public function testFailedDeleteItemKeepsItsGenerationValid()
     {
         $cache = new FailingDeleteCachePool(new SymfonyArrayAdapter());
         $pool = TaggablePSR6PoolAdapter::makeTaggable($cache, new SymfonyArrayAdapter());
@@ -149,7 +391,7 @@ class SeparateTagPoolPSR6AdapterTest extends TaggableCachePoolTest
         $this->assertFalse($pool->hasItem('key'));
     }
 
-    public function testFailedSaveKeepsThePreviousTagIndex()
+    public function testFailedSaveKeepsThePreviousGenerationValid()
     {
         $cache = new FailingDeleteCachePool(new SymfonyArrayAdapter());
         $pool = TaggablePSR6PoolAdapter::makeTaggable($cache, new SymfonyArrayAdapter());
@@ -165,14 +407,16 @@ class SeparateTagPoolPSR6AdapterTest extends TaggableCachePoolTest
 
     public function testSaveReportsATagStoreWriteFailure()
     {
+        $cache = new SymfonyArrayAdapter();
         $tagStore = new FailingDeleteCachePool(new SymfonyArrayAdapter());
         $tagStore->failSave = true;
-        $pool = TaggablePSR6PoolAdapter::makeTaggable(new SymfonyArrayAdapter(), $tagStore);
+        $pool = TaggablePSR6PoolAdapter::makeTaggable($cache, $tagStore);
 
         self::assertFalse($pool->save($pool->getItem('key')->set('value')->setTags(['tag'])));
+        self::assertFalse($cache->hasItem('key'));
     }
 
-    public function testDeleteReportsATagStoreWriteFailure()
+    public function testDeleteDoesNotWriteTagMetadata()
     {
         $tagStore = new FailingDeleteCachePool(new SymfonyArrayAdapter());
         $pool = TaggablePSR6PoolAdapter::makeTaggable(new SymfonyArrayAdapter(), $tagStore);
@@ -180,10 +424,11 @@ class SeparateTagPoolPSR6AdapterTest extends TaggableCachePoolTest
 
         $tagStore->failSave = true;
 
-        self::assertFalse($pool->deleteItem('key'));
+        self::assertTrue($pool->deleteItem('key'));
+        self::assertFalse($pool->hasItem('key'));
     }
 
-    public function testSaveReportsATagStoreRemovalFailure()
+    public function testSavingWithoutTagsDoesNotWriteTagMetadata()
     {
         $tagStore = new FailingDeleteCachePool(new SymfonyArrayAdapter());
         $pool = TaggablePSR6PoolAdapter::makeTaggable(new SymfonyArrayAdapter(), $tagStore);
@@ -191,7 +436,9 @@ class SeparateTagPoolPSR6AdapterTest extends TaggableCachePoolTest
 
         $tagStore->failSave = true;
 
-        self::assertFalse($pool->save($pool->getItem('key')->set('replacement')));
+        self::assertTrue($pool->save($pool->getItem('key')->set('replacement')));
+        self::assertTrue($pool->invalidateTag('tag'));
+        self::assertTrue($pool->hasItem('key'));
     }
 
     public function testInvalidationReportsATagStoreDeleteFailure()
@@ -205,7 +452,7 @@ class SeparateTagPoolPSR6AdapterTest extends TaggableCachePoolTest
         self::assertFalse($pool->invalidateTag('tag'));
     }
 
-    public function testInvalidationReportsATagStoreWriteFailure()
+    public function testInvalidationDoesNotWriteTagMetadata()
     {
         $tagStore = new FailingDeleteCachePool(new SymfonyArrayAdapter());
         $pool = TaggablePSR6PoolAdapter::makeTaggable(new SymfonyArrayAdapter(), $tagStore);
@@ -213,10 +460,11 @@ class SeparateTagPoolPSR6AdapterTest extends TaggableCachePoolTest
 
         $tagStore->failSave = true;
 
-        self::assertFalse($pool->invalidateTag('tag'));
+        self::assertTrue($pool->invalidateTag('tag'));
+        self::assertFalse($pool->hasItem('key'));
     }
 
-    public function testFailedDeleteItemsKeepsTheTagIndex()
+    public function testFailedDeleteItemsKeepTheirGenerationsValid()
     {
         $cache = new FailingDeleteCachePool(new SymfonyArrayAdapter());
         $pool = TaggablePSR6PoolAdapter::makeTaggable($cache, new SymfonyArrayAdapter());
@@ -231,7 +479,7 @@ class SeparateTagPoolPSR6AdapterTest extends TaggableCachePoolTest
         $this->assertFalse($pool->hasItem('key'));
     }
 
-    public function testFailedClearKeepsTheTagIndex()
+    public function testFailedClearKeepsGenerationsValid()
     {
         $cache = new FailingDeleteCachePool(new SymfonyArrayAdapter());
         $pool = TaggablePSR6PoolAdapter::makeTaggable($cache, new SymfonyArrayAdapter());
@@ -284,94 +532,129 @@ class SeparateTagPoolPSR6AdapterTest extends TaggableCachePoolTest
         $this->assertTrue($pool->invalidateTag('tag'));
         $this->assertFalse($pool->hasItem('key'));
     }
+
+    private function tagMetadataKey(string $tag): string
+    {
+        return '__tag.'.substr(hash('sha256', $tag), 0, 58);
+    }
 }
 
-final class NativeListTaggablePool extends ExtensibleTaggablePSR6PoolAdapter
+final class NativeGenerationTaggablePool extends TaggablePSR6PoolAdapter
 {
     public function wrappedCachePool(): CacheItemPoolInterface
     {
-        return $this->getCachePool();
+        return $this->cachePool;
     }
 
     public function wrappedTagStorePool(): CacheItemPoolInterface
     {
-        return $this->getTagStorePool();
+        return $this->tagStorePool;
     }
 
-    protected function appendListItem(string $name, string $value): bool
+    protected function readTagGeneration(string $name): string|false|null
     {
-        return $this->nativeTagStore()->appendListItem($name, $value);
+        return $this->nativeTagStore()->readTagGeneration($name);
     }
 
-    protected function removeList(string $name): bool
+    protected function writeTagGeneration(string $name, string $generation): bool
     {
-        return $this->nativeTagStore()->removeList($name);
+        return $this->nativeTagStore()->writeTagGeneration($name, $generation);
     }
 
-    protected function removeListItem(string $name, string $key): bool
+    protected function deleteTagGeneration(string $name): bool
     {
-        return $this->nativeTagStore()->removeListItem($name, $key);
+        return $this->nativeTagStore()->deleteTagGeneration($name);
     }
 
-    protected function getList(string $name): array
+    private function nativeTagStore(): NativeGenerationTagStore
     {
-        return $this->nativeTagStore()->getList($name);
-    }
-
-    private function nativeTagStore(): NativeListTagStore
-    {
-        $tagStore = $this->getTagStorePool();
-        if (!$tagStore instanceof NativeListTagStore) {
-            throw new \LogicException('A native list tag store is required.');
+        $tagStore = $this->tagStorePool;
+        if (!$tagStore instanceof NativeGenerationTagStore) {
+            throw new \LogicException('A native generation tag store is required.');
         }
 
         return $tagStore;
     }
 }
 
-final class NativeListTagStore extends SymfonyArrayAdapter
+final class MetadataKeyTaggablePool extends TaggablePSR6PoolAdapter
 {
-    /** @var array<string, list<string>> */
-    private array $lists = [];
-
-    public int $appendCalls = 0;
-
-    public int $removeCalls = 0;
-
-    public int $removeItemCalls = 0;
-
-    public function appendListItem(string $name, string $value): bool
+    public function metadataKey(string $tag): string
     {
-        ++$this->appendCalls;
-        $this->lists[$name][] = $value;
+        return $this->getTagKey($tag);
+    }
+}
+
+final class CustomPrefixTaggablePool extends TaggablePSR6PoolAdapter
+{
+    protected function getTagKeyPrefix(): string
+    {
+        return '__custom_tag.';
+    }
+}
+
+final class NativeGenerationTagStore extends SymfonyArrayAdapter
+{
+    public int $deleteCalls = 0;
+
+    /** @var array<string, string> */
+    private array $generations = [];
+
+    public int $readCalls = 0;
+
+    public int $writeCalls = 0;
+
+    public function readTagGeneration(string $name): ?string
+    {
+        ++$this->readCalls;
+
+        return $this->generations[$name] ?? null;
+    }
+
+    public function writeTagGeneration(string $name, string $generation): bool
+    {
+        ++$this->writeCalls;
+        $this->generations[$name] = $generation;
 
         return true;
     }
 
-    public function removeList(string $name): bool
+    public function deleteTagGeneration(string $name): bool
     {
-        ++$this->removeCalls;
-        unset($this->lists[$name]);
+        ++$this->deleteCalls;
+        unset($this->generations[$name]);
 
         return true;
     }
+}
 
-    public function removeListItem(string $name, string $key): bool
+final class InterleavingGenerationTaggablePool extends TaggablePSR6PoolAdapter
+{
+    public ?\Closure $afterGenerationDelete = null;
+
+    public ?\Closure $afterGenerationRead = null;
+
+    protected function deleteTagGeneration(string $name): bool
     {
-        ++$this->removeItemCalls;
-        $this->lists[$name] = array_values(array_filter(
-            $this->lists[$name] ?? [],
-            static fn (string $value): bool => $value !== $key,
-        ));
+        $deleted = parent::deleteTagGeneration($name);
+        if (null !== $this->afterGenerationDelete) {
+            $callback = $this->afterGenerationDelete;
+            $this->afterGenerationDelete = null;
+            $callback();
+        }
 
-        return true;
+        return $deleted;
     }
 
-    /**
-     * @return list<string>
-     */
-    public function getList(string $name): array
+    protected function readTagGeneration(string $name): string|false|null
     {
-        return $this->lists[$name] ?? [];
+        $generation = parent::readTagGeneration($name);
+        if (null !== $this->afterGenerationRead) {
+            $callback = $this->afterGenerationRead;
+            $this->afterGenerationRead = null;
+            $callback();
+        }
+
+        return $generation;
     }
 }

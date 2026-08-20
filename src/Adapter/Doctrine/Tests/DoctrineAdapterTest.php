@@ -75,8 +75,11 @@ class DoctrineAdapterTest extends TestCase
 
     public function testCorruptTagListIsIgnored()
     {
-        $this->mockDoctrine->shouldReceive('fetch')->once()->with('tag!corrupt')->andReturn(42);
-        $this->mockDoctrine->shouldReceive('delete')->once()->with('tag!corrupt')->andReturn(true);
+        $tagKey = 'tag!'.substr(hash('sha256', 'corrupt'), 0, 60);
+        $tagVersionKey = 'tagv!'.substr(hash('sha256', 'corrupt'), 0, 59);
+        $this->mockDoctrine->shouldReceive('fetch')->once()->with($tagKey)->andReturn(42);
+        $this->mockDoctrine->shouldReceive('delete')->once()->with($tagVersionKey)->andReturn(true);
+        $this->mockDoctrine->shouldReceive('delete')->once()->with($tagKey)->andReturn(true);
 
         self::assertTrue($this->pool->invalidateTag('corrupt'));
     }
@@ -96,9 +99,12 @@ class DoctrineAdapterTest extends TestCase
 
     public function testInvalidatingAnExistingTagReportsABackendFailure()
     {
-        $this->mockDoctrine->shouldReceive('fetch')->once()->with('tag!tag')->andReturn([]);
-        $this->mockDoctrine->shouldReceive('delete')->once()->with('tag!tag')->andReturn(false);
-        $this->mockDoctrine->shouldReceive('contains')->once()->with('tag!tag')->andReturn(true);
+        $tagKey = 'tag!'.substr(hash('sha256', 'tag'), 0, 60);
+        $tagVersionKey = 'tagv!'.substr(hash('sha256', 'tag'), 0, 59);
+        $this->mockDoctrine->shouldReceive('fetch')->once()->with($tagKey)->andReturn([]);
+        $this->mockDoctrine->shouldReceive('delete')->once()->with($tagVersionKey)->andReturn(true);
+        $this->mockDoctrine->shouldReceive('delete')->once()->with($tagKey)->andReturn(false);
+        $this->mockDoctrine->shouldReceive('contains')->once()->with($tagKey)->andReturn(true);
 
         self::assertFalse($this->pool->invalidateTag('tag'));
     }

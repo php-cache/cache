@@ -9,10 +9,10 @@ This package exposes an Illuminate cache store through PSR-6 and PSR-16. The poo
 ## Installation
 
 ```bash
-composer require cache/illuminate-adapter:^1.0
+composer require cache/illuminate-adapter:^2.0
 ```
 
-Version 1 supports Illuminate 11 through 13.
+Version 2 supports Illuminate 11 through 13.
 
 ## Usage
 
@@ -25,6 +25,12 @@ $pool = new IlluminateCachePool($store);
 ```
 
 Pass any implementation of `Illuminate\Contracts\Cache\Store` to the constructor.
+
+## Upgrading to version 2
+
+Version 2 stores a generation snapshot with each tagged item and a separate marker for each tag. Version 1 workers cannot safely share this format.
+
+Stop or drain all workers, clear the backing store, and then deploy version 2. Follow the same sequence before a rollback.
 
 ## Contributing
 

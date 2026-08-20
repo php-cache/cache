@@ -30,10 +30,16 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
 
     protected \Memcached $cache;
 
-    public function __construct(\Memcached $cache, bool $binaryProtocol = true)
+    /**
+     * @param array<int, mixed> $options
+     */
+    public function __construct(\Memcached $cache, array $options = [])
     {
         $this->cache = $cache;
-        $this->cache->setOption(\Memcached::OPT_BINARY_PROTOCOL, $binaryProtocol);
+
+        foreach (array_replace([\Memcached::OPT_BINARY_PROTOCOL => true], $options) as $option => $value) {
+            $this->cache->setOption($option, $value);
+        }
     }
 
     protected function fetchObjectFromCache(string $key): array
@@ -77,7 +83,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
 
         $key = $this->getHierarchyKey($item->getKey());
 
-        return $this->cache->set($key, serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]), $ttl);
+        return $this->cache->set($key, serialize([true, $item->get(), $item->getTagVersions(), $item->getExpirationTimestamp()]), $ttl);
     }
 
     public function getDirectValue(string $name): mixed
@@ -162,7 +168,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
             if (null === $stored) {
                 continue;
             }
-            foreach ($stored[2] as $tag) {
+            foreach ($stored[2] as [$tag]) {
                 $tagsRemoved = $this->removeListItem($this->getTagKey($tag), $key) && $tagsRemoved;
             }
         }
@@ -214,7 +220,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
             if (null === $stored) {
                 continue;
             }
-            foreach ($stored[2] as $tag) {
+            foreach ($stored[2] as [$tag]) {
                 $tagsRemoved = $this->removeListItem($this->getTagKey($tag), $key) && $tagsRemoved;
             }
         }
@@ -225,7 +231,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     /**
      * @param list<string> $keys
      *
-     * @return array<string, array{true, mixed, array<string, string>, int|null}|null>
+     * @return array<string, array{true, mixed, list<array{0: string, 1: string}>, int|null}|null>
      */
     private function fetchMultipleCacheItems(array $keys): array
     {
@@ -252,8 +258,8 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     }
 
     /**
-     * @param list<string>                                                            $keys
-     * @param array<string, array{true, mixed, array<string, string>, int|null}|null> $storedItems
+     * @param list<string>                                                                        $keys
+     * @param array<string, array{true, mixed, list<array{0: string, 1: string}>, int|null}|null> $storedItems
      *
      * @return \Generator<string, mixed, mixed, void>
      */
@@ -268,7 +274,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
             }
 
             $stored = $storedItems["\0".$key] ?? null;
-            if (null === $stored || (null !== $stored[3] && $stored[3] <= time())) {
+            if (null === $stored || (null !== $stored[3] && $stored[3] <= time()) || !$this->tagVersionsAreCurrent($stored[2])) {
                 yield $key => $default;
 
                 continue;
@@ -298,7 +304,7 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
     }
 
     /**
-     * @return array{true, mixed, array<string, string>, int|null}|null
+     * @return array{true, mixed, list<array{0: string, 1: string}>, int|null}|null
      */
     private function decodeCacheItem(mixed $payload): ?array
     {
@@ -319,12 +325,16 @@ class MemcachedCachePool extends AbstractCachePool implements HierarchicalPoolIn
         }
 
         $validTags = [];
-        foreach ($tags as $tag) {
-            if (!\is_string($tag)) {
+        foreach ($tags as $tagVersion) {
+            if (!\is_array($tagVersion) || !array_is_list($tagVersion) || 2 !== \count($tagVersion)) {
+                return null;
+            }
+            [$tag, $version] = $tagVersion;
+            if (!\is_string($tag) || !\is_string($version)) {
                 return null;
             }
 
-            $validTags[$tag] = $tag;
+            $validTags[] = [$tag, $version];
         }
 
         if (null !== $expirationTimestamp && !\is_int($expirationTimestamp)) {

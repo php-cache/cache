@@ -50,12 +50,16 @@ class ApcuCachePool extends AbstractCachePool
         }
 
         $decodedTags = [];
-        foreach ($tags as $tag) {
-            if (!\is_string($tag)) {
+        foreach ($tags as $tagVersion) {
+            if (!\is_array($tagVersion) || !array_is_list($tagVersion) || 2 !== \count($tagVersion)) {
+                return [false, null, [], null];
+            }
+            [$tag, $version] = $tagVersion;
+            if (!\is_string($tag) || !\is_string($version)) {
                 return [false, null, [], null];
             }
 
-            $decodedTags[$tag] = $tag;
+            $decodedTags[] = [$tag, $version];
         }
 
         $expiration = $record[2];
@@ -73,9 +77,7 @@ class ApcuCachePool extends AbstractCachePool
 
     protected function clearOneObjectFromCache(string $key): bool
     {
-        apcu_delete($key);
-
-        return true;
+        return apcu_delete($key) || !apcu_exists($key);
     }
 
     protected function storeItemInCache(PhpCacheItem $item, ?int $ttl): bool
@@ -92,7 +94,7 @@ class ApcuCachePool extends AbstractCachePool
             $ttl = 0;
         }
 
-        return apcu_store($item->getKey(), [$item->get(), $item->getTags(), $item->getExpirationTimestamp()], $ttl);
+        return apcu_store($item->getKey(), [$item->get(), $item->getTagVersions(), $item->getExpirationTimestamp()], $ttl);
     }
 
     /**

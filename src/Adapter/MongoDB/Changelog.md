@@ -2,6 +2,13 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 3.0.0
+
+### Changed
+
+* Require `cache/adapter-common` 3.
+* Store tag generations in item documents and separate marker documents. Clear the cache collection before upgrading or rolling back.
+
 ## 2.0.3
 
 ### Fixed

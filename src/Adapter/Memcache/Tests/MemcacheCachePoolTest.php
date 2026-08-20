@@ -42,14 +42,40 @@ class MemcacheCachePoolTest extends TestCase
             $this->markTestSkipped('This test uses a local Memcache stub.');
         }
 
-        eval('namespace { class Memcache { public mixed $payload; public function get(string $key): mixed { return $this->payload; } } }');
+        eval('namespace { class Memcache { public array $payloads = []; public function get(string $key): mixed { return $this->payloads[$key] ?? false; } } }');
 
         $client = new \Memcache();
-        $client->payload = serialize([true, 'value', ['tag' => 'tag'], null]);
+        $client->payloads = [
+            'key' => serialize([true, 'value', [['tag', 'version']], null]),
+            'tagv!'.substr(hash('sha256', 'tag'), 0, 59) => serialize([true, 'version', [], null]),
+        ];
         $item = (new MemcacheCachePool($client))->getItem('key');
 
         self::assertTrue($item->isHit());
         self::assertSame(['tag' => 'tag'], $item->getPreviousTags());
+        self::assertSame([['tag', 'version']], $item->getTagVersions());
+    }
+
+    #[RunInSeparateProcess]
+    public function testDeleteReportsANativeFailureUnlessTheKeyIsMissing()
+    {
+        if (class_exists(\Memcache::class)) {
+            $this->markTestSkipped('This test uses a local Memcache stub.');
+        }
+
+        eval('namespace { class Memcache { public mixed $payload = "value"; public function delete(string $key): false { return false; } public function get(string $key): mixed { return $this->payload; } } }');
+
+        $client = new \Memcache();
+        $pool = new class($client) extends MemcacheCachePool {
+            public function clearKey(string $key): bool
+            {
+                return $this->clearOneObjectFromCache($key);
+            }
+        };
+        self::assertFalse($pool->clearKey('key'));
+
+        $client->payload = false;
+        self::assertTrue($pool->clearKey('missing'));
     }
 
     #[DataProvider('invalidPayloadProvider')]

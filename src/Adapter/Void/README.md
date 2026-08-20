@@ -11,7 +11,7 @@ Use this adapter when an application requires a cache interface but caching must
 ## Installation
 
 ```bash
-composer require cache/void-adapter:^2.0
+composer require cache/void-adapter:^3.0
 ```
 
 ## Usage
@@ -21,6 +21,8 @@ use Cache\Adapter\Void\VoidCachePool;
 
 $pool = new VoidCachePool();
 ```
+
+Version 3 requires `cache/adapter-common` 3. The pool retains no cache data, so an upgrade does not require a cache clear.
 
 ## Contributing
 

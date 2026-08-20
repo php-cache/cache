@@ -19,31 +19,21 @@ use Predis\Command\CommandInterface;
 
 class PredisCachePoolTest extends TestCase
 {
-    public function testRepeatedTagSavesKeepOneIndexEntry()
+    public function testTagInvalidationReportsAScriptReadFailure()
     {
-        $client = new PayloadClient(false);
-        $pool = new PredisCachePool($client);
+        $pool = new PredisCachePool(new PayloadClient(false, false));
 
-        self::assertTrue($pool->save($pool->getItem('key')->set('first')->setTags(['tag'])));
-        self::assertTrue($pool->save($pool->getItem('key')->set('second')->setTags(['tag'])));
-        self::assertSame(['key'], $client->smembers('tag!tag'));
-
-        self::assertTrue($pool->invalidateTag('tag'));
-        self::assertFalse($pool->hasItem('key'));
-        self::assertSame([], $client->smembers('tag!tag'));
-        self::assertSame([
-            ['tag!tag', 'key'],
-            ['tag!tag', 'key'],
-        ], $client->setRemovalArguments);
+        self::assertFalse($pool->invalidateTag('tag'));
     }
 
     public function testValidTaggedBackendPayloadIsHit()
     {
-        $payload = serialize([true, 'value', ['tag' => 'tag'], null]);
-        $item = (new PredisCachePool(new PayloadClient($payload)))->getItem('key');
+        $payload = serialize([true, 'value', [['tag', 'version']], null]);
+        $item = (new PredisCachePool(new PayloadClient($payload, '@generation:version')))->getItem('key');
 
         self::assertTrue($item->isHit());
         self::assertSame(['tag' => 'tag'], $item->getPreviousTags());
+        self::assertSame([['tag', 'version']], $item->getTagVersions());
     }
 
     #[DataProvider('invalidPayloadProvider')]
@@ -71,12 +61,10 @@ class PredisCachePoolTest extends TestCase
 
 final class PayloadClient implements ClientInterface
 {
-    public array $setRemovalArguments = [];
-    private array $sets = [];
-    private array $values = [];
-
-    public function __construct(private readonly mixed $payload)
-    {
+    public function __construct(
+        private readonly mixed $payload,
+        private readonly mixed $evalResponse = null,
+    ) {
     }
 
     public function getCommandFactory()
@@ -117,54 +105,13 @@ final class PayloadClient implements ClientInterface
     public function __call($method, $arguments)
     {
         if ('get' === $method) {
-            return $this->values[$arguments[0]] ?? $this->payload;
+            return $this->payload;
         }
-        if ('set' === $method) {
-            $this->values[$arguments[0]] = $arguments[1];
-
-            return 'OK';
-        }
-        if ('sadd' === $method) {
-            $added = 0;
-            foreach ($arguments[1] as $value) {
-                if (!isset($this->sets[$arguments[0]][$value])) {
-                    $this->sets[$arguments[0]][$value] = $value;
-                    ++$added;
-                }
-            }
-
-            return $added;
-        }
-        if ('smembers' === $method) {
-            return array_values($this->sets[$arguments[0]] ?? []);
-        }
-        if ('srem' === $method) {
-            $this->setRemovalArguments[] = $arguments;
-            $members = \is_array($arguments[1]) ? $arguments[1] : [$arguments[1]];
-            $removed = 0;
-            foreach ($members as $member) {
-                if (isset($this->sets[$arguments[0]][$member])) {
-                    unset($this->sets[$arguments[0]][$member]);
-                    ++$removed;
-                }
-            }
-
-            return $removed;
+        if ('eval' === $method) {
+            return $this->evalResponse;
         }
         if ('del' === $method) {
-            $keys = \is_array($arguments[0]) ? $arguments[0] : $arguments;
-            $removed = 0;
-            foreach ($keys as $key) {
-                if (isset($this->sets[$key]) || isset($this->values[$key])) {
-                    ++$removed;
-                }
-                unset($this->sets[$key], $this->values[$key]);
-            }
-
-            return $removed;
-        }
-        if ('incr' === $method) {
-            return 1;
+            return 0;
         }
 
         throw new \BadMethodCallException();

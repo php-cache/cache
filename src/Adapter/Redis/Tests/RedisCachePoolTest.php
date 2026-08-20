@@ -31,89 +31,84 @@ class RedisCachePoolTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testRepeatedTagSavesKeepOneIndexEntry()
+    public function testRedisArrayRoutesTagScriptsByTheTagKey()
     {
-        if (class_exists(\Redis::class)) {
-            $this->markTestSkipped('This test uses a local Redis stub.');
+        if (class_exists(\Redis::class) || class_exists(\RedisArray::class)) {
+            $this->markTestSkipped('This test uses local Redis and RedisArray stubs.');
         }
 
         eval(<<<'PHP'
             namespace {
                 class Redis
                 {
-                    public array $setRemovalArguments = [];
-                    public array $sets = [];
-                    public array $values = [];
+                    public array $evalCalls = [];
+                    private ?string $tagVersion = null;
 
-                    public function del(string $key): int
+                    public function eval(string $script, array $arguments = [], int $keyCount = 0): int|string|false
                     {
-                        $exists = isset($this->sets[$key]) || isset($this->values[$key]);
-                        unset($this->sets[$key], $this->values[$key]);
+                        $this->evalCalls[] = [$script, $arguments, $keyCount];
 
-                        return (int) $exists;
-                    }
+                        if (str_contains($script, "'@generation:' .. ARGV[1]")) {
+                            $this->tagVersion = '@generation:'.$arguments[1];
 
-                    public function get(string $key): mixed
-                    {
-                        return $this->values[$key] ?? false;
-                    }
-
-                    public function sAdd(string $key, string ...$values): int
-                    {
-                        $added = 0;
-                        foreach ($values as $value) {
-                            if (!isset($this->sets[$key][$value])) {
-                                $this->sets[$key][$value] = $value;
-                                ++$added;
-                            }
+                            return 1;
+                        }
+                        if (str_contains($script, "ZRANGEBYSCORE', KEYS[1], -1, -1")) {
+                            return $this->tagVersion ?? false;
                         }
 
-                        return $added;
+                        return 1;
+                    }
+                }
+
+                class RedisArray
+                {
+                    public Redis $node;
+                    public array $targetKeys = [];
+
+                    public function __construct()
+                    {
+                        $this->node = new Redis();
                     }
 
-                    public function sMembers(string $key): array
+                    public function _instance(string $host): Redis
                     {
-                        return array_values($this->sets[$key] ?? []);
+                        return $this->node;
                     }
 
-                    public function sRem(string $key, string ...$values): int
+                    public function _target(string $key): string
                     {
-                        $this->setRemovalArguments[] = func_get_args();
-                        $removed = 0;
-                        foreach ($values as $value) {
-                            if (isset($this->sets[$key][$value])) {
-                                unset($this->sets[$key][$value]);
-                                ++$removed;
-                            }
-                        }
+                        $this->targetKeys[] = $key;
 
-                        return $removed;
+                        return 'redis:6379';
+                    }
+
+                    public function get(string $key): false
+                    {
+                        return false;
                     }
 
                     public function set(string $key, mixed $value): bool
                     {
-                        $this->values[$key] = $value;
-
                         return true;
                     }
                 }
             }
             PHP);
 
-        $client = new \Redis();
+        $client = new \RedisArray();
         $pool = new RedisCachePool($client);
 
-        self::assertTrue($pool->save($pool->getItem('key')->set('first')->setTags(['tag'])));
-        self::assertTrue($pool->save($pool->getItem('key')->set('second')->setTags(['tag'])));
-        self::assertSame(['key'], $client->sMembers('tag!tag'));
+        self::assertTrue($pool->save($pool->getItem('key')->set('value')->setTags(['tag'])));
+        self::assertSame(array_fill(0, 4, 'php-cache:tag:tag'), $client->targetKeys);
+        self::assertCount(4, $client->node->evalCalls);
 
-        self::assertTrue($pool->invalidateTag('tag'));
-        self::assertFalse($pool->hasItem('key'));
-        self::assertSame([], $client->sMembers('tag!tag'));
-        self::assertSame([
-            ['tag!tag', 'key'],
-            ['tag!tag', 'key'],
-        ], $client->setRemovalArguments);
+        $appendCall = $client->node->evalCalls[3];
+        self::assertStringContainsString("redis.call('ZADD'", $appendCall[0]);
+        self::assertStringContainsString("redis.call('EXPIRE', KEYS[1]", $appendCall[0]);
+        self::assertStringNotContainsString("redis.call('EXPIREAT'", $appendCall[0]);
+        self::assertSame(['php-cache:tag:tag', 'key', 0], \array_slice($appendCall[1], 0, 3));
+        self::assertSame(1, $appendCall[2]);
     }
 
     #[RunInSeparateProcess]
@@ -123,14 +118,15 @@ class RedisCachePoolTest extends TestCase
             $this->markTestSkipped('This test uses a local Redis stub.');
         }
 
-        eval('namespace { class Redis { public mixed $payload; public function get(string $key): mixed { return $this->payload; } } }');
+        eval('namespace { class Redis { public mixed $payload; public function get(string $key): mixed { return $this->payload; } public function eval(string $script, array $arguments = [], int $keyCount = 0): string { return "@generation:version"; } } }');
 
         $client = new \Redis();
-        $client->payload = serialize([true, 'value', ['tag' => 'tag'], null]);
+        $client->payload = serialize([true, 'value', [['tag', 'version']], null]);
         $item = (new RedisCachePool($client))->getItem('key');
 
         self::assertTrue($item->isHit());
         self::assertSame(['tag' => 'tag'], $item->getPreviousTags());
+        self::assertSame([['tag', 'version']], $item->getTagVersions());
     }
 
     #[RunInSeparateProcess]
@@ -152,7 +148,19 @@ class RedisCachePoolTest extends TestCase
             $this->markTestSkipped('This test uses a local Redis stub.');
         }
 
-        eval('namespace { class Redis { public function sMembers(string $key): array { return []; } public function del(string $key): false { return false; } } }');
+        eval('namespace { class Redis { private int $deleteCalls = 0; public function eval(string $script, array $arguments = [], int $keyCount = 0): array { return []; } public function del(string $key): int|false { return 0 === $this->deleteCalls++ ? 1 : false; } } }');
+
+        self::assertFalse((new RedisCachePool(new \Redis()))->invalidateTag('tag'));
+    }
+
+    #[RunInSeparateProcess]
+    public function testTagInvalidationReportsANativeVersionDeleteFailure()
+    {
+        if (class_exists(\Redis::class)) {
+            $this->markTestSkipped('This test uses a local Redis stub.');
+        }
+
+        eval('namespace { class Redis { private int $deleteCalls = 0; public function eval(string $script, array $arguments = [], int $keyCount = 0): array { return []; } public function del(string $key): int|false { return 0 === $this->deleteCalls++ ? false : 1; } } }');
 
         self::assertFalse((new RedisCachePool(new \Redis()))->invalidateTag('tag'));
     }
@@ -164,7 +172,7 @@ class RedisCachePoolTest extends TestCase
             $this->markTestSkipped('This test uses a local Redis stub.');
         }
 
-        eval('namespace { class Redis { public function sMembers(string $key): false { return false; } public function del(string $key): int { return 0; } } }');
+        eval('namespace { class Redis { public function eval(string $script, array $arguments = [], int $keyCount = 0): false { return false; } public function del(string $key): int { return 0; } } }');
 
         self::assertFalse((new RedisCachePool(new \Redis()))->invalidateTag('tag'));
     }
@@ -176,7 +184,7 @@ class RedisCachePoolTest extends TestCase
             $this->markTestSkipped('This test uses a local Redis stub.');
         }
 
-        eval('namespace { class Redis { public function get(string $key): false { return false; } public function set(string $key, mixed $value): bool { return true; } public function sAdd(string $key, string ...$values): false { return false; } } }');
+        eval('namespace { class Redis { private ?string $tagVersion = null; public function get(string $key): false { return false; } public function set(string $key, mixed $value): bool { return true; } public function eval(string $script, array $arguments = [], int $keyCount = 0): int|string|false { if (str_contains($script, "\'@generation:\' .. ARGV[1]")) { $this->tagVersion = "@generation:".$arguments[1]; return 1; } if (str_contains($script, "ZRANGEBYSCORE\', KEYS[1], -1, -1")) { return $this->tagVersion ?? false; } return false; } } }');
 
         $pool = new RedisCachePool(new \Redis());
 
@@ -190,7 +198,7 @@ class RedisCachePoolTest extends TestCase
             $this->markTestSkipped('This test uses a local Redis stub.');
         }
 
-        eval('namespace { class Redis { public array $values = []; public function get(string $key): mixed { return $this->values[$key] ?? false; } public function set(string $key, mixed $value): bool { $this->values[$key] = $value; return true; } public function sAdd(string $key, string ...$values): int { return 1; } public function sRem(string $key, string ...$values): false { return false; } public function del(string $key): int { unset($this->values[$key]); return 1; } } }');
+        eval('namespace { class Redis { public array $values = []; private ?string $tagVersion = null; public function get(string $key): mixed { return $this->values[$key] ?? false; } public function set(string $key, mixed $value): bool { $this->values[$key] = $value; return true; } public function eval(string $script, array $arguments = [], int $keyCount = 0): int|string|false { if (str_contains($script, "\'@generation:\' .. ARGV[1]")) { $this->tagVersion = "@generation:".$arguments[1]; return 1; } if (str_contains($script, "ZRANGEBYSCORE\', KEYS[1], -1, -1")) { return $this->tagVersion ?? false; } return str_contains($script, "\'ZREM\'") ? false : 1; } public function del(string $key): int { unset($this->values[$key]); return 1; } } }');
 
         $pool = new RedisCachePool(new \Redis());
         self::assertTrue($pool->save($pool->getItem('key')->set('value')->setTags(['tag'])));
@@ -205,7 +213,7 @@ class RedisCachePoolTest extends TestCase
             $this->markTestSkipped('This test uses a local Redis stub.');
         }
 
-        eval('namespace { class Redis { public array $values = []; public bool $failTagRemoval = false; public function get(string $key): mixed { return $this->values[$key] ?? false; } public function set(string $key, mixed $value): bool { $this->values[$key] = $value; return true; } public function sAdd(string $key, string ...$values): int { return 1; } public function sRem(string $key, string ...$values): int|false { return $this->failTagRemoval ? false : 1; } } }');
+        eval('namespace { class Redis { public array $values = []; public bool $failTagRemoval = false; private ?string $tagVersion = null; public function get(string $key): mixed { return $this->values[$key] ?? false; } public function set(string $key, mixed $value): bool { $this->values[$key] = $value; return true; } public function eval(string $script, array $arguments = [], int $keyCount = 0): int|string|false { if (str_contains($script, "\'@generation:\' .. ARGV[1]")) { $this->tagVersion = "@generation:".$arguments[1]; return 1; } if (str_contains($script, "ZRANGEBYSCORE\', KEYS[1], -1, -1")) { return $this->tagVersion ?? false; } return $this->failTagRemoval && str_contains($script, "\'ZREM\'") ? false : 1; } } }');
 
         $client = new \Redis();
         $pool = new RedisCachePool($client);
@@ -222,7 +230,7 @@ class RedisCachePoolTest extends TestCase
             $this->markTestSkipped('This test uses a local Redis stub.');
         }
 
-        eval('namespace { class Redis { public array $sets = []; public array $values = []; public function get(string $key): mixed { return $this->values[$key] ?? false; } public function set(string $key, mixed $value): bool { $this->values[$key] = $value; return true; } public function sAdd(string $key, string ...$values): int { foreach ($values as $value) { $this->sets[$key][$value] = $value; } return 1; } public function sMembers(string $key): array { return array_values($this->sets[$key] ?? []); } public function sRem(string $key, string ...$values): false { return false; } public function del(string $key): int { unset($this->values[$key], $this->sets[$key]); return 1; } } }');
+        eval('namespace { class Redis { public array $sets = []; public array $values = []; private array $tagVersions = []; public function get(string $key): mixed { return $this->values[$key] ?? false; } public function set(string $key, mixed $value): bool { $this->values[$key] = $value; return true; } public function eval(string $script, array $arguments = [], int $keyCount = 0): array|int|string|false { if (str_contains($script, "\'@generation:\' .. ARGV[1]")) { $this->tagVersions[$arguments[0]] = "@generation:".$arguments[1]; return 1; } if (str_contains($script, "ZRANGEBYSCORE\', KEYS[1], -1, -1")) { return $this->tagVersions[$arguments[0]] ?? false; } if (str_contains($script, "local removed = redis.call(\'ZREM\'")) { return false; } if (str_contains($script, "redis.call(\'ZADD\'")) { $this->sets[$arguments[0]][$arguments[1]] = $arguments[1]; return 1; } if (str_contains($script, "return redis.call(\'ZRANGEBYSCORE\'")) { return array_values($this->sets[$arguments[0]] ?? []); } return false; } public function del(string $key): int { unset($this->values[$key], $this->sets[$key], $this->tagVersions[$key]); return 1; } } }');
 
         $pool = new RedisCachePool(new \Redis());
         self::assertTrue($pool->save($pool->getItem('key')->set('value')->setTags(['tag'])));

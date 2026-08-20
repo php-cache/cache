@@ -2,6 +2,13 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 2.0.0
+
+### Changed
+
+* Require `cache/adapter-common` 3 and `cache/hierarchical-cache` 2.1.
+* Store tag generations in item payloads and separate marker entries. Clear the backing store before upgrading or rolling back.
+
 ## 1.0.3
 
 ### Fixed

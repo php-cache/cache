@@ -20,6 +20,16 @@ use Cache\Hierarchy\HierarchicalPoolInterface;
  */
 class VoidCachePool extends AbstractCachePool implements HierarchicalPoolInterface
 {
+    protected function readTagVersion(string $name): ?string
+    {
+        return 'void';
+    }
+
+    protected function deleteTagVersion(string $name): bool
+    {
+        return true;
+    }
+
     protected function fetchObjectFromCache(string $key): array
     {
         return [false, null, [], null];

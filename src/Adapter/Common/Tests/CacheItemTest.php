@@ -78,6 +78,28 @@ class CacheItemTest extends TestCase
         $this->assertFalse($item->isHit());
     }
 
+    public function testNumericStringTagsKeepStringMapKeys()
+    {
+        $item = new CacheItem('test_key', static fn (): array => [
+            true,
+            'value',
+            [['0', 'zero'], ['123', 'positive'], ['-1', 'negative']],
+            null,
+        ]);
+
+        $this->assertSame(
+            [':0' => '0', ':123' => '123', ':-1' => '-1'],
+            $item->getPreviousTags()
+        );
+
+        $item->setTags(['0', '123', '-1']);
+
+        $this->assertSame(
+            [':0' => '0', ':123' => '123', ':-1' => '-1'],
+            $item->getTags()
+        );
+    }
+
     public function testGetExpirationTimestamp()
     {
         $item = new CacheItem('test_key');

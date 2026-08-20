@@ -44,3 +44,13 @@ function apcu_store(string $key, mixed $value, int $ttl = 0): bool
 
     return true;
 }
+
+function apcu_delete(string $key): bool
+{
+    return ApcuFunctionStub::$deleteResult;
+}
+
+function apcu_exists(string $key): bool
+{
+    return ApcuFunctionStub::$exists;
+}

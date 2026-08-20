@@ -69,12 +69,16 @@ class MongoDBCachePool extends AbstractCachePool
         }
 
         $validTags = [];
-        foreach ($tags as $tag) {
-            if (!\is_string($tag)) {
+        foreach ($tags as $tagVersion) {
+            if (!\is_array($tagVersion) || !array_is_list($tagVersion) || 2 !== \count($tagVersion)) {
+                return [false, null, [], null];
+            }
+            [$tag, $version] = $tagVersion;
+            if (!\is_string($tag) || !\is_string($version)) {
                 return [false, null, [], null];
             }
 
-            $validTags[$tag] = $tag;
+            $validTags[] = [$tag, $version];
         }
 
         $expirationTimestamp = $document['expirationTimestamp'] ?? null;
@@ -105,7 +109,7 @@ class MongoDBCachePool extends AbstractCachePool
         $object = [
             '_id' => $item->getKey(),
             'data' => $this->freezeValue($item->get()),
-            'tags' => $this->freezeValue($item->getTags()),
+            'tags' => $this->freezeValue($item->getTagVersions()),
             'expirationTimestamp' => $expirationTimestamp,
         ];
 

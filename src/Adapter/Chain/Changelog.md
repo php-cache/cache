@@ -2,6 +2,12 @@
 
 Each release groups changes under Added, Removed, Changed, or Fixed headings.
 
+## 2.1.0
+
+### Changed
+
+* Support `cache/adapter-common` 2 and 3. Use PHP Cache 3 adapters in development.
+
 ## 2.0.4
 
 ### Fixed

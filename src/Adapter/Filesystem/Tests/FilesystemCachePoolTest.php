@@ -27,49 +27,111 @@ class FilesystemCachePoolTest extends TestCase
 {
     use CreatePoolTrait;
 
-    public function testGetItemRejectsInvalidFilenameKeyImmediately()
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        $pool = $this->createCachePool();
-
-        $pool->getItem('DoctrineNamespaceCacheKey[]');
-    }
-
     #[DataProvider('dotKeyProvider')]
-    public function testRoundTripsDotKeys(string $key, string $storageKey)
+    public function testRoundTripsDotKeys(string $key)
     {
         $pool = $this->createCachePool();
 
         self::assertTrue($pool->save($pool->getItem($key)->set('value')));
-        self::assertTrue($this->getFilesystem()->fileExists('cache/'.$storageKey));
+        self::assertTrue($this->getFilesystem()->fileExists($this->storagePath($key)));
         self::assertSame('value', $pool->getItem($key)->get());
         self::assertTrue($pool->deleteItem($key));
         self::assertFalse($pool->hasItem($key));
     }
 
+    #[DataProvider('portableStorageKeyProvider')]
+    public function testUsesPortableShardedPathsByDefault(string $key)
+    {
+        $pool = $this->createCachePool();
+        $path = $this->storagePath($key);
+
+        self::assertTrue($pool->save($pool->getItem($key)->set('value')));
+        self::assertTrue($this->getFilesystem()->fileExists($path));
+        self::assertSame('value', $pool->getItem($key)->get());
+    }
+
+    public function testSubclassCanShardCacheFiles()
+    {
+        $pool = new ShardedFilesystemCachePool($this->getFilesystem());
+
+        self::assertTrue($pool->save($pool->getItem('key')->set('value')));
+        self::assertTrue($this->getFilesystem()->fileExists($this->storagePath('key', 'cache/keys')));
+        self::assertSame('value', $pool->getItem('key')->get());
+    }
+
+    public function testClearRemovesShardedCacheFiles()
+    {
+        $pool = new ShardedFilesystemCachePool($this->getFilesystem());
+        self::assertTrue($pool->save($pool->getItem('first')->set('first')));
+        self::assertTrue($pool->save($pool->getItem('second')->set('second')));
+
+        self::assertTrue($pool->clear());
+
+        self::assertFalse($pool->hasItem('first'));
+        self::assertFalse($pool->hasItem('second'));
+    }
+
+    public function testDeleteRemovesShardedCacheFile()
+    {
+        $pool = new ShardedFilesystemCachePool($this->getFilesystem());
+        self::assertTrue($pool->save($pool->getItem('key')->set('value')));
+
+        self::assertTrue($pool->deleteItem('key'));
+
+        self::assertFalse($pool->hasItem('key'));
+        self::assertFalse($this->getFilesystem()->fileExists($this->storagePath('key', 'cache/keys')));
+    }
+
+    public function testTagInvalidationRemovesShardedCacheFile()
+    {
+        $pool = new ShardedFilesystemCachePool($this->getFilesystem());
+        $item = $pool->getItem('key')->set('value')->setTags(['group']);
+        self::assertTrue($pool->save($item));
+
+        self::assertTrue($pool->invalidateTag('group'));
+
+        self::assertFalse($pool->hasItem('key'));
+        self::assertFalse($this->getFilesystem()->fileExists($this->storagePath('key', 'cache/keys')));
+    }
+
     /**
-     * @return iterable<string, array{string, string}>
+     * @return iterable<string, array{string}>
      */
     public static function dotKeyProvider(): iterable
     {
-        yield 'current directory' => ['.', '@dot'];
-        yield 'parent directory' => ['..', '@dotdot'];
+        yield 'current directory' => ['.'];
+        yield 'parent directory' => ['..'];
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function portableStorageKeyProvider(): iterable
+    {
+        yield 'Windows reserved name' => ['NUL'];
+        yield 'uppercase key' => ['ABC'];
+        yield 'lowercase key' => ['abc'];
+        yield 'filesystem punctuation' => ['key-with-dash'];
+    }
+
+    private function storagePath(string $key, string $folder = 'cache'): string
+    {
+        $digest = hash('sha256', $key);
+
+        return $folder.'/'.substr($digest, 0, 2).'/'.substr($digest, 2);
     }
 
     public function testCleanupOnExpire()
     {
         $pool = $this->createCachePool();
 
-        $this->getFilesystem()->write(
-            'cache/test_ttl_null',
-            serialize(['data', [], time()])
-        );
-        $this->assertTrue($this->getFilesystem()->fileExists('cache/test_ttl_null'));
+        $path = $this->storagePath('test_ttl_null');
+        $this->getFilesystem()->write($path, serialize(['data', [], time()]));
+        $this->assertTrue($this->getFilesystem()->fileExists($path));
 
         $item = $pool->getItem('test_ttl_null');
         $this->assertFalse($item->isHit());
-        $this->assertFalse($this->getFilesystem()->fileExists('cache/test_ttl_null'));
+        $this->assertFalse($this->getFilesystem()->fileExists($path));
     }
 
     public function testClearIgnoresFileRemovedByAnotherProcess()
@@ -88,7 +150,7 @@ class FilesystemCachePoolTest extends TestCase
         $pool->setFolder('foobar');
 
         $pool->save($pool->getItem('test_path'));
-        $this->assertTrue($this->getFilesystem()->fileExists('foobar/test_path'));
+        $this->assertTrue($this->getFilesystem()->fileExists($this->storagePath('test_path', 'foobar')));
     }
 
     public function testFilesystemAndFolderCanBeReconfigured()
@@ -140,19 +202,20 @@ class FilesystemCachePoolTest extends TestCase
     {
         $pool = $this->createCachePool();
 
-        $this->getFilesystem()->write('cache/corrupt', 'corrupt data');
+        $path = $this->storagePath('corrupt');
+        $this->getFilesystem()->write($path, 'corrupt data');
 
         $item = $pool->getItem('corrupt');
         $this->assertFalse($item->isHit());
 
-        $this->getFilesystem()->delete('cache/corrupt');
+        $this->getFilesystem()->delete($path);
     }
 
     public function testMalformedSerializedCacheFileIsMiss()
     {
         $pool = $this->createCachePool();
 
-        $this->getFilesystem()->write('cache/malformed', serialize([]));
+        $this->getFilesystem()->write($this->storagePath('malformed'), serialize([]));
 
         $this->assertFalse($pool->getItem('malformed')->isHit());
     }
@@ -161,7 +224,7 @@ class FilesystemCachePoolTest extends TestCase
     {
         $pool = $this->createCachePool();
 
-        $this->getFilesystem()->write('cache/throwing', serialize([new ThrowingSerializedValue(), [], null]));
+        $this->getFilesystem()->write($this->storagePath('throwing'), serialize([new ThrowingSerializedValue(), [], null]));
 
         self::assertFalse($pool->getItem('throwing')->isHit());
     }
@@ -171,7 +234,7 @@ class FilesystemCachePoolTest extends TestCase
         $pool = $this->createCachePool();
         $payload = str_replace('stdClass', 'GoneType', serialize([new \stdClass(), [], null]));
 
-        $this->getFilesystem()->write('cache/incomplete', $payload);
+        $this->getFilesystem()->write($this->storagePath('incomplete'), $payload);
 
         self::assertFalse($pool->getItem('incomplete')->isHit());
     }
@@ -179,19 +242,23 @@ class FilesystemCachePoolTest extends TestCase
     public function testCorruptedTagListIsEmpty()
     {
         $pool = $this->createCachePool();
+        $tag = 'corrupt_tag';
+        $tagKey = 'tag!'.substr(hash('sha256', $tag), 0, 60);
 
-        $this->getFilesystem()->write('cache/tag!corrupt_tag', 'corrupt data');
+        $this->getFilesystem()->write($this->storagePath($tagKey), 'corrupt data');
 
-        $this->assertTrue($pool->invalidateTag('corrupt_tag'));
+        $this->assertTrue($pool->invalidateTag($tag));
     }
 
     public function testThrowingUnserializeTagListIsEmpty()
     {
         $pool = $this->createCachePool();
+        $tag = 'throwing';
+        $tagKey = 'tag!'.substr(hash('sha256', $tag), 0, 60);
 
-        $this->getFilesystem()->write('cache/tag!throwing', serialize([new ThrowingSerializedValue()]));
+        $this->getFilesystem()->write($this->storagePath($tagKey), serialize([new ThrowingSerializedValue()]));
 
-        self::assertTrue($pool->invalidateTag('throwing'));
+        self::assertTrue($pool->invalidateTag($tag));
     }
 
     public function testClearKeepsCacheDirectory()
@@ -217,5 +284,15 @@ final class ThrowingSerializedValue
     public function __unserialize(array $data)
     {
         throw new \RuntimeException();
+    }
+}
+
+final class ShardedFilesystemCachePool extends FilesystemCachePool
+{
+    protected function getFilePath(string $key): string
+    {
+        $path = parent::getFilePath($key);
+
+        return $this->getFolder().'/keys/'.substr($path, \strlen($this->getFolder()) + 1);
     }
 }

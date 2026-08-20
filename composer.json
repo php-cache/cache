@@ -41,29 +41,29 @@
         "symfony/cache": "^7.4 || ^8.0"
     },
     "replace": {
-        "cache/adapter-common": "self.version",
-        "cache/apcu-adapter": "self.version",
-        "cache/array-adapter": "self.version",
-        "cache/chain-adapter": "self.version",
-        "cache/doctrine-adapter": "self.version",
-        "cache/encryption-cache": "self.version",
-        "cache/filesystem-adapter": "self.version",
-        "cache/hierarchical-cache": "self.version",
-        "cache/illuminate-adapter": "1.0.3",
-        "cache/memcache-adapter": "self.version",
-        "cache/memcached-adapter": "self.version",
-        "cache/mongodb-adapter": "self.version",
-        "cache/namespaced-cache": "self.version",
-        "cache/predis-adapter": "self.version",
-        "cache/prefixed-cache": "self.version",
-        "cache/psr-6-doctrine-bridge": "4.0.3",
-        "cache/redis-adapter": "self.version",
-        "cache/session-handler": "self.version",
-        "cache/simple-cache-bridge": "self.version",
-        "cache/tag-interop": "self.version",
-        "cache/taggable-cache": "self.version",
+        "cache/adapter-common": "3.0.0",
+        "cache/apcu-adapter": "3.0.0",
+        "cache/array-adapter": "3.0.0",
+        "cache/chain-adapter": "2.1.0",
+        "cache/doctrine-adapter": "3.0.0",
+        "cache/encryption-cache": "2.1.0",
+        "cache/filesystem-adapter": "3.0.0",
+        "cache/hierarchical-cache": "2.1.0",
+        "cache/illuminate-adapter": "2.0.0",
+        "cache/memcache-adapter": "3.0.0",
+        "cache/memcached-adapter": "3.0.0",
+        "cache/mongodb-adapter": "3.0.0",
+        "cache/namespaced-cache": "2.0.3",
+        "cache/predis-adapter": "3.0.0",
+        "cache/prefixed-cache": "2.0.3",
+        "cache/psr-6-doctrine-bridge": "4.0.4",
+        "cache/redis-adapter": "3.0.0",
+        "cache/session-handler": "2.0.3",
+        "cache/simple-cache-bridge": "2.0.4",
+        "cache/tag-interop": "2.0.0",
+        "cache/taggable-cache": "3.0.0",
         "cache/util": "1.0.3",
-        "cache/void-adapter": "self.version"
+        "cache/void-adapter": "3.0.0"
     },
     "provide": {
         "psr/cache-implementation": "3.0",
@@ -93,7 +93,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "2.2-dev"
+            "dev-master": "3.0-dev"
         }
     },
     "scripts": {

@@ -18,23 +18,8 @@ use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
 /**
- * This adapter lets you make any PSR-6 cache pool taggable. If a pool is
- * already taggable, it is simply returned by makeTaggable. Tags are stored
- * either in the same cache pool, or a a separate pool, and both of these
- * appoaches come with different caveats.
- *
- * A general caveat is that using this adapter reserves any cache key starting
- * with '__tag.'.
- *
- * Using the same pool is precarious if your cache does LRU evictions of items
- * even if they do not expire (as in e.g. memcached). If so, the tag item may
- * be evicted without all of the tagged items having been evicted first,
- * causing items to lose their tags.
- *
- * In order to mitigate this issue, you may use a separate, more persistent
- * pool for your tag items. Do however note that if you are doing so, the
- * entire pool is reserved for tags, as this pool is cleared whenever the
- * main pool is cleared.
+ * Adds generation-based tags to any PSR-6 pool. Missing or changed tag
+ * generations make the cached item a miss.
  *
  * @author Magnus Nordlander <magnus@fervo.se>
  *
@@ -42,9 +27,13 @@ use Psr\Cache\CacheItemPoolInterface;
  */
 class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
 {
-    private CacheItemPoolInterface $cachePool;
+    private const GENERATION_EXPIRATION = '@2147483647';
 
-    private CacheItemPoolInterface $tagStorePool;
+    private const TAG_KEY_PREFIX = '__tag.';
+
+    protected readonly CacheItemPoolInterface $cachePool;
+
+    protected readonly CacheItemPoolInterface $tagStorePool;
 
     private readonly object $owner;
 
@@ -76,7 +65,7 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
     {
         $this->validateKey($key);
 
-        return TaggablePSR6ItemAdapter::makeTaggable($this->cachePool->getItem($key), $this->owner);
+        return $this->wrapItem($this->cachePool->getItem($key));
     }
 
     /**
@@ -103,15 +92,24 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
                 throw new \UnexpectedValueException('A cache pool returned an invalid cache item.');
             }
 
-            yield $item->getKey() => TaggablePSR6ItemAdapter::makeTaggable($item, $this->owner);
+            yield $item->getKey() => $this->wrapItem($item);
         }
+    }
+
+    private function wrapItem(CacheItemInterface $item): TaggablePSR6ItemAdapter
+    {
+        return TaggablePSR6ItemAdapter::makeTaggable(
+            $item,
+            $this->owner,
+            fn (array $tags, array $generations): bool => $this->tagGenerationsAreCurrent($tags, $generations),
+        );
     }
 
     public function hasItem(string $key): bool
     {
         $this->validateKey($key);
 
-        return $this->cachePool->hasItem($key);
+        return $this->getItem($key)->isHit();
     }
 
     public function clear(): bool
@@ -126,35 +124,15 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
     public function deleteItem(string $key): bool
     {
         $this->validateKey($key);
-        $item = $this->getItem($key);
-        $tags = $this->getTagEntries($item);
 
-        if (!$this->cachePool->deleteItem($key)) {
-            return false;
-        }
-
-        return $this->removeTagEntries($item, $tags);
+        return $this->cachePool->deleteItem($key);
     }
 
     public function deleteItems(array $keys): bool
     {
         $keys = $this->validateKeys($keys);
-        $entries = [];
-        foreach ($keys as $key) {
-            $item = $this->getItem($key);
-            $entries[] = [$item, $this->getTagEntries($item)];
-        }
 
-        if (!$this->cachePool->deleteItems($keys)) {
-            return false;
-        }
-
-        $tagsRemoved = true;
-        foreach ($entries as [$item, $tags]) {
-            $tagsRemoved = $this->removeTagEntries($item, $tags) && $tagsRemoved;
-        }
-
-        return $tagsRemoved;
+        return $this->cachePool->deleteItems($keys);
     }
 
     private function validateKey(string $key): void
@@ -165,6 +143,10 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
 
         if (preg_match('|[\{\}\(\)/\\\@\:]|', $key)) {
             throw new InvalidArgumentException(\sprintf('Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:', $key));
+        }
+        $tagKeyPrefix = $this->tagKeyPrefix();
+        if ($this->tagStorePool === $this->cachePool && str_starts_with($key, $tagKeyPrefix)) {
+            throw new InvalidArgumentException(\sprintf('Invalid key: "%s". Cache keys starting with "%s" are reserved for tag metadata.', $key, $tagKeyPrefix));
         }
     }
 
@@ -194,20 +176,17 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
             throw new InvalidArgumentException('Cache items are not transferable between pools. Item MUST implement TaggablePSR6ItemAdapter.');
         }
 
-        $previousTags = $this->getTagEntries($item);
+        if (!$item->isDirty()) {
+            return $this->cachePool->save($item->unwrap());
+        }
 
-        if (!$this->cachePool->save($item->unwrap())) {
+        $generations = $this->resolveTagGenerations($item->getTags());
+        if (false === $generations) {
             return false;
         }
+        $item->setTagGenerations($generations);
 
-        $tagsRemoved = $this->removeTagEntries($item, $previousTags);
-        if ($this->cachePool->hasItem($item->getKey())) {
-            $tagsSaved = $this->saveTags($item);
-
-            return $tagsSaved && $tagsRemoved;
-        }
-
-        return $tagsRemoved;
+        return $this->cachePool->save($item->unwrap());
     }
 
     public function saveDeferred(CacheItemInterface $item): bool
@@ -223,79 +202,85 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
         return $tagsSaved && $itemsSaved;
     }
 
-    protected function appendListItem(string $name, string $value): bool
+    protected function readTagGeneration(string $name): string|false|null
     {
-        $listItem = $this->tagStorePool->getItem($name);
-        $list = $this->getList($name);
-        $list[] = $value;
-        $listItem->set($list);
+        $generationItem = $this->tagStorePool->getItem($name);
+        if (!$generationItem->isHit()) {
+            return null;
+        }
 
-        return $this->tagStorePool->save($listItem);
+        $generation = $generationItem->get();
+
+        return \is_string($generation) && '' !== $generation ? $generation : false;
     }
 
-    protected function removeList(string $name): bool
+    protected function writeTagGeneration(string $name, string $generation): bool
+    {
+        $generationItem = $this->tagStorePool->getItem($name);
+        $generationItem->set($generation);
+        $generationItem->expiresAt(new \DateTimeImmutable(self::GENERATION_EXPIRATION));
+
+        return $this->tagStorePool->save($generationItem);
+    }
+
+    protected function deleteTagGeneration(string $name): bool
     {
         return $this->tagStorePool->deleteItem($name);
     }
 
-    protected function removeListItem(string $name, string $key): bool
-    {
-        $listItem = $this->tagStorePool->getItem($name);
-        $list = [];
-        foreach ($this->getList($name) as $value) {
-            if ($value !== $key) {
-                $list[] = $value;
-            }
-        }
-
-        $listItem->set($list);
-
-        return $this->tagStorePool->save($listItem);
-    }
-
-    /**
-     * @return list<string>
-     */
-    protected function getList(string $name): array
-    {
-        $listItem = $this->tagStorePool->getItem($name);
-        $stored = $listItem->get();
-        if (!\is_array($stored)) {
-            return [];
-        }
-
-        $list = [];
-        foreach ($stored as $value) {
-            if (\is_string($value)) {
-                $list[] = $value;
-            }
-        }
-
-        return $list;
-    }
-
     protected function getTagKey(string $tag): string
     {
-        return '__tag.'.$tag;
+        $prefix = $this->tagKeyPrefix();
+
+        return $prefix.substr(hash('sha256', $tag), 0, 64 - \strlen($prefix));
     }
 
-    /** Save the item's current tags in the tag store. */
-    private function saveTags(TaggablePSR6ItemAdapter $item): bool
+    protected function getTagKeyPrefix(): string
     {
-        return $this->saveTagEntries($item->getKey(), $item->getTags());
+        return self::TAG_KEY_PREFIX;
+    }
+
+    /** @return non-empty-string */
+    private function tagKeyPrefix(): string
+    {
+        $prefix = $this->getTagKeyPrefix();
+        if ('' === $prefix || 32 < \strlen($prefix) || 1 === preg_match('/[^A-Za-z0-9_.]/', $prefix)) {
+            throw new \LogicException('The tag metadata key prefix must use 1 to 32 portable PSR-6 key characters.');
+        }
+
+        return $prefix;
     }
 
     /**
      * @param array<string, string> $tags
+     *
+     * @return list<string>|false
      */
-    private function saveTagEntries(string $key, array $tags): bool
+    private function resolveTagGenerations(array $tags): array|false
     {
-        $saved = true;
+        $generations = [];
         foreach ($tags as $tag) {
-            $saved = $this->appendListItem($this->getTagKey($tag), $key) && $saved;
+            $name = $this->getTagKey($tag);
+            $generation = $this->readTagGeneration($name);
+            if (false === $generation) {
+                return false;
+            }
+            if (null === $generation) {
+                $generation = bin2hex(random_bytes(16));
+                if (!$this->writeTagGeneration($name, $generation)) {
+                    return false;
+                }
+
+                $generation = $this->readTagGeneration($name);
+                if (!\is_string($generation)) {
+                    return false;
+                }
+            }
+
+            $generations[] = $generation;
         }
 
-        return $saved;
+        return $generations;
     }
 
     /**
@@ -303,32 +288,14 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
      */
     public function invalidateTags(array $tags): bool
     {
-        $invalidTags = array_fill_keys($tags, true);
-        $itemIds = [];
+        $validatedTags = [];
         foreach ($tags as $tag) {
-            foreach ($this->getList($this->getTagKey($tag)) as $itemId) {
-                $item = $this->getItem($itemId);
-                if (!$item->isHit()) {
-                    continue;
-                }
-
-                foreach ($item->getPreviousTags() as $storedTag) {
-                    if (isset($invalidTags[$storedTag])) {
-                        $itemIds[$itemId] = $itemId;
-                        break;
-                    }
-                }
-            }
+            $validatedTags[] = TaggablePSR6ItemAdapter::validateTag($tag);
         }
 
-        // Remove all items with the tag
-        $success = $this->deleteItems(array_values($itemIds));
-
-        if ($success) {
-            // Remove the tag list
-            foreach ($tags as $tag) {
-                $success = $this->removeList($this->getTagKey($tag)) && $success;
-            }
+        $success = true;
+        foreach ($validatedTags as $tag) {
+            $success = $this->deleteTagGeneration($this->getTagKey($tag)) && $success;
         }
 
         return $success;
@@ -340,29 +307,18 @@ class TaggablePSR6PoolAdapter implements TaggableCacheItemPoolInterface
     }
 
     /**
-     * @return array<string, string>
+     * @param list<string> $tags
+     * @param list<string> $generations
      */
-    private function getTagEntries(TaggableCacheItemInterface $item): array
+    private function tagGenerationsAreCurrent(array $tags, array $generations): bool
     {
-        $tags = $item->getPreviousTags();
-        $stored = TaggablePSR6ItemAdapter::makeTaggable($this->cachePool->getItem($item->getKey()), $this->owner);
-        foreach ($stored->getPreviousTags() as $tag) {
-            $tags[$tag] = $tag;
+        foreach ($tags as $index => $tag) {
+            $generation = $generations[$index] ?? null;
+            if ($generation !== $this->readTagGeneration($this->getTagKey($tag))) {
+                return false;
+            }
         }
 
-        return $tags;
-    }
-
-    /**
-     * @param array<string, string> $tags
-     */
-    private function removeTagEntries(TaggableCacheItemInterface $item, array $tags): bool
-    {
-        $removed = true;
-        foreach ($tags as $tag) {
-            $removed = $this->removeListItem($this->getTagKey($tag), $item->getKey()) && $removed;
-        }
-
-        return $removed;
+        return true;
     }
 }

@@ -25,6 +25,73 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
 {
     use HierarchicalCachePoolTrait;
 
+    private const TAG_GENERATION_MEMBER_PREFIX = '@generation:';
+
+    private const TAG_KEY_PREFIX = 'php-cache:tag:';
+
+    private const APPEND_TAG_SCRIPT = <<<'LUA'
+        redis.call('ZREMRANGEBYSCORE', KEYS[1], 1, ARGV[3])
+        redis.call('ZADD', KEYS[1], ARGV[2], ARGV[1])
+
+        if redis.call('ZCOUNT', KEYS[1], 0, 0) > 0 then
+            redis.call('PERSIST', KEYS[1])
+        else
+            local latest = redis.call('ZREVRANGE', KEYS[1], 0, 0, 'WITHSCORES')
+            local ttl = math.max(1, latest[2] - ARGV[3])
+            redis.call('EXPIRE', KEYS[1], ttl)
+        end
+
+        return 1
+        LUA;
+
+    private const REMOVE_TAG_SCRIPT = <<<'LUA'
+        redis.call('ZREMRANGEBYSCORE', KEYS[1], 1, ARGV[2])
+        local removed = redis.call('ZREM', KEYS[1], ARGV[1])
+
+        if redis.call('ZCOUNT', KEYS[1], 0, '+inf') == 0 then
+            if redis.call('ZCOUNT', KEYS[1], -1, -1) > 0 then
+                redis.call('EXPIRE', KEYS[1], 60)
+            else
+                redis.call('DEL', KEYS[1])
+            end
+            return removed
+        end
+
+        if redis.call('ZCOUNT', KEYS[1], 0, 0) > 0 then
+            redis.call('PERSIST', KEYS[1])
+        else
+            local latest = redis.call('ZREVRANGE', KEYS[1], 0, 0, 'WITHSCORES')
+            local ttl = math.max(1, latest[2] - ARGV[2])
+            redis.call('EXPIRE', KEYS[1], ttl)
+        end
+
+        return removed
+        LUA;
+
+    private const READ_TAG_SCRIPT = <<<'LUA'
+        redis.call('ZREMRANGEBYSCORE', KEYS[1], 1, ARGV[1])
+
+        return redis.call('ZRANGEBYSCORE', KEYS[1], 0, '+inf')
+        LUA;
+
+    private const READ_TAG_VERSION_SCRIPT = <<<'LUA'
+        local versions = redis.call('ZRANGEBYSCORE', KEYS[1], -1, -1, 'LIMIT', 0, 1)
+
+        return versions[1] or false
+        LUA;
+
+    private const WRITE_TAG_VERSION_SCRIPT = <<<'LUA'
+        if redis.call('ZCOUNT', KEYS[1], -1, -1) == 0 then
+            redis.call('ZADD', KEYS[1], -1, '@generation:' .. ARGV[1])
+        end
+
+        if redis.call('ZCOUNT', KEYS[1], 0, '+inf') == 0 then
+            redis.call('EXPIRE', KEYS[1], 60)
+        end
+
+        return 1
+        LUA;
+
     protected \Redis|\RedisArray|\RedisCluster $cache;
 
     /** @var array<string, true> */
@@ -111,7 +178,7 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     protected function storeItemInCache(PhpCacheItem $item, ?int $ttl): bool
     {
         $key = $this->getHierarchyKey($item->getKey());
-        $data = serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]);
+        $data = serialize([true, $item->get(), $item->getTagVersions(), $item->getExpirationTimestamp()]);
         if (null === $ttl || 0 === $ttl) {
             return $this->isSuccessfulWrite($this->cache->set($key, $data));
         }
@@ -124,16 +191,59 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         return $this->cache->get($key);
     }
 
+    protected function getTagKey(string $tag): string
+    {
+        return self::TAG_KEY_PREFIX.$tag;
+    }
+
+    protected function getTagVersionKey(string $tag): string
+    {
+        return $this->getTagKey($tag);
+    }
+
+    protected function readTagVersion(string $name): ?string
+    {
+        $stored = $this->evaluateTagScript(self::READ_TAG_VERSION_SCRIPT, $name);
+        if (!\is_string($stored) || '' === $stored || !str_starts_with($stored, self::TAG_GENERATION_MEMBER_PREFIX)) {
+            return null;
+        }
+
+        return substr($stored, \strlen(self::TAG_GENERATION_MEMBER_PREFIX));
+    }
+
+    protected function writeTagVersion(string $name, string $version): bool
+    {
+        return 1 === $this->evaluateTagScript(self::WRITE_TAG_VERSION_SCRIPT, $name, $version);
+    }
+
+    protected function deleteTagVersion(string $name): bool
+    {
+        $deleted = $this->cache->del($name);
+
+        return \is_int($deleted) && $deleted >= 0;
+    }
+
     protected function appendListItem(string $name, string $value): bool
     {
-        $added = $this->cache->sAdd($name, $value);
+        return $this->appendListItemWithExpiration($name, $value, null);
+    }
 
-        return \is_int($added) && $added >= 0;
+    protected function appendListItemWithExpiration(string $name, string $key, ?int $expirationTimestamp): bool
+    {
+        $added = $this->evaluateTagScript(
+            self::APPEND_TAG_SCRIPT,
+            $name,
+            $key,
+            $expirationTimestamp ?? 0,
+            time()
+        );
+
+        return 1 === $added;
     }
 
     protected function getList(string $name): array
     {
-        $items = $this->cache->sMembers($name);
+        $items = $this->evaluateTagScript(self::READ_TAG_SCRIPT, $name, time());
         if (!\is_array($items)) {
             $this->failedListReads[$name] = true;
 
@@ -160,13 +270,33 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
 
     protected function removeListItem(string $name, string $key): bool
     {
-        $removed = $this->cache->sRem($name, $key);
+        $removed = $this->evaluateTagScript(self::REMOVE_TAG_SCRIPT, $name, $key, time());
 
         return \is_int($removed) && $removed >= 0;
     }
 
+    private function evaluateTagScript(string $script, string $name, int|string ...$arguments): mixed
+    {
+        $scriptArguments = [$name, ...$arguments];
+        if (!$this->cache instanceof \RedisArray) {
+            return $this->cache->eval($script, $scriptArguments, 1);
+        }
+
+        $host = (string) $this->cache->_target($name);
+        if ('' === $host) {
+            return false;
+        }
+
+        $node = $this->cache->_instance($host);
+        if (!$node instanceof \Redis) {
+            return false;
+        }
+
+        return $node->eval($script, $scriptArguments, 1);
+    }
+
     /**
-     * @return array{true, mixed, array<string, string>, int|null}|null
+     * @return array{true, mixed, list<array{0: string, 1: string}>, int|null}|null
      */
     private function decodeCacheItem(mixed $payload): ?array
     {
@@ -187,12 +317,16 @@ class RedisCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         }
 
         $validTags = [];
-        foreach ($tags as $tag) {
-            if (!\is_string($tag)) {
+        foreach ($tags as $tagVersion) {
+            if (!\is_array($tagVersion) || !array_is_list($tagVersion) || 2 !== \count($tagVersion)) {
+                return null;
+            }
+            [$tag, $version] = $tagVersion;
+            if (!\is_string($tag) || !\is_string($version)) {
                 return null;
             }
 
-            $validTags[$tag] = $tag;
+            $validTags[] = [$tag, $version];
         }
 
         if (null !== $expirationTimestamp && !\is_int($expirationTimestamp)) {

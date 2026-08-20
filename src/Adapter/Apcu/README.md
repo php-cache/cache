@@ -11,7 +11,7 @@ This package provides PSR-6 and PSR-16 cache implementations backed by APCu. The
 Install the package and enable the APCu extension:
 
 ```bash
-composer require cache/apcu-adapter:^2.0
+composer require cache/apcu-adapter:^3.0
 ```
 
 ## Usage
@@ -21,6 +21,12 @@ use Cache\Adapter\Apcu\ApcuCachePool;
 
 $pool = new ApcuCachePool();
 ```
+
+## Upgrading to version 3
+
+Version 3 stores a generation snapshot with each tagged item and a separate marker for each tag. Version 2 workers cannot safely share this format.
+
+Stop all workers, clear APCu, and then deploy version 3. Follow the same sequence before a rollback.
 
 ## Upgrading to version 2
 

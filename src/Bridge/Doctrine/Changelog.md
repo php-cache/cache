@@ -2,6 +2,12 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 4.0.4
+
+### Changed
+
+* Test against PHP Cache 3 adapters.
+
 ## 4.0.3
 
 ### Fixed

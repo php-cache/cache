@@ -30,8 +30,8 @@
     "homepage": "https://www.php-cache.com/en/latest/",
     "require": {
         "php": "^8.2",
-        "cache/adapter-common": "^2.0.3",
-        "cache/hierarchical-cache": "^2.0",
+        "cache/adapter-common": "^3.0",
+        "cache/hierarchical-cache": "^2.1",
         "illuminate/cache": "^11.0 || ^12.0 || ^13.0",
         "psr/cache": "^3.0",
         "psr/simple-cache": "^2.0 || ^3.0"
@@ -57,7 +57,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.0-dev"
+            "dev-master": "2.0-dev"
         }
     }
 }

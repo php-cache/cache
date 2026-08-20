@@ -32,6 +32,10 @@ final class ApcuFunctionStub
 
     public static bool $throwUnserializationException = false;
 
+    public static bool $deleteResult = false;
+
+    public static bool $exists = false;
+
     public static ?string $storedKey = null;
 
     public static ?int $storedTtl = null;
@@ -159,5 +163,25 @@ final class ApcuCachePoolTest extends TestCase
         } catch (CachePoolException $exception) {
             self::assertSame($backendException, $exception->getPrevious());
         }
+    }
+
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
+    public function testDeleteReportsANativeFailureUnlessTheKeyIsMissing()
+    {
+        require_once __DIR__.'/Fixtures/apcu_functions.php';
+
+        $pool = new class extends ApcuCachePool {
+            public function clearKey(string $key): bool
+            {
+                return $this->clearOneObjectFromCache($key);
+            }
+        };
+        ApcuFunctionStub::$deleteResult = false;
+        ApcuFunctionStub::$exists = true;
+        self::assertFalse($pool->clearKey('key'));
+
+        ApcuFunctionStub::$exists = false;
+        self::assertTrue($pool->clearKey('missing'));
     }
 }

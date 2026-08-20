@@ -2,6 +2,21 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 3.0.0
+
+### Changed
+
+* Store tag indexes as sorted sets under the reserved `php-cache:tag:` prefix.
+* Expire each tag index with its longest-lived item. A non-expiring item keeps the index persistent.
+* Store tag generation markers in the sorted set and generation snapshots in item payloads.
+* Require `cache/adapter-common` 3.
+* Change the tag storage format. Clear Redis before upgrading, rolling back, or running mixed versions.
+
+### Fixed
+
+* Prune expired item references when reading or changing a tag index.
+* Preserve the tag generation while replacing the last indexed item.
+
 ## 2.0.3
 
 ### Fixed

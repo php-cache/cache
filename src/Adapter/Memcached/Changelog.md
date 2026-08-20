@@ -2,6 +2,18 @@
 
 Each release groups changes under Added, Removed, Changed, or Fixed headings.
 
+## 3.0.0
+
+### Changed
+
+* Replace the `bool` constructor flag with a Memcached option map. The binary protocol remains enabled unless the map overrides it.
+* Require `cache/adapter-common` 3 and `cache/hierarchical-cache` 2.1.
+* Store tag generations in item payloads and separate marker entries. Clear Memcached before upgrading or rolling back.
+
+### Fixed
+
+* Reject stale tag generations during bulk `getMultiple()` reads.
+
 ## 2.1.0
 
 ### Added

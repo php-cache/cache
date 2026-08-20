@@ -25,8 +25,11 @@ class CacheItem implements PhpCacheItem
     /** @var array<string, string> */
     private array $tags = [];
 
+    /** @var list<array{0: string, 1: string}> */
+    private array $tagVersions = [];
+
     /**
-     * @var (\Closure(): array{0: bool, 1: mixed, 2?: array<string, string>, 3?: int|null})|null
+     * @var (\Closure(): array{0: bool, 1: mixed, 2?: list<array{0: string, 1: string}>, 3?: int|null})|null
      */
     private ?\Closure $callable = null;
 
@@ -44,7 +47,7 @@ class CacheItem implements PhpCacheItem
     private bool $hasValue = false;
 
     /**
-     * @param (\Closure(): array{0: bool, 1: mixed, 2?: array<string, string>, 3?: int|null})|bool|null $callable or boolean hasValue
+     * @param (\Closure(): array{0: bool, 1: mixed, 2?: list<array{0: string, 1: string}>, 3?: int|null})|bool|null $callable or boolean hasValue
      */
     public function __construct(string $key, \Closure|bool|null $callable = null, mixed $value = null)
     {
@@ -155,9 +158,20 @@ class CacheItem implements PhpCacheItem
         return $this->tags;
     }
 
+    public function getTagVersions(): array
+    {
+        return $this->tagVersions;
+    }
+
+    public function setTagVersions(array $tagVersions): void
+    {
+        $this->tagVersions = $tagVersions;
+    }
+
     public function setTags(array $tags): static
     {
         $this->tags = [];
+        $this->tagVersions = [];
         $this->tag($tags);
 
         return $this;
@@ -178,22 +192,30 @@ class CacheItem implements PhpCacheItem
             $tags = [$tags];
         }
         foreach ($tags as $tag) {
-            if (!\is_string($tag)) {
-                throw new InvalidArgumentException(\sprintf('Cache tag must be string, "%s" given', \is_object($tag) ? $tag::class : \gettype($tag)));
-            }
-            if (isset($this->tags[$tag])) {
+            $tag = self::validateTag($tag);
+            $tagIndex = self::tagIndex($tag);
+            if (isset($this->tags[$tagIndex])) {
                 continue;
             }
-            if (!isset($tag[0])) {
-                throw new InvalidArgumentException('Cache tag length must be greater than zero');
-            }
-            if (isset($tag[strcspn($tag, '{}()/\@:')])) {
-                throw new InvalidArgumentException(\sprintf('Cache tag "%s" contains reserved characters {}()/\@:', $tag));
-            }
-            $this->tags[$tag] = $tag;
+            $this->tags[$tagIndex] = $tag;
         }
 
         return $this;
+    }
+
+    public static function validateTag(mixed $tag): string
+    {
+        if (!\is_string($tag)) {
+            throw new InvalidArgumentException(\sprintf('Cache tag must be string, "%s" given', \is_object($tag) ? $tag::class : \gettype($tag)));
+        }
+        if (!isset($tag[0])) {
+            throw new InvalidArgumentException('Cache tag length must be greater than zero');
+        }
+        if (isset($tag[strcspn($tag, '{}()/\@:')])) {
+            throw new InvalidArgumentException(\sprintf('Cache tag "%s" contains reserved characters {}()/\@:', $tag));
+        }
+
+        return $tag;
     }
 
     /**
@@ -207,11 +229,23 @@ class CacheItem implements PhpCacheItem
             $result = $func();
             $this->hasValue = $result[0];
             $this->value = $result[1];
-            $this->prevTags = $result[2] ?? [];
+            $this->tagVersions = $result[2] ?? [];
+            foreach ($this->tagVersions as [$tag]) {
+                $this->prevTags[self::tagIndex($tag)] = $tag;
+            }
             $this->expirationTimestamp = $result[3] ?? null;
 
             $this->callable = null;
         }
+    }
+
+    private static function tagIndex(string $tag): string
+    {
+        if (1 === preg_match('/^(?:0|-?[1-9][0-9]*)$/D', $tag) && (string) (int) $tag === $tag) {
+            return ':'.$tag;
+        }
+
+        return $tag;
     }
 
     /**
@@ -222,6 +256,7 @@ class CacheItem implements PhpCacheItem
     public function moveTagsToPrevious(): void
     {
         $this->prevTags = $this->tags;
+        $this->tagVersions = [];
         $this->tags = [];
     }
 }

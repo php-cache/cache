@@ -27,6 +27,10 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 {
     public const SEPARATOR_TAG = '!';
 
+    private const TAG_KEY_PREFIX = 'tag!';
+
+    private const TAG_VERSION_KEY_PREFIX = 'tagv!';
+
     private ?LoggerInterface $logger = null;
 
     /**
@@ -46,7 +50,7 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
      *
      * If it is a cache miss, it MUST return [false, null, [], null]
      *
-     * @return array{0: bool, 1: mixed, 2: array<string, string>, 3: int|null}
+     * @return array{0: bool, 1: mixed, 2: list<array{0: string, 1: string}>, 3: int|null}
      */
     abstract protected function fetchObjectFromCache(string $key): array;
 
@@ -79,6 +83,11 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
      */
     abstract protected function appendListItem(string $name, string $key): bool;
 
+    protected function appendListItemWithExpiration(string $name, string $key, ?int $expirationTimestamp): bool
+    {
+        return $this->appendListItem($name, $key);
+    }
+
     /**
      * Remove an item from the list.
      */
@@ -105,7 +114,12 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 
         $func = function () use ($key) {
             try {
-                return $this->fetchObjectFromCache($key);
+                $stored = $this->fetchObjectFromCache($key);
+                if ($stored[0] && !$this->tagVersionsAreCurrent($stored[2])) {
+                    return [false, null, [], null];
+                }
+
+                return $stored;
             } catch (\Exception $e) {
                 $this->handleException($e, 'getItem');
             }
@@ -219,6 +233,10 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
         }
 
         try {
+            if (!$this->prepareTagVersions($item)) {
+                return false;
+            }
+
             $previousTags = $this->getTagEntries($item);
             if (!$this->storeItemInCache($item, $timeToLive)) {
                 return false;
@@ -282,7 +300,7 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
             ));
             $this->handleException($e, __FUNCTION__);
         }
-        if (!isset($key[0])) {
+        if ('' === $key) {
             $e = new InvalidArgumentException('Cache key cannot be an empty string');
             $this->handleException($e, __FUNCTION__);
         }
@@ -290,6 +308,22 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
             $e = new InvalidArgumentException(\sprintf(
                 'Invalid key: "%s". The key contains one or more characters reserved for future extension: {}()/\@:',
                 $key
+            ));
+            $this->handleException($e, __FUNCTION__);
+        }
+        if (str_starts_with($key, self::TAG_KEY_PREFIX)) {
+            $e = new InvalidArgumentException(\sprintf(
+                'Invalid key: "%s". Cache keys starting with "%s" are reserved for tag indexes.',
+                $key,
+                self::TAG_KEY_PREFIX
+            ));
+            $this->handleException($e, __FUNCTION__);
+        }
+        if (str_starts_with($key, self::TAG_VERSION_KEY_PREFIX)) {
+            $e = new InvalidArgumentException(\sprintf(
+                'Invalid key: "%s". Cache keys starting with "%s" are reserved for tag versions.',
+                $key,
+                self::TAG_VERSION_KEY_PREFIX
             ));
             $this->handleException($e, __FUNCTION__);
         }
@@ -339,17 +373,32 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
      */
     public function invalidateTags(array $tags): bool
     {
+        $validatedTags = [];
+        foreach ($tags as $tag) {
+            $validatedTags[] = CacheItem::validateTag($tag);
+        }
+        $tags = $validatedTags;
+        if (!$this->commit()) {
+            return false;
+        }
+
         $invalidTags = array_fill_keys($tags, true);
         $itemIds = [];
         foreach ($tags as $tag) {
             foreach ($this->getList($this->getTagKey($tag)) as $itemId) {
                 $stored = $this->fetchObjectFromCache($itemId);
-                foreach ($stored[2] as $storedTag) {
+                foreach ($stored[2] as [$storedTag]) {
                     if ($stored[0] && isset($invalidTags[$storedTag])) {
                         $itemIds[$itemId] = $itemId;
                         break;
                     }
                 }
+            }
+        }
+
+        foreach ($tags as $tag) {
+            if (!$this->deleteTagVersion($this->getTagVersionKey($tag))) {
+                return false;
             }
         }
 
@@ -376,10 +425,76 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
         $saved = true;
         $tags = $item->getTags();
         foreach ($tags as $tag) {
-            $saved = $this->appendListItem($this->getTagKey($tag), $item->getKey()) && $saved;
+            $saved = $this->appendListItemWithExpiration(
+                $this->getTagKey($tag),
+                $item->getKey(),
+                $item->getExpirationTimestamp()
+            ) && $saved;
         }
 
         return $saved;
+    }
+
+    protected function readTagVersion(string $name): ?string
+    {
+        $stored = $this->fetchObjectFromCache($name);
+
+        return $stored[0] && \is_string($stored[1]) ? $stored[1] : null;
+    }
+
+    protected function writeTagVersion(string $name, string $version): bool
+    {
+        return $this->storeItemInCache(new CacheItem($name, true, $version), null);
+    }
+
+    protected function deleteTagVersion(string $name): bool
+    {
+        return $this->clearOneObjectFromCache($name);
+    }
+
+    protected function getTagVersionKey(string $tag): string
+    {
+        return $this->getTagMetadataKey(self::TAG_VERSION_KEY_PREFIX, $tag);
+    }
+
+    private function prepareTagVersions(PhpCacheItem $item): bool
+    {
+        $versions = [];
+        foreach ($item->getTags() as $tag) {
+            $name = $this->getTagVersionKey($tag);
+            $version = $this->readTagVersion($name);
+            if (null === $version) {
+                if (!$this->writeTagVersion($name, bin2hex(random_bytes(16)))) {
+                    return false;
+                }
+
+                $version = $this->readTagVersion($name);
+                if (null === $version) {
+                    return false;
+                }
+            }
+
+            $versions[] = [$tag, $version];
+        }
+
+        $item->setTagVersions($versions);
+
+        return true;
+    }
+
+    /**
+     * @param list<array{0: string, 1: string}> $versions
+     */
+    protected function tagVersionsAreCurrent(array $versions): bool
+    {
+        foreach ($versions as [$tag, $version]) {
+            $current = $this->readTagVersion($this->getTagVersionKey($tag));
+            if (null === $current || !hash_equals($version, $current)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -397,23 +512,21 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
         return $this;
     }
 
-    /**
-     * @return array<string, string>
-     */
+    /** @return list<string> */
     private function getTagEntries(PhpCacheItem $item): array
     {
         $stored = $this->fetchObjectFromCache($item->getKey());
-        $tags = $item->getPreviousTags();
-        foreach ($stored[2] as $tag) {
-            $tags[$tag] = $tag;
+        $tags = array_values($item->getPreviousTags());
+        foreach ($stored[2] as [$tag]) {
+            if (!\in_array($tag, $tags, true)) {
+                $tags[] = $tag;
+            }
         }
 
         return $tags;
     }
 
-    /**
-     * @param array<string, string> $tags
-     */
+    /** @param list<string> $tags */
     private function removeTagEntries(PhpCacheItem $item, array $tags): bool
     {
         $removed = true;
@@ -426,7 +539,12 @@ abstract class AbstractCachePool implements PhpCachePool, LoggerAwareInterface, 
 
     protected function getTagKey(string $tag): string
     {
-        return 'tag'.self::SEPARATOR_TAG.$tag;
+        return $this->getTagMetadataKey(self::TAG_KEY_PREFIX, $tag);
+    }
+
+    private function getTagMetadataKey(string $prefix, string $tag): string
+    {
+        return $prefix.substr(hash('sha256', $tag), 0, 64 - \strlen($prefix));
     }
 
     public function get(string $key, mixed $default = null): mixed

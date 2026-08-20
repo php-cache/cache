@@ -11,7 +11,7 @@ For example, deleting `|users|42|followers` also invalidates keys below that pat
 ## Installation
 
 ```bash
-composer require cache/hierarchical-cache:^2.0
+composer require cache/hierarchical-cache:^2.1
 ```
 
 ## Usage
@@ -21,6 +21,8 @@ Read the [hierarchical cache guide](https://www.php-cache.com/en/latest/hierarch
 ## Implementing a pool
 
 Adapter authors can use `HierarchicalCachePoolTrait`. Read the [implementation guide](https://www.php-cache.com/en/latest/implementing-cache-pools/hierarchy/) before storing or deleting hierarchical keys.
+
+Version 2.1 supports `cache/adapter-common` 2 and 3. Use it with the Common version required by the concrete adapter.
 
 ## Contributing
 

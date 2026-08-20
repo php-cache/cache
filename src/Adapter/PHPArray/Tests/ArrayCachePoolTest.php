@@ -153,13 +153,29 @@ class ArrayCachePoolTest extends TestCase
 
     public function testMalformedTagIndexIsDiscarded()
     {
+        $tagKey = 'tag!'.substr(hash('sha256', 'tag'), 0, 60);
+
         foreach (['invalid', [123]] as $tagIndex) {
-            $storage = ['tag!tag' => $tagIndex];
+            $storage = [$tagKey => $tagIndex];
             $pool = new ArrayCachePool(null, $storage);
 
             self::assertTrue($pool->invalidateTag('tag'));
-            self::assertArrayNotHasKey('tag!tag', $storage);
+            self::assertArrayNotHasKey($tagKey, $storage);
         }
+    }
+
+    public function testPublicKeyCannotUseInternalTagIndexNamespace()
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        (new ArrayCachePool())->getItem('tag!group');
+    }
+
+    public function testPublicKeyCannotUseInternalTagVersionNamespace()
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        (new ArrayCachePool())->getItem('tagv!group');
     }
 
     public function testSavingHierarchicalItemRepairsMalformedPath()
@@ -305,6 +321,71 @@ class ArrayCachePoolTest extends TestCase
         self::assertSame('replacement', $pool->getItem('key')->get());
     }
 
+    public function testMissingTagGenerationMakesTaggedItemsMiss()
+    {
+        $storage = [];
+        $pool = new ArrayCachePool(null, $storage);
+        self::assertTrue($pool->save($pool->getItem('key')->set('value')->setTags(['tag'])));
+
+        unset($storage['tagv!'.substr(hash('sha256', 'tag'), 0, 59)]);
+
+        self::assertFalse($pool->hasItem('key'));
+        self::assertFalse(iterator_to_array($pool->getItems(['key']))['key']->isHit());
+    }
+
+    public function testNumericStringTagsKeepTheirGenerationSnapshots()
+    {
+        $pool = new ArrayCachePool();
+
+        foreach (['0', '123', '-1'] as $tag) {
+            $key = 'key_'.str_replace('-', 'minus_', $tag);
+            self::assertTrue($pool->save($pool->getItem($key)->set('value')->setTags([$tag])));
+            self::assertTrue($pool->hasItem($key));
+            self::assertTrue($pool->invalidateTag($tag));
+            self::assertFalse($pool->hasItem($key));
+        }
+    }
+
+    public function testSaveRacingWithInvalidationCannotEscapeTheInvalidation()
+    {
+        $storage = [];
+        $first = new InterleavingArrayCachePool(null, $storage);
+        $second = new ArrayCachePool(null, $storage);
+        self::assertTrue($first->save($first->getItem('seed')->set('value')->setTags(['tag'])));
+
+        $first->beforePublicStore = static function () use ($second): void {
+            self::assertTrue($second->invalidateTag('tag'));
+        };
+
+        self::assertTrue($first->save($first->getItem('during')->set('value')->setTags(['tag'])));
+        self::assertFalse($first->hasItem('seed'));
+        self::assertFalse($first->hasItem('during'));
+
+        self::assertTrue($second->save($second->getItem('after')->set('value')->setTags(['tag'])));
+        self::assertTrue($first->hasItem('after'));
+    }
+
+    public function testTagGenerationWriteFailureDoesNotStoreTheItem()
+    {
+        $storage = [];
+        $pool = new FailingTagGenerationArrayCachePool(null, $storage);
+        $pool->failGenerationWrites = true;
+
+        self::assertFalse($pool->save($pool->getItem('key')->set('value')->setTags(['tag'])));
+        self::assertArrayNotHasKey('key', $storage);
+    }
+
+    public function testTagGenerationDeleteFailureDoesNotDeleteTheItem()
+    {
+        $storage = [];
+        $pool = new FailingTagGenerationArrayCachePool(null, $storage);
+        self::assertTrue($pool->save($pool->getItem('key')->set('value')->setTags(['tag'])));
+        $pool->failGenerationDeletes = true;
+
+        self::assertFalse($pool->invalidateTag('tag'));
+        self::assertTrue($pool->hasItem('key'));
+    }
+
     public function testRemoveListItem()
     {
         $pool = new ArrayCachePool();
@@ -337,6 +418,47 @@ final class FailingArrayCachePool extends ArrayCachePool
     protected function storeItemInCache(PhpCacheItem $item, ?int $ttl): bool
     {
         if ($this->failWrites) {
+            return false;
+        }
+
+        return parent::storeItemInCache($item, $ttl);
+    }
+}
+
+final class InterleavingArrayCachePool extends ArrayCachePool
+{
+    public ?\Closure $beforePublicStore = null;
+
+    protected function storeItemInCache(PhpCacheItem $item, ?int $ttl): bool
+    {
+        if (null !== $this->beforePublicStore && !str_starts_with($item->getKey(), 'tagv!')) {
+            $callback = $this->beforePublicStore;
+            $this->beforePublicStore = null;
+            $callback();
+        }
+
+        return parent::storeItemInCache($item, $ttl);
+    }
+}
+
+final class FailingTagGenerationArrayCachePool extends ArrayCachePool
+{
+    public bool $failGenerationDeletes = false;
+
+    public bool $failGenerationWrites = false;
+
+    protected function clearOneObjectFromCache(string $key): bool
+    {
+        if ($this->failGenerationDeletes && str_starts_with($key, 'tagv!')) {
+            return false;
+        }
+
+        return parent::clearOneObjectFromCache($key);
+    }
+
+    protected function storeItemInCache(PhpCacheItem $item, ?int $ttl): bool
+    {
+        if ($this->failGenerationWrites && str_starts_with($item->getKey(), 'tagv!')) {
             return false;
         }
 

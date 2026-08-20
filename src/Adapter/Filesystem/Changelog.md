@@ -2,6 +2,16 @@
 
 Each release groups changes under Added, Removed, Changed, or Fixed headings.
 
+## 3.0.0
+
+### Changed
+
+* Expose `getFilePath()` as a protected extension point for custom file layouts.
+* Hash keys into 256 shard directories to avoid platform-specific filenames and large flat directories.
+* Clear cache files recursively so custom layouts can use nested directories.
+* Require `cache/adapter-common` 3.
+* Store tag generations in item payloads and separate marker files. Clear the cache directory before upgrading or rolling back.
+
 ## 2.0.4
 
 ### Fixed

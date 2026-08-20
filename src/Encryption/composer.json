@@ -29,14 +29,14 @@
     "homepage": "https://www.php-cache.com/en/latest/",
     "require": {
         "php": "^8.2",
-        "cache/adapter-common": "^2.0.3",
+        "cache/adapter-common": "^2.0.3 || ^3.0",
         "cache/tag-interop": "^2.0",
         "defuse/php-encryption": "^2.4",
         "psr/cache": "^3.0"
     },
     "require-dev": {
-        "cache/array-adapter": "^2.0",
-        "cache/filesystem-adapter": "^2.0",
+        "cache/array-adapter": "^3.0",
+        "cache/filesystem-adapter": "^3.0",
         "cache/integration-tests": "^1.0@dev",
         "phpunit/phpunit": "^11.5"
     },
@@ -52,7 +52,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "2.0-dev"
+            "dev-master": "2.1-dev"
         }
     }
 }

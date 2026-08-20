@@ -44,7 +44,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         $this->limit = $limit;
     }
 
-    /** @return PhpCacheItem|array{bool, mixed, array<string, string>, int|null} */
+    /** @return PhpCacheItem|array{bool, mixed, list<array{0: string, 1: string}>, int|null} */
     protected function getItemWithoutGenerateCacheKey(string $key): PhpCacheItem|array
     {
         if (isset($this->deferred[$key])) {
@@ -57,7 +57,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         return $this->fetchObjectFromCache($key);
     }
 
-    /** @return array{bool, mixed, array<string, string>, int|null} */
+    /** @return array{bool, mixed, list<array{0: string, 1: string}>, int|null} */
     protected function fetchObjectFromCache(string $key): array
     {
         $keys = $this->getHierarchyKey($key);
@@ -132,7 +132,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
             }
         }
 
-        $this->cacheToolkit($keys, [$value, $item->getTags(), $item->getExpirationTimestamp()]);
+        $this->cacheToolkit($keys, [$value, $item->getTagVersions(), $item->getExpirationTimestamp()]);
 
         return true;
     }
@@ -261,7 +261,7 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         return $this->explodeKey($key);
     }
 
-    /** @return array{mixed, array<string, string>, int|null}|null */
+    /** @return array{mixed, list<array{0: string, 1: string}>, int|null}|null */
     private function decodeCacheElement(mixed $element): ?array
     {
         if (!\is_array($element)
@@ -275,12 +275,16 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         }
 
         $tags = [];
-        foreach ($element[1] as $tag) {
-            if (!\is_string($tag)) {
+        foreach ($element[1] as $tagVersion) {
+            if (!\is_array($tagVersion) || !array_is_list($tagVersion) || 2 !== \count($tagVersion)) {
+                return null;
+            }
+            [$tag, $version] = $tagVersion;
+            if (!\is_string($tag) || !\is_string($version)) {
                 return null;
             }
 
-            $tags[$tag] = $tag;
+            $tags[] = [$tag, $version];
         }
 
         return [$element[0], $tags, $element[2]];

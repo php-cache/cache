@@ -9,7 +9,7 @@ This package encrypts values stored through a taggable PSR-6 cache pool. Encrypt
 ## Installation
 
 ```bash
-composer require cache/encryption-cache:^2.0
+composer require cache/encryption-cache:^2.1
 ```
 
 ## Usage
@@ -28,6 +28,8 @@ $pool->save($item);
 ```
 
 The wrapped pool must implement `TaggableCacheItemPoolInterface`. Persist the encryption key outside the cache and load the same key for every request.
+
+Version 2.1 supports `cache/adapter-common` 2 and 3. Follow the wrapped adapter's upgrade steps before deploying or rolling back.
 
 ## Contributing
 

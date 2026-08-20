@@ -170,8 +170,11 @@ class IlluminateAdapterTest extends TestCase
 
     public function testCorruptTagListIsIgnored()
     {
-        $this->mockStore->shouldReceive('get')->twice()->with('tag!corrupt')->andReturn([42]);
-        $this->mockStore->shouldReceive('forget')->once()->with('tag!corrupt')->andReturn(true);
+        $tagKey = 'tag!'.substr(hash('sha256', 'corrupt'), 0, 60);
+        $tagVersionKey = 'tagv!'.substr(hash('sha256', 'corrupt'), 0, 59);
+        $this->mockStore->shouldReceive('get')->twice()->with($tagKey)->andReturn([42]);
+        $this->mockStore->shouldReceive('get')->once()->with($tagVersionKey)->andReturn(null);
+        $this->mockStore->shouldReceive('forget')->once()->with($tagKey)->andReturn(true);
 
         self::assertTrue($this->pool->invalidateTag('corrupt'));
     }

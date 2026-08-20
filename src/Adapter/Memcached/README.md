@@ -11,7 +11,7 @@ This package provides PSR-6 and PSR-16 cache implementations backed by the Memca
 Install the package and enable the Memcached extension:
 
 ```bash
-composer require cache/memcached-adapter:^2.0
+composer require cache/memcached-adapter:^3.0
 ```
 
 ## Usage
@@ -25,10 +25,13 @@ $client->addServer('127.0.0.1', 11211);
 $pool = new MemcachedCachePool($client);
 ```
 
-The pool enables Memcached's binary protocol by default. Pass `false` as the second constructor argument when an ASCII-only proxy handles the connection:
+The pool enables Memcached's binary protocol by default. Pass a Memcached option map as the second constructor argument to override it or set other client options:
 
 ```php
-$pool = new MemcachedCachePool($client, false);
+$pool = new MemcachedCachePool($client, [
+    Memcached::OPT_BINARY_PROTOCOL => false,
+    Memcached::OPT_CONNECT_TIMEOUT => 1000,
+]);
 ```
 
 ## Bulk operations
@@ -36,6 +39,14 @@ $pool = new MemcachedCachePool($client, false);
 The PSR-16 `getMultiple()`, `setMultiple()`, and `deleteMultiple()` methods use the native Memcached bulk commands. Bulk writes keep the same expiration for every value and remove old tag references after storage succeeds.
 
 The pool treats `false` from Memcached's `getMulti()` as a backend failure. It throws `CachePoolException` instead of returning a batch of cache misses.
+
+## Upgrading to version 3
+
+Version 3 stores a generation snapshot with each tagged item and a separate marker for each tag. Version 2 workers cannot safely share this format.
+
+The constructor now accepts a Memcached option map instead of a Boolean binary-protocol flag.
+
+Stop or drain all workers, clear Memcached, and then deploy version 3. Follow the same sequence before a rollback.
 
 ## Contributing
 

@@ -11,7 +11,7 @@ Use the [PSR-6 Doctrine bridge](https://github.com/php-cache/doctrine-bridge) wh
 ## Installation
 
 ```bash
-composer require cache/doctrine-adapter:^2.0
+composer require cache/doctrine-adapter:^3.0
 ```
 
 ## Usage
@@ -29,6 +29,12 @@ function createPool(Cache $doctrineCache): DoctrineCachePool
 ```
 
 Doctrine Cache 2.x provides the legacy interfaces but no storage drivers. Your application must provide the concrete implementation.
+
+## Upgrading to version 3
+
+Version 3 stores a generation snapshot with each tagged item and a separate marker for each tag. Version 2 workers cannot safely share this format.
+
+Stop or drain all workers, clear the Doctrine cache, and then deploy version 3. Follow the same sequence before a rollback.
 
 ## Contributing
 

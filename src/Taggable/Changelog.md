@@ -2,6 +2,33 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 3.0.0
+
+### Changed
+
+* Expose the wrapped cache and tag-store pools as protected `readonly` properties on `TaggablePSR6PoolAdapter`.
+* Store a generation snapshot with each tagged item instead of a reverse tag index.
+* Validate tag generations in `getItem()`, `getItems()`, and `hasItem()`.
+* Keep one generation marker for each known tag until invalidation, pool clearing, eviction, or the signed 32-bit Unix time bound.
+
+### Fixed
+
+* Make concurrent generation initialization fail closed instead of exposing a stale item.
+* Prevent save and invalidation races from leaving a stale tagged item visible.
+* Treat missing, evicted, malformed, and legacy tag generations as cache misses.
+* Keep `isHit()` and `get()` stable for the lifetime of a returned item.
+* Preserve the value and tags when an unchanged fetched item is saved again.
+* Support numeric-string tags in generation snapshots.
+* Keep metadata keys within the portable PSR-6 alphabet and length limit.
+* Keep generation marker expirations within common backend integer limits.
+* Validate every tag before invalidation changes metadata.
+* Prevent changing tags on a cache miss from restoring its invalidated body.
+
+### Removed
+
+* Remove `ExtensibleTaggablePSR6PoolAdapter`. Extend `TaggablePSR6PoolAdapter` directly instead.
+* Remove the protected tag-list hooks. Override the generation read, write, and delete hooks instead.
+
 ## 2.1.0
 
 ### Added

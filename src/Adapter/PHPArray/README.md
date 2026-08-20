@@ -11,7 +11,7 @@ Values live only for the current PHP process. This adapter works well in tests a
 ## Installation
 
 ```bash
-composer require cache/array-adapter:^2.0
+composer require cache/array-adapter:^3.0
 ```
 
 ## Usage
@@ -31,6 +31,10 @@ $pool = new ArrayCachePool(1_000);
 ```
 
 When the pool reaches the limit, saving a new key removes the key in the next storage slot. Updating an existing key keeps its slot.
+
+## Upgrading to version 3
+
+Version 3 stores a generation snapshot with each tagged item and a separate marker for each tag. Array caches are process-local, so new workers start with an empty cache.
 
 ## Contributing
 

@@ -2,6 +2,12 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 2.1.0
+
+### Changed
+
+* Support `cache/adapter-common` 2 and 3.
+
 ## 2.0.0
 
 ### Changed

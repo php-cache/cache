@@ -11,10 +11,13 @@
 
 namespace Cache\Adapter\Redis\Tests;
 
-use Cache\IntegrationTests\TaggableCachePoolTest;
+use Cache\Adapter\Redis\RedisCachePool;
 
-class ClusterIntegrationTagTest extends TaggableCachePoolTest
+final class InspectableRedisCachePool extends RedisCachePool
 {
-    use CreateRedisClusterPoolTrait;
-    use TagExpirationTestTrait;
+    /** @return list<string> */
+    public function getTagMembers(string $name): array
+    {
+        return $this->getList($name);
+    }
 }

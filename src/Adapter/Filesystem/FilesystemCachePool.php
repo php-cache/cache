@@ -74,13 +74,8 @@ class FilesystemCachePool extends AbstractCachePool
         $this->folder = implode('/', $segments);
     }
 
-    protected function validateKey(mixed $key): string
-    {
-        return $this->validateFilename(parent::validateKey($key));
-    }
-
     /**
-     * @return array{bool, mixed, array<string, string>, int|null}
+     * @return array{bool, mixed, list<array{0: string, 1: string}>, int|null}
      */
     protected function fetchObjectFromCache(string $key): array
     {
@@ -99,7 +94,7 @@ class FilesystemCachePool extends AbstractCachePool
         // Determine expirationTimestamp from data, remove items if expired
         $expirationTimestamp = $data[2] ?: null;
         if (null !== $expirationTimestamp && time() >= $expirationTimestamp) {
-            foreach ($data[1] as $tag) {
+            foreach ($data[1] as [$tag]) {
                 $this->removeListItem($this->getTagKey($tag), $key);
             }
             $this->forceClear($key);
@@ -112,7 +107,7 @@ class FilesystemCachePool extends AbstractCachePool
 
     protected function clearAllObjectsFromCache(): bool
     {
-        foreach ($this->filesystem->listContents($this->folder) as $entry) {
+        foreach ($this->filesystem->listContents($this->folder, true) as $entry) {
             if ($entry->isFile()) {
                 $this->deleteFile($entry->path());
             }
@@ -131,7 +126,7 @@ class FilesystemCachePool extends AbstractCachePool
         $data = serialize(
             [
                 $item->get(),
-                $item->getTags(),
+                $item->getTagVersions(),
                 $item->getExpirationTimestamp(),
             ]
         );
@@ -144,26 +139,11 @@ class FilesystemCachePool extends AbstractCachePool
     /**
      * @throws InvalidArgumentException
      */
-    private function getFilePath(string $key): string
+    protected function getFilePath(string $key): string
     {
-        $key = $this->validateFilename($key);
-        // PSR-6 requires dot keys; @ is reserved, so these storage names cannot collide with valid keys.
-        $key = match ($key) {
-            '.' => '@dot',
-            '..' => '@dotdot',
-            default => $key,
-        };
+        $digest = hash('sha256', $key);
 
-        return \sprintf('%s/%s', $this->folder, $key);
-    }
-
-    private function validateFilename(string $key): string
-    {
-        if (!preg_match('|^[a-zA-Z0-9_\.! ]+$|', $key)) {
-            throw new InvalidArgumentException(\sprintf('Invalid key "%s". Valid filenames must match [a-zA-Z0-9_\.! ].', $key));
-        }
-
-        return $key;
+        return \sprintf('%s/%s/%s', $this->folder, substr($digest, 0, 2), substr($digest, 2));
     }
 
     /**
@@ -228,7 +208,7 @@ class FilesystemCachePool extends AbstractCachePool
     }
 
     /**
-     * @return array{mixed, array<string, string>, int|null}|null
+     * @return array{mixed, list<array{0: string, 1: string}>, int|null}|null
      */
     private function decodeCacheItem(string $contents): ?array
     {
@@ -246,12 +226,16 @@ class FilesystemCachePool extends AbstractCachePool
         }
 
         $tags = [];
-        foreach ($stored[1] as $tag) {
-            if (!\is_string($tag)) {
+        foreach ($stored[1] as $tagVersion) {
+            if (!\is_array($tagVersion) || !array_is_list($tagVersion) || 2 !== \count($tagVersion)) {
+                return null;
+            }
+            [$tag, $version] = $tagVersion;
+            if (!\is_string($tag) || !\is_string($version)) {
                 return null;
             }
 
-            $tags[$tag] = $tag;
+            $tags[] = [$tag, $version];
         }
 
         return [$stored[0], $tags, $stored[2]];

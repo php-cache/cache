@@ -23,7 +23,7 @@
         "psr/simple-cache": "^2.0 || ^3.0"
     },
     "require-dev": {
-        "cache/array-adapter": "^2.0",
+        "cache/array-adapter": "^3.0",
         "cache/integration-tests": "^1.0@dev",
         "cache/namespaced-cache": "^2.0",
         "cache/prefixed-cache": "^2.0",

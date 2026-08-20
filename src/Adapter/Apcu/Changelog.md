@@ -2,6 +2,17 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 3.0.0
+
+### Changed
+
+* Require `cache/adapter-common` 3.
+* Store tag generations in item payloads and separate marker entries. Clear APCu before upgrading or rolling back.
+
+### Fixed
+
+* Report a failed native deletion when the key still exists.
+
 ## 2.0.3
 
 ### Fixed

@@ -36,7 +36,7 @@ class IlluminateCachePool extends AbstractCachePool implements HierarchicalPoolI
 
     protected function storeItemInCache(PhpCacheItem $item, ?int $ttl): bool
     {
-        $data = serialize([true, $item->get(), $item->getTags(), $item->getExpirationTimestamp()]);
+        $data = serialize([true, $item->get(), $item->getTagVersions(), $item->getExpirationTimestamp()]);
 
         $key = $this->getHierarchyKey($item->getKey());
         if (null === $ttl) {
@@ -67,12 +67,16 @@ class IlluminateCachePool extends AbstractCachePool implements HierarchicalPoolI
         }
 
         $decodedTags = [];
-        foreach ($tags as $tag) {
-            if (!\is_string($tag)) {
+        foreach ($tags as $tagVersion) {
+            if (!\is_array($tagVersion) || !array_is_list($tagVersion) || 2 !== \count($tagVersion)) {
+                return [false, null, [], null];
+            }
+            [$tag, $version] = $tagVersion;
+            if (!\is_string($tag) || !\is_string($version)) {
                 return [false, null, [], null];
             }
 
-            $decodedTags[$tag] = $tag;
+            $decodedTags[] = [$tag, $version];
         }
 
         $expiration = $record[3];

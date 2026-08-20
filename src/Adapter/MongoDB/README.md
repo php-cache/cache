@@ -11,7 +11,7 @@ This package provides PSR-6 and PSR-16 cache implementations backed by MongoDB. 
 Install the package and enable the MongoDB extension:
 
 ```bash
-composer require cache/mongodb-adapter:^2.0
+composer require cache/mongodb-adapter:^3.0
 ```
 
 ## Usage
@@ -26,6 +26,12 @@ $pool = new MongoDBCachePool($collection);
 ```
 
 `createCollection()` creates the TTL index used to remove expired entries.
+
+## Upgrading to version 3
+
+Version 3 stores a generation snapshot with each tagged item and a separate marker document for each tag. Version 2 workers cannot safely share this format.
+
+Stop or drain all workers, clear the cache collection, and then deploy version 3. Follow the same sequence before a rollback.
 
 ## Contributing
 

@@ -2,6 +2,26 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 3.0.0
+
+### Added
+
+* Add `appendListItemWithExpiration()` as a protected hook for adapters that store tag lifetimes.
+* Expose tag generation validation to adapters with optimized bulk reads.
+
+### Changed
+
+* Store a generation snapshot with each tagged item and reject stale snapshots after tag invalidation.
+* Store tag metadata under portable, SHA-256-based `tag!` and `tagv!` keys. Reserve those public key prefixes.
+* Require adapters to store tag payloads as `[tag, generation]` pairs instead of tag-name maps.
+* Change the tag storage format. Clear shared caches before upgrading, rolling back, or running mixed versions.
+
+### Fixed
+
+* Preserve numeric string tag names and remove each tag-index entry once.
+* Validate every tag before bulk invalidation changes cache data or metadata.
+* Commit deferred tagged items before invalidation scans their tag indexes.
+
 ## 2.0.3
 
 ### Fixed

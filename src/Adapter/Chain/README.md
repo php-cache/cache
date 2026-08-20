@@ -11,7 +11,7 @@ Reads use the first available value. Writes update each configured pool.
 ## Installation
 
 ```bash
-composer require cache/chain-adapter:^2.0
+composer require cache/chain-adapter:^2.1
 ```
 
 ## Usage
@@ -46,7 +46,7 @@ By default, the chain throws exceptions from a pool. Set `skip_on_failure` to re
 Install the optional no-op pool when failures must become cache misses:
 
 ```bash
-composer require cache/void-adapter:^2.0
+composer require cache/void-adapter:^3.0
 ```
 
 ```php
@@ -68,6 +68,8 @@ If every member throws before one completes the operation, the chain throws `NoP
 Add `VoidCachePool` last when cache failures must become misses. Writes still run against every active pool, including `VoidCachePool`.
 
 The chain cannot catch an exception thrown before the pool reaches the chain constructor. Delay backend connections until a cache operation when possible.
+
+Version 2.1 supports `cache/adapter-common` 2 and 3. Follow each member adapter's upgrade steps before mixing major versions in a chain.
 
 ## Contributing
 

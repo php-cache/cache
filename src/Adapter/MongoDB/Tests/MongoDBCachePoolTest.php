@@ -51,17 +51,29 @@ class MongoDBCachePoolTest extends TestCase
 
     public function testValidTaggedBackendDocumentIsHit()
     {
+        $tagVersionKey = 'tagv!'.substr(hash('sha256', 'tag'), 0, 59);
         $collection = $this->createMock(Collection::class);
-        $collection->method('findOne')->willReturn([
-            'data' => serialize('value'),
-            'tags' => serialize(['tag' => 'tag']),
-            'expirationTimestamp' => null,
-        ]);
+        $collection->method('findOne')->willReturnCallback(static function (array $filter) use ($tagVersionKey): array {
+            if ($tagVersionKey === $filter['_id']) {
+                return [
+                    'data' => serialize('version'),
+                    'tags' => serialize([]),
+                    'expirationTimestamp' => null,
+                ];
+            }
+
+            return [
+                'data' => serialize('value'),
+                'tags' => serialize([['tag', 'version']]),
+                'expirationTimestamp' => null,
+            ];
+        });
 
         $item = (new MongoDBCachePool($collection))->getItem('key');
 
         self::assertTrue($item->isHit());
         self::assertSame(['tag' => 'tag'], $item->getPreviousTags());
+        self::assertSame([['tag', 'version']], $item->getTagVersions());
     }
 
     #[DataProvider('invalidDocumentProvider')]
